@@ -213,45 +213,8 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data }, ref)
           </div>
 
           {/* Footer */}
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-3 items-end gap-6 text-center">
-            <div className="space-y-4">
-              {/* Deputy Transport Commissioner Signature - Left Side - Only for Regional Certificates */}
-              {data.regionalAuthority && (
-                <div className="flex flex-col items-center space-y-1 mb-4">
-                  <Image
-                    src="/assets/signatures/Official1.png"
-                    alt="Deputy Transport Commissioner Signature"
-                    width={120}
-                    height={50}
-                    className="h-10 w-auto object-contain mb-2"
-                    unoptimized
-                  />
-                  <div className="space-y-1">
-                    <p className={`${inter.className} font-semibold text-gray-800 text-sm`}>
-                      {isTelugu ? "పి.పురుషోత్తం" : "P.Purushottham"}
-                    </p>
-                    <p className={`${inter.className} text-xs text-gray-600`}>
-                      {isTelugu ? "డిప్యూటీ ట్రాన్స్పోర్ట్ కమిషనర్, కరీంనగర్" : "Deputy Transport Commissioner, Karimnagar"}
-                    </p>
-                  </div>
-                </div>
-              )}
-              
-              <div className="space-y-2">
-                <div className="border-b border-gray-300" />
-                <p className={`${inter.className} text-sm text-gray-600`}>
-                  {isTelugu ? "జారీ తేదీ" : "Date of Issue"}
-                </p>
-                <p className={`${inter.className} font-semibold text-gray-800`}>
-                  {new Date(data.issueDate).toLocaleDateString(isTelugu ? "te-IN" : "en-IN", {
-                    day: "2-digit",
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </p>
-              </div>
-            </div>
-
+          <div className="mt-12 flex flex-col items-center gap-6 text-center">
+            {/* Minister Signature - Center */}
             <div className="flex flex-col items-center space-y-1">
               <Image
                 src="/assets/signatures/minister%20ponnam%20prabhakar%20sign.jpg"
@@ -271,29 +234,21 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data }, ref)
               </div>
             </div>
 
-            <div className="space-y-4">
-              {/* Deputy Transport Commissioner Signature - Right Side - Only for Regional Certificates */}
-              {data.regionalAuthority && (
-                <div className="flex flex-col items-center space-y-1 mb-4">
-                  <Image
-                    src="/assets/signatures/Official2.png"
-                    alt="Deputy Transport Commissioner Signature"
-                    width={120}
-                    height={50}
-                    className="h-10 w-auto object-contain mb-2"
-                    unoptimized
-                  />
-                  <div className="space-y-1">
-                    <p className={`${inter.className} font-semibold text-gray-800 text-sm`}>
-                      {isTelugu ? "పి.పురుషోత్తం" : "P.Purushottham"}
-                    </p>
-                    <p className={`${inter.className} text-xs text-gray-600`}>
-                      {isTelugu ? "డిప్యూటీ ట్రాన్స్పోర్ట్ కమిషనర్, కరీంనగర్" : "Deputy Transport Commissioner, Karimnagar"}
-                    </p>
-                  </div>
-                </div>
-              )}
-              
+            {/* Date and Reference ID - Below signature */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-md">
+              <div className="space-y-2">
+                <div className="border-b border-gray-300" />
+                <p className={`${inter.className} text-sm text-gray-600`}>
+                  {isTelugu ? "జారీ తేదీ" : "Date of Issue"}
+                </p>
+                <p className={`${inter.className} font-semibold text-gray-800`}>
+                  {new Date(data.issueDate).toLocaleDateString(isTelugu ? "te-IN" : "en-IN", {
+                    day: "2-digit",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </p>
+              </div>
               <div className="space-y-2">
                 <div className="border-b border-gray-300" />
                 <p className={`${inter.className} text-sm text-gray-600`}>

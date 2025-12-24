@@ -35,34 +35,15 @@ export async function GET(request: NextRequest) {
     // No QR code
     const qrDataUrl = "";
 
-    // Get signature URLs - For Karimnagar regional certificates, always include RTA signature
-    let rtaSignatureUrl = "";
-    // Check if this is a regional certificate (activityType is "online" or has eventReferenceId)
-    const isRegionalCertificate = certificate.activityType === "online" || certificate.eventReferenceId;
-    
-    if (certificate.type !== "ORGANIZER" && isRegionalCertificate) {
-      // For Karimnagar, use Padala Rahul's signature
-      // Check SignatureMap first, then fallback to default path
-      const sigMap = await SignatureMap.findOne({ regionCode: "karimnagar" });
-      if (sigMap?.signatureUrl) {
-        rtaSignatureUrl = sigMap.signatureUrl;
-      } else {
-        // Default Karimnagar RTA signature path (Padala Rahul's signature)
-        rtaSignatureUrl = "/assets/signatures/Official1.png";
-      }
-    }
-
     // Load assets (in production, these should be stored securely)
+    // Only Minister's signature is used - no secretary or RTA signatures
     const ministerPhotoPath = join(process.cwd(), "public", "assets", "minister", "photo.jpg");
     const emblemPath = join(process.cwd(), "public", "assets", "seals", "telangana-emblem.png");
     const ministerSigPath = join(process.cwd(), "public", "assets", "signatures", "minister.png");
-    const secretarySigPath = join(process.cwd(), "public", "assets", "signatures", "secretary.png");
 
     let ministerPhoto = "";
     let emblem = "";
     let ministerSig = "";
-    let secretarySig = "";
-    let rtaSig = "";
 
     try {
       if (existsSync(ministerPhotoPath)) {
@@ -74,15 +55,6 @@ export async function GET(request: NextRequest) {
       if (existsSync(ministerSigPath)) {
         ministerSig = readFileSync(ministerSigPath, "base64");
       }
-      if (existsSync(secretarySigPath)) {
-        secretarySig = readFileSync(secretarySigPath, "base64");
-      }
-      if (rtaSignatureUrl) {
-        const rtaPath = join(process.cwd(), "public", rtaSignatureUrl);
-        if (existsSync(rtaPath)) {
-          rtaSig = readFileSync(rtaPath, "base64");
-        }
-      }
     } catch (err) {
       console.warn("Asset loading error:", err);
     }
@@ -93,8 +65,6 @@ export async function GET(request: NextRequest) {
       ministerPhoto: `data:image/jpeg;base64,${ministerPhoto}`,
       emblem: `data:image/png;base64,${emblem}`,
       ministerSig: `data:image/png;base64,${ministerSig}`,
-      secretarySig: `data:image/png;base64,${secretarySig}`,
-      rtaSig: rtaSig ? `data:image/png;base64,${rtaSig}` : "",
     });
 
     // Set timeout for PDF generation (30 seconds max)
@@ -155,21 +125,15 @@ function generateCertificateHTML({
   ministerPhoto,
   emblem,
   ministerSig,
-  secretarySig,
-  rtaSig,
 }: {
   certificate: any;
   qrDataUrl: string;
   ministerPhoto: string;
   emblem: string;
   ministerSig: string;
-  secretarySig: string;
-  rtaSig: string;
 }) {
   const ministerName = process.env.MINISTER_NAME || "Ponnam Prabhakar";
   const ministerTitle = process.env.MINISTER_TITLE || "Hon'ble Cabinet Minister";
-  const secretaryName = process.env.PRINCIPAL_SECRETARY_NAME || "Principal Secretary";
-  const secretaryTitle = process.env.PRINCIPAL_SECRETARY_TITLE || "Principal Secretary, Transport Department";
 
   const typeLabels: Record<string, string> = {
     organiser: "Organiser",
@@ -239,13 +203,13 @@ function generateCertificateHTML({
         }
         .signatures {
           display: flex;
-          justify-content: space-around;
+          justify-content: center;
           margin-top: 60px;
           align-items: flex-end;
         }
         .signature-block {
           text-align: center;
-          width: ${rtaSig ? "30%" : "45%"};
+          width: 100%;
         }
         .signature-img {
           height: 60px;
@@ -288,18 +252,6 @@ function generateCertificateHTML({
           <div class="signature-name">${ministerName}</div>
           <div class="signature-title">${ministerTitle}</div>
         </div>
-        <div class="signature-block">
-          <img src="${secretarySig}" class="signature-img" alt="Secretary Signature" />
-          <div class="signature-name">${secretaryName}</div>
-          <div class="signature-title">${secretaryTitle}</div>
-        </div>
-        ${rtaSig ? `
-        <div class="signature-block">
-          <img src="${rtaSig}" class="signature-img" alt="RTA Signature" />
-          <div class="signature-name">Regional Transport Authority</div>
-          <div class="signature-title">${certificate.regionCode || ""}</div>
-        </div>
-        ` : ""}
       </div>
 
       
