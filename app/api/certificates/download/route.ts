@@ -42,12 +42,16 @@ export async function GET(request: NextRequest) {
     const ministerSigPath = join(process.cwd(), "public", "assets", "signatures", "minister.png");
     const regionalPhotoPath = join(process.cwd(), "public", "assets", "leadership", "Karimnagarrtamemberpadalarahul.webp");
 
+    let cmPhoto = "";
     let ministerPhoto = "";
     let emblem = "";
     let ministerSig = "";
     let regionalPhoto = "";
 
     try {
+      if (existsSync(cmPhotoPath)) {
+        cmPhoto = readFileSync(cmPhotoPath, "base64");
+      }
       if (existsSync(ministerPhotoPath)) {
         ministerPhoto = readFileSync(ministerPhotoPath, "base64");
       }
@@ -67,9 +71,10 @@ export async function GET(request: NextRequest) {
     const html = generateCertificateHTML({
       certificate,
       qrDataUrl,
-      ministerPhoto: `data:image/jpeg;base64,${ministerPhoto}`,
-      emblem: `data:image/png;base64,${emblem}`,
-      ministerSig: `data:image/png;base64,${ministerSig}`,
+      cmPhoto: cmPhoto ? `data:image/png;base64,${cmPhoto}` : "",
+      ministerPhoto: ministerPhoto ? `data:image/jpeg;base64,${ministerPhoto}` : "",
+      emblem: emblem ? `data:image/png;base64,${emblem}` : "",
+      ministerSig: ministerSig ? `data:image/png;base64,${ministerSig}` : "",
       regionalPhoto: regionalPhoto ? `data:image/webp;base64,${regionalPhoto}` : "",
     });
 
@@ -85,16 +90,21 @@ export async function GET(request: NextRequest) {
 
       try {
         const page = await browser.newPage();
+        
+        // Set content with simpler wait strategy
         await page.setContent(html, { 
-          waitUntil: "networkidle0",
-          timeout: 20000, // 20 second timeout for content loading
+          waitUntil: "domcontentloaded",
+          timeout: 15000,
         });
+        
+        // Wait for images to load
+        await page.waitForTimeout(2000);
 
         const pdf = await page.pdf({
           format: "A4",
           printBackground: true,
           margin: { top: "0", right: "0", bottom: "0", left: "0" },
-          timeout: 10000, // 10 second timeout for PDF generation
+          timeout: 15000,
         });
 
         return pdf;
@@ -133,6 +143,7 @@ export async function GET(request: NextRequest) {
 function generateCertificateHTML({
   certificate,
   qrDataUrl,
+  cmPhoto,
   ministerPhoto,
   emblem,
   ministerSig,
@@ -140,6 +151,7 @@ function generateCertificateHTML({
 }: {
   certificate: any;
   qrDataUrl: string;
+  cmPhoto: string;
   ministerPhoto: string;
   emblem: string;
   ministerSig: string;
@@ -249,8 +261,9 @@ function generateCertificateHTML({
       
       <div class="header">
         <div class="photo-blocks">
-          <img src="${ministerPhoto}" class="portrait" alt="Minister" />
-          ${regionalPhoto ? `<img src="${regionalPhoto}" class="portrait" alt="Regional Transport Authority" />` : ""}
+          ${cmPhoto ? `<img src="${cmPhoto}" class="portrait" alt="Chief Minister" />` : ""}
+          ${ministerPhoto ? `<img src="${ministerPhoto}" class="portrait" alt="Minister" />` : ""}
+          ${regionalPhoto ? `<img src="${regionalPhoto}" class="portrait" alt="Padala Rahul - RTA Member" />` : ""}
         </div>
         <div></div>
       </div>
