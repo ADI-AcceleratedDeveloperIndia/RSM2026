@@ -37,13 +37,15 @@ export async function GET(request: NextRequest) {
 
     // Load assets (in production, these should be stored securely)
     // Only Minister's signature is used - no secretary or RTA signatures
-    const ministerPhotoPath = join(process.cwd(), "public", "assets", "minister", "photo.jpg");
+    const ministerPhotoPath = join(process.cwd(), "public", "assets", "minister", "Sri-Ponnam-Prabhakar.jpg");
     const emblemPath = join(process.cwd(), "public", "assets", "seals", "telangana-emblem.png");
     const ministerSigPath = join(process.cwd(), "public", "assets", "signatures", "minister.png");
+    const regionalPhotoPath = join(process.cwd(), "public", "assets", "leadership", "Karimnagarrtamemberpadalarahul.webp");
 
     let ministerPhoto = "";
     let emblem = "";
     let ministerSig = "";
+    let regionalPhoto = "";
 
     try {
       if (existsSync(ministerPhotoPath)) {
@@ -55,6 +57,9 @@ export async function GET(request: NextRequest) {
       if (existsSync(ministerSigPath)) {
         ministerSig = readFileSync(ministerSigPath, "base64");
       }
+      if (existsSync(regionalPhotoPath)) {
+        regionalPhoto = readFileSync(regionalPhotoPath, "base64");
+      }
     } catch (err) {
       console.warn("Asset loading error:", err);
     }
@@ -65,6 +70,7 @@ export async function GET(request: NextRequest) {
       ministerPhoto: `data:image/jpeg;base64,${ministerPhoto}`,
       emblem: `data:image/png;base64,${emblem}`,
       ministerSig: `data:image/png;base64,${ministerSig}`,
+      regionalPhoto: regionalPhoto ? `data:image/webp;base64,${regionalPhoto}` : "",
     });
 
     // Set timeout for PDF generation (30 seconds max)
@@ -104,10 +110,8 @@ export async function GET(request: NextRequest) {
 
     const pdf = await Promise.race([pdfGenerationPromise, timeoutPromise]) as Buffer;
 
-    const pdfUint8Array = new Uint8Array(pdf);
-    const pdfBlob = new Blob([pdfUint8Array.buffer], { type: "application/pdf" });
-
-    return new NextResponse(pdfBlob, {
+    return new NextResponse(pdf as unknown as BodyInit, {
+      status: 200,
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="certificate-${cid}.pdf"`,
@@ -125,12 +129,14 @@ function generateCertificateHTML({
   ministerPhoto,
   emblem,
   ministerSig,
+  regionalPhoto,
 }: {
   certificate: any;
   qrDataUrl: string;
   ministerPhoto: string;
   emblem: string;
   ministerSig: string;
+  regionalPhoto: string;
 }) {
   const ministerName = process.env.MINISTER_NAME || "Ponnam Prabhakar";
   const ministerTitle = process.env.MINISTER_TITLE || "Hon'ble Cabinet Minister";
@@ -170,11 +176,17 @@ function generateCertificateHTML({
           align-items: flex-start;
           margin-bottom: 30px;
         }
-        .minister-photo {
+        .photo-blocks {
+          display: flex;
+          gap: 20px;
+          align-items: center;
+        }
+        .portrait {
           width: 120px;
           height: 150px;
           object-fit: cover;
           border: 2px solid #333;
+          border-radius: 6px;
         }
         .title {
           text-align: center;
@@ -229,8 +241,11 @@ function generateCertificateHTML({
       <img src="${emblem}" class="watermark" alt="Telangana Emblem" />
       
       <div class="header">
+        <div class="photo-blocks">
+          <img src="${ministerPhoto}" class="portrait" alt="Minister" />
+          ${regionalPhoto ? `<img src="${regionalPhoto}" class="portrait" alt="Regional Transport Authority" />` : ""}
+        </div>
         <div></div>
-        <img src="${ministerPhoto}" class="minister-photo" alt="Minister" />
       </div>
 
       <div class="title">CERTIFICATE OF ${typeLabels[certificate.type]?.toUpperCase() || "PARTICIPATION"}</div>
