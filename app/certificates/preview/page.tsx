@@ -109,11 +109,15 @@ function CertificatePreviewContent() {
       const errorMessage = error?.message || "Unknown error";
       if (errorMessage.includes("timeout") || errorMessage.includes("timed out")) {
         setDownloadError(
-          "PDF generation is taking too long. Please try again or use the server download option."
+          i18n.language === "te" 
+            ? "PNG సృష్టి చాలా సమయం తీసుకుంటోంది. దయచేసి మళ్లీ ప్రయత్నించండి."
+            : "PNG generation is taking too long. Please try again."
         );
       } else {
         setDownloadError(
-          tc("couldNotGeneratePdf") || "Could not generate the PDF. Please retry after a few seconds."
+          i18n.language === "te"
+            ? "PNG సృష్టించలేకపోయింది. దయచేసి కొన్ని సెకన్ల తర్వాత మళ్లీ ప్రయత్నించండి."
+            : "Could not generate the PNG. Please retry after a few seconds."
         );
       }
     } finally {
