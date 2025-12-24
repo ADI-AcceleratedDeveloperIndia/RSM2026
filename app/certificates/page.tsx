@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { Award, Sparkles, ArrowRight, Loader2 } from "lucide-react";
