@@ -92,8 +92,8 @@ function CertificatePreviewContent() {
     setDownloadError(null);
 
     try {
-      // Ensure certificate is fully rendered (reduced wait time)
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      // Minimal wait - just ensure DOM is ready
+      await new Promise((resolve) => setTimeout(resolve, 100));
       
       // Check if certificate element exists and is visible
       if (!certificateRef.current || certificateRef.current.offsetHeight === 0) {
