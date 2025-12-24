@@ -98,9 +98,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate unique certificate ID
-    const certificateId = generateCertificateNumber(validated.type, nextCertNumber);
-    
     const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
     const userIpHash = hashIp(ip);
 
@@ -108,12 +105,14 @@ export async function POST(request: NextRequest) {
     let certificate;
     let attempts = 0;
     const maxAttempts = 5;
+    let currentCertNumber = nextCertNumber;
+    let certificateId = generateCertificateNumber(validated.type, currentCertNumber);
     
     while (attempts < maxAttempts) {
       try {
         certificate = new Certificate({
           certificateId,
-          certificateNumber: nextCertNumber,
+          certificateNumber: currentCertNumber,
           type: validated.type,
           fullName: validated.fullName,
           institution: validated.institution,
@@ -144,13 +143,12 @@ export async function POST(request: NextRequest) {
             .select('certificateNumber')
             .lean() as { certificateNumber?: number } | null;
           
-          nextCertNumber = (freshLastCert && typeof freshLastCert.certificateNumber === 'number') 
+          currentCertNumber = (freshLastCert && typeof freshLastCert.certificateNumber === 'number') 
             ? freshLastCert.certificateNumber + 1 
             : 1;
           
           // Regenerate certificate ID with new number
-          const newCertificateId = generateCertificateNumber(validated.type, nextCertNumber);
-          certificateId = newCertificateId;
+          certificateId = generateCertificateNumber(validated.type, currentCertNumber);
           
           // Small delay before retry
           await new Promise(resolve => setTimeout(resolve, 50 + Math.random() * 50));
