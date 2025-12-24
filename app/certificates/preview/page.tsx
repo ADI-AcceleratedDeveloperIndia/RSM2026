@@ -102,7 +102,7 @@ function CertificatePreviewContent() {
 
       await exportCertificateToPdf(
         certificateRef.current,
-        `${certificateData.fullName.replace(/\s+/g, "_")}_certificate.pdf`
+        `${certificateData.fullName.replace(/\s+/g, "_")}_certificate.png`
       );
     } catch (error: any) {
       console.error("Certificate download failed:", error);
@@ -144,10 +144,10 @@ function CertificatePreviewContent() {
           <h1 className="text-3xl font-semibold text-emerald-900">
             {i18n.language === "te" ? "సర్టిఫికేట్ ప్రివ్యూ" : "Review & Download"}
           </h1>
-          <p className="text-slate-600 max-w-2xl">
+              <p className="text-slate-600 max-w-2xl">
             {i18n.language === "te"
-              ? "మీ సర్టిఫికేట్ సిద్ధంగా ఉంది. PDF ఫైల్‌గా డౌన్‌లోడ్ చేయడానికి డౌన్‌లోడ్ బటన్‌ను క్లిక్ చేయండి."
-              : "Your certificate is ready. Click the download button to save it as a PDF file on your device."}
+              ? "మీ సర్టిఫికేట్ సిద్ధంగా ఉంది. PNG ఫైల్‌గా డౌన్‌లోడ్ చేయడానికి డౌన్‌లోడ్ బటన్‌ను క్లిక్ చేయండి."
+              : "Your certificate is ready. Click the download button to save it as a PNG image file on your device."}
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
@@ -158,11 +158,11 @@ function CertificatePreviewContent() {
             {isDownloading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />{" "}
-                {i18n.language === "te" ? "PDF సృష్టిస్తోంది..." : "Generating PDF..."}
+                {i18n.language === "te" ? "PNG సృష్టిస్తోంది..." : "Generating PNG..."}
               </>
             ) : (
               <>
-                <Download className="h-4 w-4" /> {i18n.language === "te" ? "PDF డౌన్‌లోడ్" : "Download PDF"}
+                <Download className="h-4 w-4" /> {i18n.language === "te" ? "PNG డౌన్‌లోడ్" : "Download PNG"}
               </>
             )}
           </Button>
