@@ -84,7 +84,8 @@ export async function POST(request: NextRequest) {
     let attempts = 0;
     let certificate;
     let certificateId: string | null = null;
-    const maxAttempts = 10; // Increased retries
+    const maxAttempts = 5; // Reduced retries for faster response
+    const maxRetryDelay = 200; // Maximum 200ms delay per retry
     
     while (attempts < maxAttempts) {
       try {
@@ -150,12 +151,12 @@ export async function POST(request: NextRequest) {
               attempts
             });
             return NextResponse.json(
-              { error: "Failed to create certificate. Please try again in a moment." },
+              { error: "Certificate creation is busy. Please try again in a moment." },
               { status: 500 }
             );
           }
-          // Exponential backoff with jitter
-          const delay = 50 * Math.pow(2, attempts) + Math.random() * 50;
+          // Faster retry with smaller delays (max 200ms)
+          const delay = Math.min(50 * attempts, maxRetryDelay);
           await new Promise(resolve => setTimeout(resolve, delay));
           continue;
         }

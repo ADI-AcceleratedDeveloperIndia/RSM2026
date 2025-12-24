@@ -63,7 +63,6 @@ export default function Nav() {
                 width={48}
                 height={48}
                 className="h-12 w-12 rounded-full object-cover"
-                priority
               />
             </div>
             <Link href="/" className="flex items-center">
@@ -73,7 +72,6 @@ export default function Nav() {
                   alt={t("telanganaGovernmentLogo") || "Telangana Government Logo"}
                   width={48}
                   height={48}
-                  priority
                   className="h-12 w-12 object-contain"
                 />
               </div>
@@ -85,7 +83,6 @@ export default function Nav() {
                 width={48}
                 height={48}
                 className="h-12 w-12 rounded-full object-cover"
-                priority
               />
             </div>
           </div>

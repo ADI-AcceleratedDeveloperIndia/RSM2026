@@ -175,7 +175,6 @@ export default function Home() {
                           width={320}
                           height={320}
                           className="h-full w-full object-cover"
-                          priority
                         />
                       </div>
                       <div className="text-center space-y-1">

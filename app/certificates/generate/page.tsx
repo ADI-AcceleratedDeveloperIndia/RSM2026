@@ -95,6 +95,10 @@ function CertificateGenerateContent() {
 
     setLoading(true);
     try {
+      // Add timeout to fetch (30 seconds)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+
       const response = await fetch("/api/certificates/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -108,8 +112,10 @@ function CertificateGenerateContent() {
           organizerReferenceId: data.organizerReferenceId || undefined,
           userEmail: data.userEmail || undefined,
         }),
+        signal: controller.signal,
       });
 
+      clearTimeout(timeoutId);
       const result = await response.json();
       if (response.ok) {
         // Clear sessionStorage
@@ -128,10 +134,17 @@ function CertificateGenerateContent() {
         // Redirect to preview with certificate ID
         router.push(`/certificates/preview?certId=${result.certificateId}&eventTitle=${encodeURIComponent(result.eventTitle || "")}`);
       } else {
-        alert(result.error || "Failed to create certificate");
+        const errorMsg = result.error || "Failed to create certificate";
+        alert(errorMsg);
+        console.error("Certificate creation error:", result);
       }
-    } catch (error) {
-      alert("Failed to create certificate. Please try again.");
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        alert("Certificate creation timed out. Please check your connection and try again.");
+      } else {
+        console.error("Certificate creation error:", error);
+        alert("Failed to create certificate. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
