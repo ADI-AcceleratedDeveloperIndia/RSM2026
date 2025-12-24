@@ -54,7 +54,7 @@ export default function Nav() {
   return (
     <header className="sticky top-0 z-50 backdrop-blur bg-white/92 border-b border-emerald-100 shadow-[0_6px_20px_rgba(0,109,74,0.08)]">
       <div className="rs-container">
-        <div className="flex h-20 items-center justify-between gap-3">
+        <div className="flex h-20 items-center justify-between gap-3 overflow-x-auto">
           <div className="flex items-center gap-3">
             <div className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-emerald-200 bg-white shadow-[0_8px_18px_rgba(13,148,94,0.18)]">
               <Image
@@ -115,7 +115,7 @@ export default function Nav() {
             })}
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-shrink-0">
             <div className="rs-pill-toggle">
               {mounted && (
                 <>
@@ -123,6 +123,7 @@ export default function Nav() {
                     data-active={i18n.language === "en"} 
                     onClick={() => toggleLanguage("en")}
                     className="text-xs font-semibold px-3 py-1.5 rounded-full transition-all"
+                    aria-label="Switch to English"
                   >
                     EN
                   </button>
@@ -130,6 +131,7 @@ export default function Nav() {
                     data-active={i18n.language === "te"} 
                     onClick={() => toggleLanguage("te")}
                     className="text-xs font-semibold px-3 py-1.5 rounded-full transition-all"
+                    aria-label="Switch to Telugu"
                   >
                     TE
                   </button>
@@ -137,7 +139,7 @@ export default function Nav() {
               )}
             </div>
             <button
-              className="xl:hidden inline-flex h-11 w-11 items-center justify-center rounded-full border border-emerald-200 text-emerald-800 shadow-[0_8px_18px_rgba(0,123,79,0.15)]"
+              className="lg:hidden inline-flex h-11 w-11 items-center justify-center rounded-full border border-emerald-200 text-emerald-800 shadow-[0_8px_18px_rgba(0,123,79,0.15)] flex-shrink-0"
               onClick={() => setIsOpen(!isOpen)}
               aria-label={t("toggleMenu") || "Toggle menu"}
             >

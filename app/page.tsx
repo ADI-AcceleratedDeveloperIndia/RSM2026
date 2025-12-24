@@ -115,8 +115,8 @@ export default function Home() {
   return (
     <div className="space-y-24">
       <section className="rs-hero-pattern">
-        <div className="rs-container py-6 sm:py-8 md:py-12">
-          <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6 sm:gap-8 lg:gap-12">
+        <div className="rs-container py-6 sm:py-8 md:py-12 w-full">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6 sm:gap-8 lg:gap-12 w-full">
             <div className="flex-1 space-y-4 text-white">
               <span className="rs-chip" style={{ background: "rgba(255,255,255,0.2)", color: "#ffffff" }}>
                 {tc("governmentOfTelangana")}
