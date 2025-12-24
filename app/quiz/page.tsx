@@ -649,14 +649,10 @@ export default function QuizPage() {
         sessionStorage.setItem("activityType", "quiz");
       }
       
-      // Hide celebration after 3 seconds and redirect to certificate generation
+      // Hide celebration after 2 seconds and show continue button
       setTimeout(() => {
         setShowCelebration(false);
-        // Redirect to certificate generation after showing results briefly
-        setTimeout(() => {
-          router.push("/certificates/generate");
-        }, 2000);
-      }, 3000);
+      }, 2000);
     } catch (error) {
       console.error("Error:", error);
       alert(tc("failedToSubmitQuiz"));

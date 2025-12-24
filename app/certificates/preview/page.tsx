@@ -37,6 +37,7 @@ function CertificatePreviewContent() {
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const [certificateData, setCertificateData] = useState<CertificateData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [downloadSignature, setDownloadSignature] = useState<string | null>(null);
 
   useEffect(() => {
     const certId = searchParams.get("certId");
@@ -57,6 +58,11 @@ function CertificatePreviewContent() {
           
           // Always include regional authority for regional certificates
           const shouldIncludeRegional = isRegional || cert.activityType === "online";
+          
+          // Store signature for server-side download
+          if (data.signature) {
+            setDownloadSignature(data.signature);
+          }
           
           setCertificateData({
             certificateType: cert.type === "MERIT" ? "QUIZ" : cert.type === "ORGANIZER" ? "ORG" : "PAR",
@@ -92,15 +98,30 @@ function CertificatePreviewContent() {
     setDownloadError(null);
 
     try {
+      // Ensure certificate is fully rendered
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      
+      // Check if certificate element exists and is visible
+      if (!certificateRef.current || certificateRef.current.offsetHeight === 0) {
+        throw new Error("Certificate element is not visible");
+      }
+
       await exportCertificateToPdf(
         certificateRef.current,
         `${certificateData.fullName.replace(/\s+/g, "_")}_certificate.pdf`
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error("Certificate download failed:", error);
-      setDownloadError(
-        tc("couldNotGeneratePdf") || "Could not generate the PDF. Please retry after a few seconds."
-      );
+      const errorMessage = error?.message || "Unknown error";
+      if (errorMessage.includes("timeout") || errorMessage.includes("timed out")) {
+        setDownloadError(
+          "PDF generation is taking too long. Please try again or use the server download option."
+        );
+      } else {
+        setDownloadError(
+          tc("couldNotGeneratePdf") || "Could not generate the PDF. Please retry after a few seconds."
+        );
+      }
     } finally {
       setIsDownloading(false);
     }
@@ -135,7 +156,7 @@ function CertificatePreviewContent() {
               : "Your certificate is ready. Click the download button to save it as a PDF file on your device."}
           </p>
         </div>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-col sm:flex-row gap-2">
           <Button variant="outline" onClick={() => router.push("/")} className="gap-2">
             <ArrowLeft className="h-4 w-4" /> {i18n.language === "te" ? "హోమ్‌కు వెళ్ళండి" : "Go to Home"}
           </Button>
@@ -147,10 +168,26 @@ function CertificatePreviewContent() {
               </>
             ) : (
               <>
-                <Download className="h-4 w-4" /> {i18n.language === "te" ? "PDF డౌన్‌లోడ్" : "Download PDF"}
+                <Download className="h-4 w-4" /> {i18n.language === "te" ? "PDF డౌన్‌లోడ్" : "Download PDF (Client)"}
               </>
             )}
           </Button>
+          {certificateData?.referenceId && downloadSignature && (
+            <Button
+              variant="outline"
+              onClick={() => {
+                // Use server-side PDF download as fallback
+                const certId = certificateData.referenceId;
+                if (certId && downloadSignature) {
+                  window.open(`/api/certificates/download?cid=${certId}&sig=${encodeURIComponent(downloadSignature)}`, "_blank");
+                }
+              }}
+              className="gap-2"
+              disabled={isDownloading}
+            >
+              <Download className="h-4 w-4" /> {i18n.language === "te" ? "సర్వర్ డౌన్‌లోడ్" : "Download PDF (Server)"}
+            </Button>
+          )}
         </div>
       </div>
 

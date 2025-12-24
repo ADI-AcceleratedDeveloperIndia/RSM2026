@@ -7,6 +7,32 @@ export async function exportCertificateToPdf(element: HTMLElement, fileName: str
     throw new Error("Certificate element not found");
   }
 
+  // Wait for images to load
+  const images = element.querySelectorAll("img");
+  await Promise.all(
+    Array.from(images).map(
+      (img) =>
+        new Promise<void>((resolve, reject) => {
+          if (img.complete) {
+            resolve();
+            return;
+          }
+          const timeout = setTimeout(() => {
+            reject(new Error("Image load timeout"));
+          }, 10000); // 10 second timeout per image
+          img.onload = () => {
+            clearTimeout(timeout);
+            resolve();
+          };
+          img.onerror = () => {
+            clearTimeout(timeout);
+            // Continue even if image fails to load
+            resolve();
+          };
+        })
+    )
+  );
+
   const html2canvasModule = await import("html2canvas");
   const { jsPDF: JsPDFConstructor } = await import("jspdf");
 
@@ -14,7 +40,8 @@ export async function exportCertificateToPdf(element: HTMLElement, fileName: str
 
   const scale = 2.5;
 
-  const canvas = await html2canvas(element, {
+  // Add timeout to html2canvas operation (30 seconds)
+  const canvasPromise = html2canvas(element, {
     scale,
     backgroundColor: "#ffffff",
     useCORS: true,
@@ -22,6 +49,7 @@ export async function exportCertificateToPdf(element: HTMLElement, fileName: str
     logging: false,
     windowWidth: element.scrollWidth,
     windowHeight: element.scrollHeight,
+    timeout: 30000, // 30 second timeout
     ignoreElements: (element) => {
       // Ignore elements that might cause issues
       return element.classList.contains("no-export");
@@ -66,7 +94,14 @@ export async function exportCertificateToPdf(element: HTMLElement, fileName: str
     },
   });
 
-  const imgData = canvas.toDataURL("image/png");
+  // Add overall timeout wrapper
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    setTimeout(() => reject(new Error("PDF generation timed out after 30 seconds")), 30000);
+  });
+
+  const canvas = await Promise.race([canvasPromise, timeoutPromise]);
+
+  const imgData = canvas.toDataURL("image/png", 0.95); // Slightly lower quality for faster processing
 
   const pxToPt = (px: number) => (px * 72) / 96;
   const pdfWidth = pxToPt(canvas.width);

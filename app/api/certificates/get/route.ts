@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import Certificate from "@/models/Certificate";
+import { signCertificateUrl } from "@/lib/hmac";
 
 export async function GET(request: NextRequest) {
   try {
@@ -24,6 +25,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Generate signature for download URL
+    const signature = await signCertificateUrl(certId);
+
     return NextResponse.json({
       certificate: {
         certificateId: certificate.certificateId,
@@ -38,6 +42,7 @@ export async function GET(request: NextRequest) {
         createdAt: certificate.createdAt,
         userEmail: certificate.userEmail,
       },
+      signature, // Include signature for download
     });
   } catch (error: any) {
     console.error("Certificate get error:", error);
