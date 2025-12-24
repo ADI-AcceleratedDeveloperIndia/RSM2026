@@ -28,6 +28,7 @@ const getCertificateList = (tc: (key: string) => string): CertificateInfo[] => [
 export default function CertificatesPage() {
   const { t, i18n } = useTranslation("common");
   const { t: tc } = useTranslation("content");
+  const router = useRouter();
   const [fullName, setFullName] = useState("");
   const [institution, setInstitution] = useState("");
   const [eventRef, setEventRef] = useState("");
@@ -62,13 +63,13 @@ export default function CertificatesPage() {
       if (!res.ok) {
         throw new Error(data.error || "Failed to create certificate");
       }
-      if (!data.downloadUrl) {
-        throw new Error("Missing download URL");
+      if (!data.certificateId) {
+        throw new Error("Missing certificate ID");
       }
-      window.open(data.downloadUrl, "_blank");
+      // Redirect to preview page for client-side PDF download
+      router.push(`/certificates/preview?certId=${data.certificateId}&regional=true`);
     } catch (err: any) {
       setError(err?.message || "Failed to create certificate");
-    } finally {
       setLoading(false);
     }
   };

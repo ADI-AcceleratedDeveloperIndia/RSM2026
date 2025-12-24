@@ -1,11 +1,12 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import Certificate, { CertificateData } from "@/components/certificates/Certificate";
 import { getRegionalAuthority } from "@/lib/regional";
+import { exportCertificateToPdf } from "@/utils/certificateExport";
 import { Download, ArrowLeft, Award, Loader2 } from "lucide-react";
 
 function LoadingFallback() {
@@ -31,6 +32,7 @@ function CertificatePreviewContent() {
   const { t: tc } = useTranslation("content");
   const router = useRouter();
   const searchParams = useSearchParams();
+  const certificateRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const [certificateData, setCertificateData] = useState<CertificateData | null>(null);
@@ -89,33 +91,23 @@ function CertificatePreviewContent() {
   }, [searchParams, router, i18n.language]);
 
   const handleDownload = async () => {
-    if (isDownloading || !certificateData) return;
+    if (isDownloading || !certificateData || !certificateRef.current) return;
     setIsDownloading(true);
     setDownloadError(null);
 
     try {
-      const certId = certificateData.referenceId;
-      if (!certId || !downloadSignature) {
-        throw new Error("Missing download signature");
-      }
-      const url = `/api/certificates/download?cid=${encodeURIComponent(certId)}&sig=${encodeURIComponent(downloadSignature)}`;
-      window.open(url, "_blank");
+      const certId = certificateData.referenceId || "certificate";
+      const fileName = `certificate-${certId}.pdf`;
+      
+      // Use client-side PDF generation
+      await exportCertificateToPdf(certificateRef.current, fileName);
     } catch (error: any) {
       console.error("Certificate download failed:", error);
-      const errorMessage = error?.message || "Unknown error";
-      if (errorMessage.includes("timeout") || errorMessage.includes("timed out")) {
-        setDownloadError(
-          i18n.language === "te" 
-            ? "PDF సృష్టి చాలా సమయం తీసుకుంటోంది. దయచేసి మళ్లీ ప్రయత్నించండి."
-            : "PDF generation is taking too long. Please try again."
-        );
-      } else {
-        setDownloadError(
-          i18n.language === "te"
-            ? "PDF సృష్టించలేకపోయింది. దయచేసి కొన్ని సెకన్ల తర్వాత మళ్లీ ప్రయత్నించండి."
-            : "Could not generate the PDF. Please retry after a few seconds."
-        );
-      }
+      setDownloadError(
+        i18n.language === "te"
+          ? "PDF సృష్టించలేకపోయింది. దయచేసి మళ్లీ ప్రయత్నించండి."
+          : "Failed to generate PDF. Please try again."
+      );
     } finally {
       setIsDownloading(false);
     }
