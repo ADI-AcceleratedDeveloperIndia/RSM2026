@@ -38,15 +38,15 @@ export default function Nav() {
   };
 
   const navLinks = [
-    { href: "/", label: t("home") || "Home", key: "/" },
-    { href: "/basics", label: i18n.language === "te" ? "బేసిక్స్ (అందరికీ)" : "Basics (For All)", key: "/basics" },
-    { href: "/simulation", label: i18n.language === "te" ? "సిమ్యులేషన్ (పాఠశాల)" : "Simulation (School)", key: "/simulation" },
-    { href: "/quiz", label: i18n.language === "te" ? "క్విజ్ (ఇంటర్)" : "Quiz (Inter)", key: "/quiz" },
-    { href: "/guides", label: i18n.language === "te" ? "సేఫ్టీ గైడ్స్ (అండర్ గ్రాడ్)" : "Safety Guides (Undergrad)", key: "/guides" },
-    { href: "/prevention", label: i18n.language === "te" ? "ప్రివెన్షన్ (గ్రాడ్యుయేట్స్)" : "Prevention (Graduates)", key: "/prevention" },
-    { href: "/events", label: t("events") || "Events", key: "/events" },
-    { href: "/certificates", label: t("certificates") || "Certificates", key: "/certificates" },
-    { href: "/organizer", label: i18n.language === "te" ? "నిర్వాహకుడు" : "Organizer", key: "/organizer" },
+    { href: "/", label: t("home") || "Home", sublabel: null, key: "/" },
+    { href: "/basics", label: i18n.language === "te" ? "బేసిక్స్" : "Basics", sublabel: i18n.language === "te" ? "అందరికీ" : "For All", key: "/basics" },
+    { href: "/simulation", label: i18n.language === "te" ? "సిమ్యులేషన్" : "Simulation", sublabel: i18n.language === "te" ? "పాఠశాల" : "School", key: "/simulation" },
+    { href: "/quiz", label: i18n.language === "te" ? "క్విజ్" : "Quiz", sublabel: i18n.language === "te" ? "ఇంటర్" : "Inter", key: "/quiz" },
+    { href: "/guides", label: i18n.language === "te" ? "సేఫ్టీ గైడ్స్" : "Safety Guides", sublabel: i18n.language === "te" ? "అండర్ గ్రాడ్" : "Undergrad", key: "/guides" },
+    { href: "/prevention", label: i18n.language === "te" ? "ప్రివెన్షన్" : "Prevention", sublabel: i18n.language === "te" ? "గ్రాడ్యుయేట్స్" : "Graduates", key: "/prevention" },
+    { href: "/events", label: t("events") || "Events", sublabel: null, key: "/events" },
+    { href: "/certificates", label: t("certificates") || "Certificates", sublabel: null, key: "/certificates" },
+    { href: "/organizer", label: i18n.language === "te" ? "నిర్వాహకుడు" : "Organizer", sublabel: null, key: "/organizer" },
   ];
 
   if (!mounted) return null;
@@ -97,15 +97,22 @@ export default function Nav() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  title={link.label}
-                  className={`relative flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-medium transition-all whitespace-nowrap group ${
+                  title={link.label + (link.sublabel ? ` (${link.sublabel})` : "")}
+                  className={`relative flex flex-col items-center gap-0.5 rounded-full px-2.5 py-1.5 text-xs font-medium transition-all whitespace-nowrap group ${
                     active
                       ? "bg-emerald-600 text-white shadow-[0_10px_20px_rgba(7,80,55,0.3)]"
                       : "text-slate-600 hover:bg-emerald-50"
                   }`}
                 >
-                  <span className="text-sm">{navIcons[link.key]}</span>
-                  <span>{link.label}</span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="text-sm">{navIcons[link.key]}</span>
+                    <span>{link.label}</span>
+                  </span>
+                  {link.sublabel && (
+                    <span className={`text-[10px] leading-tight ${active ? "text-emerald-100" : "text-slate-500"}`}>
+                      ({link.sublabel})
+                    </span>
+                  )}
                 </Link>
               );
             })}
@@ -152,12 +159,19 @@ export default function Nav() {
                     key={link.href}
                     href={link.href}
                     onClick={() => setIsOpen(false)}
-                    className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold transition ${
+                    className={`flex flex-col gap-1 rounded-xl px-3 py-3 text-sm font-semibold transition ${
                       active ? "bg-emerald-600 text-white" : "text-slate-700 hover:bg-emerald-50"
                     }`}
                   >
-                    {navIcons[link.key]}
-                    {link.label}
+                    <span className="flex items-center gap-3">
+                      {navIcons[link.key]}
+                      {link.label}
+                    </span>
+                    {link.sublabel && (
+                      <span className={`text-xs ml-7 ${active ? "text-emerald-100" : "text-slate-500"}`}>
+                        ({link.sublabel})
+                      </span>
+                    )}
                   </Link>
                 );
               })}
