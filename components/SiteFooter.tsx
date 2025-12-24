@@ -23,12 +23,13 @@ export default function SiteFooter() {
   };
 
   const quickLinks = [
-    { href: "/road-safety", label: t("roadSafety") },
-    { href: "/quiz", label: t("quiz") },
-    { href: "/simulation", label: t("simulation") },
-    { href: "/certificates", label: t("certificates") },
-    { href: "/certificates/regional", label: t("regionalEvent") },
+    { href: "/basics", label: "For All" },
+    { href: "/simulation", label: "School" },
+    { href: "/quiz", label: "Entrance" },
+    { href: "/guides", label: "Undergrad" },
+    { href: "/prevention", label: "Grad / Graduates" },
     { href: "/events", label: t("events") },
+    { href: "/certificates", label: t("certificates") },
   ];
 
   return (
@@ -136,7 +137,7 @@ export default function SiteFooter() {
               <address className="text-sm text-slate-300 not-italic space-y-2">
                 <p>
                   {t("transportDepartment")}<br />
-                  Hyderabad, Telangana
+                  Karimnagar, Telangana
                 </p>
                 <p className="mt-3">
                   <a 
@@ -147,7 +148,15 @@ export default function SiteFooter() {
                   </a>
                 </p>
               </address>
-              <div className="mt-6 space-y-2 text-xs text-slate-400">
+              <div className="mt-6 space-y-2">
+                <Link 
+                  href="/admin"
+                  className="text-xs text-slate-400 hover:text-yellow-300 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-offset-2 focus:ring-offset-emerald-900 rounded inline-block"
+                >
+                  Admin Panel (Internal Use Only)
+                </Link>
+              </div>
+              <div className="mt-4 space-y-2 text-xs text-slate-400">
                 <p>{t("allRightsReserved")}</p>
                 <p>{t("designedForAccessibility")}</p>
               </div>

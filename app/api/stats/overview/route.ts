@@ -18,18 +18,9 @@ export async function GET(request: NextRequest) {
       SimulationPlay.countDocuments(),
     ]);
 
-    const passRate = totalQuizAttempts > 0 ? totalQuizPasses / totalQuizAttempts : 0;
+    const passRate = totalQuizAttempts > 0 ? Math.round((totalQuizPasses / totalQuizAttempts) * 100) : 0;
 
-    const districtAgg = await Certificate.aggregate([
-      {
-        $group: {
-          _id: "$regionCode",
-          count: { $sum: 1 },
-        },
-      },
-      { $sort: { count: -1 } },
-    ]);
-
+    // Karimnagar only - no district aggregation needed
     return NextResponse.json({
       totalCertificates,
       totalAppreciations,
@@ -38,7 +29,6 @@ export async function GET(request: NextRequest) {
       totalQuizAttempts,
       passRate,
       totalSimulationPlays,
-      districts: districtAgg.map((d) => ({ key: d._id || "", count: d.count })),
     });
   } catch (error) {
     console.error("Stats error:", error);

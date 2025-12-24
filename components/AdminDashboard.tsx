@@ -2,116 +2,120 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Award, FileText, Users, Download, Activity, MapPin, Plus, BookOpen, Copy, Check } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Award, FileText, Users, Download, Activity, MapPin, Calendar, CheckCircle2, XCircle, Clock, Eye } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
+type Event = {
+  referenceId: string;
+  title: string;
+  date: string;
+  location: string;
+  organizerName: string;
+  institution: string;
+  approved: boolean;
+  createdAt: string;
+};
+
+type Participant = {
+  certificateId: string;
+  name: string;
+  institution: string;
+  score: number;
+  total: number;
+  percentage: number;
+  activityType: string;
+  certificateDate: string;
+};
+
+type EventParticipants = {
+  event: {
+    referenceId: string;
+    title: string;
+    date: string;
+    location: string;
+    organizerName: string;
+  };
+  participants: Participant[];
+  totalParticipants: number;
+};
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
-    totalCertificates: 1247,
-    totalAppreciations: 89,
-    totalEvents: 15,
-    totalQuizPasses: 892,
-    totalQuizAttempts: 1156,
-    passRate: 77,
-    totalSimulationPlays: 245,
-    districts: [
-      { key: "karimnagar", count: 342 },
-      { key: "rajannasircilla", count: 198 },
-      { key: "hyderabad", count: 156 },
-      { key: "warangal", count: 134 },
-      { key: "nizamabad", count: 98 },
-    ] as { key: string; count: number }[],
+    totalCertificates: 0,
+    totalAppreciations: 0,
+    totalEvents: 0,
+    totalQuizPasses: 0,
+    totalQuizAttempts: 0,
+    passRate: 0,
+    totalSimulationPlays: 0,
   });
   const [simStats, setSimStats] = useState({
-    totalSessions: 245,
-    totalCompletions: 189,
-    successRate: 77,
-    categoryStats: [
-      { category: "helmet", total: 98, successful: 87 },
-      { category: "triple riding", total: 76, successful: 58 },
-      { category: "drunk driving", total: 71, successful: 44 },
-    ] as { category: string; total: number; successful: number }[],
-    avgTimeSeconds: 45,
+    totalSessions: 0,
+    totalCompletions: 0,
+    successRate: 0,
+    categoryStats: [] as { category: string; total: number; successful: number }[],
+    avgTimeSeconds: 0,
   });
   const [loading, setLoading] = useState(true);
   const [appreciations, setAppreciations] = useState<{ fullName: string; appreciationText: string; createdAt: string }[]>([]);
-  const [isCreateOrganiserOpen, setIsCreateOrganiserOpen] = useState(false);
-  const [organiserForm, setOrganiserForm] = useState({
-    name: "",
-    organisation: "",
-    eventDetails: "",
-    place: "",
-    date: "",
-  });
-  const [selectedOrganiser, setSelectedOrganiser] = useState<string | null>(null);
-  const [copiedRefId, setCopiedRefId] = useState<string | null>(null);
-
-  // Dummy organiser data
-  const dummyOrganiser = {
-    id: "org-001",
-    name: "Sri Ramesh Kumar",
-    organisation: "Karimnagar Government High School",
-    eventDetails: "Road Safety Awareness Rally & Workshop",
-    place: "Karimnagar",
-    date: "2026-01-15",
-    referenceIds: [
-      "RSM-ORG-20260115-A1B2C3D4",
-      "RSM-ORG-20260115-E5F6G7H8",
-      "RSM-ORG-20260115-I9J0K1L2",
-      "RSM-ORG-20260115-M3N4O5P6",
-      "RSM-ORG-20260115-Q7R8S9T0",
-    ],
-  };
+  const [events, setEvents] = useState<Event[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
+  const [eventParticipants, setEventParticipants] = useState<EventParticipants | null>(null);
+  const [loadingParticipants, setLoadingParticipants] = useState(false);
 
   useEffect(() => {
-    const defaultStats = {
-      totalCertificates: 1247,
-      totalAppreciations: 89,
-      totalEvents: 15,
-      totalQuizPasses: 892,
-      totalQuizAttempts: 1156,
-      passRate: 77,
-      totalSimulationPlays: 245,
-      districts: [
-        { key: "karimnagar", count: 342 },
-        { key: "rajannasircilla", count: 198 },
-        { key: "hyderabad", count: 156 },
-        { key: "warangal", count: 134 },
-        { key: "nizamabad", count: 98 },
-      ],
-    };
-
-    const defaultSimStats = {
-      totalSessions: 245,
-      totalCompletions: 189,
-      successRate: 77,
-      categoryStats: [
-        { category: "helmet", total: 98, successful: 87 },
-        { category: "triple riding", total: 76, successful: 58 },
-        { category: "drunk driving", total: 71, successful: 44 },
-      ],
-      avgTimeSeconds: 45,
-    };
-
     Promise.all([
-      fetch("/api/stats/overview").then((res) => res.json()).catch(() => defaultStats),
-      fetch("/api/sim/stats").then((res) => res.json()).catch(() => defaultSimStats),
+      fetch("/api/stats/overview").then((res) => res.json()).catch(() => ({})),
+      fetch("/api/sim/stats").then((res) => res.json()).catch(() => ({})),
+      fetch("/api/admin/events/list").then((res) => res.json()).catch(() => ({ events: [] })),
     ])
-      .then(([overviewData, simData]) => {
-        // Only update if we got valid data with required properties
+      .then(([overviewData, simData, eventsData]) => {
         if (overviewData && typeof overviewData === 'object') {
-          setStats(prevStats => ({ ...prevStats, ...overviewData }));
+          setStats({
+            totalCertificates: overviewData.totalCertificates || 0,
+            totalAppreciations: overviewData.totalAppreciations || 0,
+            totalEvents: overviewData.totalEvents || 0,
+            totalQuizPasses: overviewData.totalQuizPasses || 0,
+            totalQuizAttempts: overviewData.totalQuizAttempts || 0,
+            passRate: overviewData.passRate || 0,
+            totalSimulationPlays: overviewData.totalSimulationPlays || 0,
+          });
         }
         if (simData && simData.categoryStats && Array.isArray(simData.categoryStats)) {
-          setSimStats(prevSimStats => ({ ...prevSimStats, ...simData }));
+          setSimStats(simData);
+        }
+        if (eventsData && eventsData.events) {
+          setEvents(eventsData.events);
         }
         setLoading(false);
       })
       .catch(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    fetch("/api/admin/appreciations/list")
+      .then((res) => (res.ok ? res.json() : { items: [] }))
+      .then((data) => setAppreciations(data.items || []))
+      .catch(() => setAppreciations([]));
+  }, []);
+
+  const handleViewParticipants = async (eventReferenceId: string) => {
+    setSelectedEvent(eventReferenceId);
+    setLoadingParticipants(true);
+    try {
+      const response = await fetch(`/api/admin/events/participants?eventReferenceId=${eventReferenceId}`);
+      const data = await response.json();
+      if (response.ok) {
+        setEventParticipants(data);
+      } else {
+        alert(data.error || "Failed to load participants");
+      }
+    } catch (error) {
+      alert("Failed to load participants");
+    } finally {
+      setLoadingParticipants(false);
+    }
+  };
 
   const handleExport = async () => {
     try {
@@ -127,60 +131,6 @@ export default function AdminDashboard() {
       alert("Failed to export");
     }
   };
-
-  const handleCreateOrganiser = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Dummy submission - just show success message
-    alert(`Organiser Created!\n\nName: ${organiserForm.name}\nOrganisation: ${organiserForm.organisation}\nEvent: ${organiserForm.eventDetails}\nPlace: ${organiserForm.place}\nDate: ${organiserForm.date}`);
-    setIsCreateOrganiserOpen(false);
-    setOrganiserForm({
-      name: "",
-      organisation: "",
-      eventDetails: "",
-      place: "",
-      date: "",
-    });
-  };
-
-  const handleCopyRefId = (refId: string) => {
-    navigator.clipboard.writeText(refId);
-    setCopiedRefId(refId);
-    setTimeout(() => setCopiedRefId(null), 2000);
-  };
-
-  const handleDownloadStudyMaterial = async () => {
-    try {
-      // Try to download the PDF file from the correct path
-      const response = await fetch("/assets/Road_Safety_Study_Material.pdf");
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = "Road_Safety_Study_Material.pdf";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-      } else {
-        // Fallback: Open HTML version in new tab for printing
-        window.open("/assets/study-material/road-safety-study-material.html", "_blank");
-        alert("PDF file not found. Opening HTML version. You can print it as PDF using your browser's print function.");
-      }
-    } catch (error) {
-      console.error("Download error:", error);
-      // Fallback: Open HTML version
-      window.open("/assets/study-material/road-safety-study-material.html", "_blank");
-      alert("PDF file not available. Opening HTML version. You can print it as PDF using your browser's print function.");
-    }
-  };
-
-  useEffect(() => {
-    fetch("/api/admin/appreciations/list")
-      .then((res) => (res.ok ? res.json() : { items: [] }))
-      .then((data) => setAppreciations(data.items || []))
-      .catch(() => setAppreciations([]));
-  }, []);
 
   const statCards = [
     {
@@ -210,91 +160,13 @@ export default function AdminDashboard() {
       <div className="rs-card p-8 bg-gradient-to-br from-emerald-50 to-white">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div>
-            <span className="rs-chip">Transport Department • Admin</span>
+            <span className="rs-chip">Transport Department • Admin • Karimnagar</span>
             <h1 className="text-3xl font-semibold text-emerald-900 mt-2">Admin Dashboard</h1>
             <p className="text-slate-600 max-w-2xl">
-              Monitor certificate issuance, quiz performance, simulation insights, and appreciation submissions across
-              Telangana.
+              Monitor certificate issuance, quiz performance, simulation insights, and events for Karimnagar district.
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <Dialog open={isCreateOrganiserOpen} onOpenChange={setIsCreateOrganiserOpen}>
-              <DialogTrigger asChild>
-                <Button className="rs-btn-primary gap-2">
-                  <Plus className="h-4 w-4" /> Create Organiser
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Create Event Organiser</DialogTitle>
-                  <DialogDescription>
-                    Add a new organiser with event details for road safety campaigns.
-                  </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleCreateOrganiser} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Organiser Name</Label>
-                    <Input
-                      id="name"
-                      value={organiserForm.name}
-                      onChange={(e) => setOrganiserForm({ ...organiserForm, name: e.target.value })}
-                      placeholder="Enter organiser name"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="organisation">Organisation</Label>
-                    <Input
-                      id="organisation"
-                      value={organiserForm.organisation}
-                      onChange={(e) => setOrganiserForm({ ...organiserForm, organisation: e.target.value })}
-                      placeholder="e.g., School, College, NGO"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="eventDetails">Event Details</Label>
-                    <Textarea
-                      id="eventDetails"
-                      value={organiserForm.eventDetails}
-                      onChange={(e) => setOrganiserForm({ ...organiserForm, eventDetails: e.target.value })}
-                      placeholder="Describe the event (e.g., Road Safety Rally, First Aid Training)"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="place">Place/District</Label>
-                    <Input
-                      id="place"
-                      value={organiserForm.place}
-                      onChange={(e) => setOrganiserForm({ ...organiserForm, place: e.target.value })}
-                      placeholder="e.g., Karimnagar, Hyderabad"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="date">Event Date</Label>
-                    <Input
-                      id="date"
-                      type="date"
-                      value={organiserForm.date}
-                      onChange={(e) => setOrganiserForm({ ...organiserForm, date: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div className="flex gap-2 pt-4">
-                    <Button type="button" variant="outline" onClick={() => setIsCreateOrganiserOpen(false)} className="flex-1">
-                      Cancel
-                    </Button>
-                    <Button type="submit" className="flex-1 rs-btn-primary">
-                      Create
-                    </Button>
-                  </div>
-                </form>
-              </DialogContent>
-            </Dialog>
-            <p className="text-sm text-emerald-700">{loading ? "Syncing..." : "Data refreshed"}</p>
-          </div>
+          <p className="text-sm text-emerald-700">{loading ? "Loading..." : "Data refreshed"}</p>
         </div>
       </div>
 
@@ -316,7 +188,7 @@ export default function AdminDashboard() {
       <div className="grid md:grid-cols-2 gap-5">
         <div className="rs-card p-6">
           <p className="text-sm text-slate-600">Quiz pass rate</p>
-          <p className="text-4xl font-semibold text-emerald-900">{(stats.passRate * 100).toFixed(1)}%</p>
+          <p className="text-4xl font-semibold text-emerald-900">{stats.passRate}%</p>
           <p className="text-xs text-slate-500 mt-2">Passes vs attempts</p>
         </div>
         <div className="rs-card p-6">
@@ -327,39 +199,61 @@ export default function AdminDashboard() {
       </div>
 
       <div className="rs-card p-6 space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center">
-            <MapPin className="h-5 w-5" />
-          </div>
+        <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-emerald-900">District-wise Participation</h2>
-            <p className="text-sm text-slate-600">Certificates issued by district</p>
+            <h2 className="text-lg font-semibold text-emerald-900">Events</h2>
+            <p className="text-sm text-slate-600">Manage and view event participants</p>
           </div>
         </div>
-        <div className="rs-table-wrapper">
-          <table className="rs-table text-sm min-w-[420px]">
-            <thead>
-              <tr>
-                <th className="text-left">District</th>
-                <th className="text-left">Count</th>
-              </tr>
-            </thead>
-            <tbody>
-              {stats.districts?.map((d) => (
-                <tr key={d.key}>
-                  <td>{d.key || "Unknown"}</td>
-                  <td>{d.count}</td>
-                </tr>
-              ))}
-              {(!stats.districts || stats.districts.length === 0) && (
-                <tr>
-                  <td colSpan={2}>No data yet</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+        <div className="space-y-3">
+          {events.length === 0 ? (
+            <div className="text-sm text-slate-600 text-center py-8">No events yet</div>
+          ) : (
+            events.map((event) => (
+              <div
+                key={event.referenceId}
+                className="rounded-xl border border-emerald-100 bg-white/90 p-4 hover:border-emerald-300 transition-colors"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="font-semibold text-emerald-900 text-lg">{event.title}</div>
+                      {event.approved ? (
+                        <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                      ) : (
+                        <Clock className="h-4 w-4 text-yellow-600" />
+                      )}
+                    </div>
+                    <div className="text-sm text-slate-600 mt-1">Organizer: {event.organizerName}</div>
+                    <div className="text-sm text-slate-600">Institution: {event.institution}</div>
+                    <div className="text-xs text-slate-500 mt-2 flex gap-4">
+                      <span className="inline-flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        {event.location}
+                      </span>
+                      <span className="inline-flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        {new Date(event.date).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className="text-xs text-emerald-700 mt-2 font-mono">{event.referenceId}</div>
+                  </div>
+                  <div className="ml-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                      onClick={() => handleViewParticipants(event.referenceId)}
+                    >
+                      <Eye className="h-4 w-4" />
+                      View Participants
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
-        <p className="text-xs text-slate-500 sm:hidden">Swipe sideways to check every district entry.</p>
       </div>
 
       <div className="rs-card p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -420,158 +314,105 @@ export default function AdminDashboard() {
       </div>
 
       <div className="rs-card p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-emerald-900">Event Organisers</h2>
-            <p className="text-sm text-slate-600">Manage organisers and their reference IDs</p>
-          </div>
-        </div>
-        <div className="space-y-3">
-          <div
-            className="rounded-xl border border-emerald-100 bg-white/90 p-4 hover:border-emerald-300 cursor-pointer transition-colors"
-            onClick={() => setSelectedOrganiser(dummyOrganiser.id)}
-          >
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="font-semibold text-emerald-900 text-lg">{dummyOrganiser.name}</div>
-                <div className="text-sm text-slate-600 mt-1">{dummyOrganiser.organisation}</div>
-                <div className="text-xs text-slate-500 mt-2">
-                  <span className="inline-block mr-4">
-                    <MapPin className="h-3 w-3 inline mr-1" />
-                    {dummyOrganiser.place}
-                  </span>
-                  <span className="inline-block">
-                    <Activity className="h-3 w-3 inline mr-1" />
-                    {new Date(dummyOrganiser.date).toLocaleDateString()}
-                  </span>
-                </div>
-                <div className="text-xs text-emerald-700 mt-2 font-medium">
-                  {dummyOrganiser.referenceIds.length} Reference IDs
-                </div>
-              </div>
-              <div className="ml-4">
-                <Button variant="outline" size="sm" className="gap-2">
-                  View Details
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="rs-card p-6 space-y-4">
         <h2 className="text-lg font-semibold text-emerald-900">Appreciation Messages</h2>
         <div className="space-y-4">
-          {appreciations.slice(0, 20).map((a, idx) => (
-            <div key={idx} className="rounded-xl border border-emerald-100 bg-white/90 p-4">
-              <div className="text-xs text-slate-500">{new Date(a.createdAt).toLocaleString()}</div>
-              <div className="font-semibold text-emerald-900">{a.fullName}</div>
-              <div className="mt-1 text-sm text-slate-600 whitespace-pre-wrap">{a.appreciationText}</div>
-            </div>
-          ))}
-          {appreciations.length === 0 && <div className="text-sm text-slate-600">No appreciations yet.</div>}
+          {appreciations.length === 0 ? (
+            <div className="text-sm text-slate-600">No appreciations yet.</div>
+          ) : (
+            appreciations.slice(0, 20).map((a, idx) => (
+              <div key={idx} className="rounded-xl border border-emerald-100 bg-white/90 p-4">
+                <div className="text-xs text-slate-500">{new Date(a.createdAt).toLocaleString()}</div>
+                <div className="font-semibold text-emerald-900">{a.fullName}</div>
+                <div className="mt-1 text-sm text-slate-600 whitespace-pre-wrap">{a.appreciationText}</div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
-      {/* Organiser Details Dialog */}
-      <Dialog open={selectedOrganiser === dummyOrganiser.id} onOpenChange={(open) => !open && setSelectedOrganiser(null)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      {/* Event Participants Dialog */}
+      <Dialog open={selectedEvent !== null} onOpenChange={(open) => !open && setSelectedEvent(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl">Organiser Details</DialogTitle>
+            <DialogTitle className="text-xl">Event Participants</DialogTitle>
             <DialogDescription>
-              View reference IDs and download study material for this organiser
+              View all participants and their details for this event
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-6 mt-4">
-            <div className="space-y-2">
-              <h3 className="font-semibold text-emerald-900">Organiser Information</h3>
+          {loadingParticipants ? (
+            <div className="py-8 text-center text-slate-600">Loading participants...</div>
+          ) : eventParticipants ? (
+            <div className="space-y-6 mt-4">
               <div className="bg-emerald-50 rounded-lg p-4 space-y-2">
                 <div>
-                  <span className="text-sm text-slate-600">Name:</span>
-                  <span className="ml-2 font-medium text-emerald-900">{dummyOrganiser.name}</span>
-                </div>
-                <div>
-                  <span className="text-sm text-slate-600">Organisation:</span>
-                  <span className="ml-2 font-medium text-emerald-900">{dummyOrganiser.organisation}</span>
-                </div>
-                <div>
                   <span className="text-sm text-slate-600">Event:</span>
-                  <span className="ml-2 font-medium text-emerald-900">{dummyOrganiser.eventDetails}</span>
+                  <span className="ml-2 font-medium text-emerald-900">{eventParticipants.event.title}</span>
+                </div>
+                <div>
+                  <span className="text-sm text-slate-600">Organizer:</span>
+                  <span className="ml-2 font-medium text-emerald-900">{eventParticipants.event.organizerName}</span>
                 </div>
                 <div>
                   <span className="text-sm text-slate-600">Location:</span>
-                  <span className="ml-2 font-medium text-emerald-900">{dummyOrganiser.place}</span>
+                  <span className="ml-2 font-medium text-emerald-900">{eventParticipants.event.location}</span>
                 </div>
                 <div>
                   <span className="text-sm text-slate-600">Date:</span>
                   <span className="ml-2 font-medium text-emerald-900">
-                    {new Date(dummyOrganiser.date).toLocaleDateString("en-IN", {
-                      day: "2-digit",
-                      month: "long",
-                      year: "numeric",
-                    })}
+                    {new Date(eventParticipants.event.date).toLocaleDateString()}
                   </span>
                 </div>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-emerald-900">Reference IDs</h3>
-                <span className="text-xs text-slate-500">{dummyOrganiser.referenceIds.length} IDs</span>
-              </div>
-              <div className="space-y-2">
-                {dummyOrganiser.referenceIds.map((refId, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center justify-between bg-slate-50 rounded-lg p-3 border border-slate-200"
-                  >
-                    <code className="text-sm font-mono text-emerald-900 flex-1">{refId}</code>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleCopyRefId(refId)}
-                      className="ml-2 h-8 w-8 p-0"
-                    >
-                      {copiedRefId === refId ? (
-                        <Check className="h-4 w-4 text-emerald-600" />
-                      ) : (
-                        <Copy className="h-4 w-4 text-slate-600" />
-                      )}
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-3 pt-4 border-t border-emerald-100">
-              <h3 className="font-semibold text-emerald-900">Study Material</h3>
-              <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                <div className="flex items-start gap-3">
-                  <BookOpen className="h-5 w-5 text-blue-700 flex-shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-blue-900">Road Safety Study Material</p>
-                    <p className="text-xs text-blue-700 mt-1">
-                      Comprehensive guide covering road safety rules, regulations, and best practices for organisers.
-                    </p>
-                    <Button
-                      onClick={handleDownloadStudyMaterial}
-                      className="mt-3 bg-blue-600 hover:bg-blue-700 text-white gap-2"
-                      size="sm"
-                    >
-                      <Download className="h-4 w-4" />
-                      Download PDF
-                    </Button>
-                  </div>
+                <div>
+                  <span className="text-sm text-slate-600">Total Participants:</span>
+                  <span className="ml-2 font-medium text-emerald-900">{eventParticipants.totalParticipants}</span>
+                </div>
+                <div>
+                  <span className="text-sm text-slate-600">Reference ID:</span>
+                  <span className="ml-2 font-mono text-xs text-emerald-900">{eventParticipants.event.referenceId}</span>
                 </div>
               </div>
+
+              {eventParticipants.participants.length === 0 ? (
+                <div className="text-center py-8 text-slate-600">No participants yet for this event</div>
+              ) : (
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-emerald-900">Participants List</h3>
+                  <div className="rs-table-wrapper">
+                    <table className="rs-table text-sm">
+                      <thead>
+                        <tr>
+                          <th className="text-left">Name</th>
+                          <th className="text-left">Institution</th>
+                          <th className="text-left">Score</th>
+                          <th className="text-left">Activity</th>
+                          <th className="text-left">Certificate ID</th>
+                          <th className="text-left">Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {eventParticipants.participants.map((p, idx) => (
+                          <tr key={idx}>
+                            <td className="font-medium">{p.name}</td>
+                            <td>{p.institution}</td>
+                            <td>
+                              {p.score}/{p.total} ({p.percentage}%)
+                            </td>
+                            <td className="capitalize">{p.activityType}</td>
+                            <td className="font-mono text-xs">{p.certificateId}</td>
+                            <td className="text-xs">{new Date(p.certificateDate).toLocaleDateString()}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
+          ) : (
+            <div className="py-8 text-center text-slate-600">No data available</div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
   );
 }
-
-
-

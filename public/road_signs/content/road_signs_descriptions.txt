@@ -1,0 +1,298 @@
+TRAFFIC AND ROAD SIGNS - LLR MOCK TEST
+========================================
+
+Traffic and road signs are simple representations of rules that are put in place by the Ministry of Road Transport and Highways. They provide important information to drivers as well as other road users, and one must adhere to all these rules to ensure a smooth and safe drive. It is important to have a good understanding of road safety signs and traffic signals in order to being safe on the road.
+
+There are so many road and traffic signs, each one having its own purpose. They have been divided into three categories, which are Mandatory, Cautionary and Informatory Signs.
+
+
+MANDATORY SIGNS
+===============
+
+These road signals and signs are used to make road users aware of specific laws and regulations that must be followed.
+
+1. Stop
+   This sign indicates that the vehicle must come to a complete halt.
+
+2. Give Way
+   This sign indicates that the driver must give way to traffic on the main road.
+
+3. No Entry
+   This sign indicates that entry is prohibited for all vehicles.
+
+4. One Way
+   This sign indicates that traffic is allowed to move only in one direction.
+
+5. No Left Turn
+   This sign indicates that left turn is prohibited.
+
+6. No Right Turn
+   This sign indicates that right turn is prohibited.
+
+7. No U-Turn
+   This sign indicates that U-turn is prohibited.
+
+8. No Overtaking
+   This sign indicates that overtaking is prohibited.
+
+9. Speed Limit
+   This sign indicates the maximum speed limit allowed on that road.
+
+10. No Horn
+    This sign indicates that honking is prohibited in that area.
+
+11. No Parking
+    This sign indicates that parking is not allowed.
+
+12. No Stopping
+    This sign indicates that stopping is not allowed.
+
+13. Compulsory Turn Left
+    This sign indicates that vehicles must turn left.
+
+14. Compulsory Turn Right
+    This sign indicates that vehicles must turn right.
+
+15. Compulsory Go Straight
+    This sign indicates that vehicles must go straight ahead.
+
+16. Compulsory Turn Left Ahead
+    This sign indicates that vehicles must turn left ahead.
+
+17. Compulsory Turn Right Ahead
+    This sign indicates that vehicles must turn right ahead.
+
+18. Compulsory Sound Horn
+    This sign indicates that drivers must sound their horn.
+
+19. Compulsory Keep Left
+    This sign indicates that vehicles must keep to the left.
+
+20. Compulsory Keep Right
+    This sign indicates that vehicles must keep to the right.
+
+21. Compulsory Cycle Track
+    This sign indicates that only cycles are allowed.
+
+22. Compulsory Sound Horn Prohibited
+    This sign indicates that honking is prohibited.
+
+23. Vehicles Prohibited in Both Directions
+    This sign indicates that vehicles are not allowed in both directions.
+
+24. All Motor Vehicles Prohibited
+    This sign indicates that all motor vehicles are prohibited.
+
+25. Goods Vehicles Prohibited
+    This sign indicates that goods vehicles are not allowed.
+
+26. Hand Cart Prohibited
+    This sign indicates that hand carts are not allowed.
+
+27. Tonga Prohibited
+    This sign indicates that tongas (horse-drawn carriages) are not allowed.
+
+28. Bullock Cart Prohibited
+    This sign indicates that bullock carts are not allowed.
+
+29. Pedestrians Prohibited
+    This sign indicates that pedestrians are not allowed.
+
+30. Cycles Prohibited
+    This sign indicates that cycles are not allowed.
+
+31. Right/Left Turn Prohibited
+    This sign indicates that both right and left turns are prohibited.
+
+32. Overtaking Prohibited
+    This sign indicates that overtaking is not allowed.
+
+
+CAUTIONARY SIGNS
+================
+
+These signs are used to warn road users of potential hazards or dangerous conditions ahead.
+
+1. Right Hand Curve
+   This sign indicates that there is a right-hand curve ahead on the road.
+
+2. Left Hand Curve
+   This sign indicates that there is a left-hand curve ahead on the road.
+
+3. Right Hair Pin Bend
+   This sign indicates that there is a sharp right turn ahead.
+
+4. Left Hair Pin Bend
+   This sign indicates that there is a sharp left turn ahead.
+
+5. Right Reverse Bend
+   This sign indicates that there is a reverse right bend ahead.
+
+6. Left Reverse Bend
+   This sign indicates that there is a reverse left bend ahead.
+
+7. Steep Ascent
+   This sign indicates that there is a steep uphill section ahead.
+
+8. Steep Descent
+   This sign indicates that there is a steep downhill section ahead.
+
+9. Narrow Road Ahead
+   This sign indicates that the road ahead becomes narrow.
+
+10. Road Wideness Ahead
+    This sign indicates that the road ahead becomes wider.
+
+11. Narrow Bridge
+    This sign indicates that there is a narrow bridge ahead.
+
+12. Slippery Road
+    This sign indicates that the road surface is slippery.
+
+13. Loose Gravel
+    This sign indicates that loose earth or gravel keeps falling on the road.
+
+14. Cycle Crossing
+    This sign indicates that there is a cycle crossing ahead.
+
+15. Pedestrian Crossing
+    This sign indicates that there is a pedestrian crossing ahead.
+
+16. School Ahead
+    This sign indicates that there is a school ahead, so drivers should be cautious.
+
+17. Men at Work
+    This sign indicates that there are workers on the road ahead.
+
+18. Cattle
+    This sign indicates that cattle may be present on the road.
+
+19. Falling Rocks
+    This sign indicates that the road ahead is prone to falling rocks, especially in hilly areas.
+
+20. Ferry
+    This sign indicates that there is a ferry service ahead to cross the river.
+
+21. Cross Road
+    This sign indicates that there is a crossing of roads ahead.
+
+22. Gap in Median
+    This sign indicates that there is a gap in the divider of the road.
+
+23. Side Road Right
+    This sign indicates that there is a right side turn on the road in addition to straight movement.
+
+24. Side Road Left
+    This sign indicates that there is a left side turn on the road.
+
+25. Y-Intersections
+    This sign depicts the actual formation of road ahead.
+
+26. T-Intersection
+    This sign indicates that straight ahead the traffic has to either turn left or right.
+
+27. Staggered Intersection
+    These signs indicate that there are left and right turns available on the straight road.
+
+28. Major Road Ahead
+    This sign is erected on arterial roads before it crosses a major road.
+
+29. Roundabout
+    This sign indicates that there is a roundabout ahead which is a substitute for intersection.
+
+30. Dangerous Dip
+    This sign cautions the drivers that there is a dip ahead on the road.
+
+31. Hump or Rough Road
+    This sign indicates that there is a hump on the road ahead.
+
+32. Barrier Ahead
+    This sign indicates that there is a toll collection point etc. ahead.
+
+33. Speedbreaker
+    This sign indicates that there is a speedbreaker on the road ahead.
+
+34. Railway Crossing
+    This sign indicates that there is a railway crossing ahead.
+
+35. Railway Crossing (Unmanned)
+    This sign indicates that there is an unmanned railway crossing ahead.
+
+36. Railway Crossing (Manned)
+    This sign indicates that there is a manned railway crossing ahead.
+
+
+INFORMATORY SIGNS
+=================
+
+Informatory road signs are used to provide important information. These signs are meant to provide information on direction, destination, roadside facilities, etc. to the road user. Following informative road signs helps a driver in saving time, reaching destination without wandering around. These signs are generally facilitators to the driver.
+
+1. Public Telephone
+   This sign indicates the availability of Telephone near road.
+
+2. Petrol Pump
+   This informatory sign indicates that there is a Petrol Pump ahead.
+
+3. Hospital
+   This sign indicates that there is Hospital nearby.
+
+4. Eating Place
+   This sign indicates that there is an eating-place in the vicinity.
+
+5. First Aid Post
+   This sign shows that there is a First Aid facility nearby which is very useful in case of emergency or accidents.
+
+6. Light Refreshment
+   This sign indicates there is facility of Light refreshment nearby on the road.
+
+7. Resting Place
+   This sign is erected near motel, lodge or any other facility for resting on the road.
+
+8. No Thorough Road
+   This sign is erected at the entry of such roads from which no exit is available.
+
+9. No Thorough Side Road
+   This sign indicates that there is no through side road available on the main road.
+
+10. Park this Side
+    This sign is erected at destination telling exactly where to park your vehicles.
+
+11. Parking Both sides
+    This sign is erected at destination telling exactly where to park your vehicles. This sign indicates that vehicles can be parked on both sides.
+
+12. Parking Scooters & Motorcycles
+    This sign is erected at destination, which is meant for parking of scooters and motorcycles.
+
+13. Parking Lot Cycles
+    This particular sign indicates that this parking is meant for cycles.
+
+14. Taxi Stand
+    This sign is erected at destination which is meant for parking taxis only.
+
+15. Auto Rickshaw Stand
+    This sign is erected at destination, which is meant for parking Auto rickshaws.
+
+16. Cycle Rickshaw Stand
+    This sign is erected at destination, which is meant for parking Cycle rickshaws.
+
+17. Flood Gauge
+    This sign is erected on highways/roads near river, canal, lake etc. This sign indicates the level of water. It also cautions the danger level of the water.
+
+18. Destination Sign
+    This sign indicates the direction and distance to various destinations falling on that particular road. These signs are generally installed before intersections.
+
+19. Direction Sign
+    This sign shows the direction and distance of the destination/place written on it.
+
+
+SUMMARY
+=======
+
+Total Road Signs Extracted: 87
+- Mandatory Signs: 32
+- Cautionary Signs: 36
+- Informatory Signs: 19
+
+All images have been downloaded and organized in their respective category folders.
+Content has been extracted and saved for reference.
+

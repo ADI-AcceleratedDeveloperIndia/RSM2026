@@ -1,0 +1,21 @@
+
+ROAD SIGNS EXTRACTION SUMMARY
+==============================
+
+Total Images Downloaded: 87
+Total Failed Downloads: 0
+
+By Category:
+  - Mandatory: 32 images
+  - Cautionary: 36 images
+  - Informatory: 19 images
+
+Images are saved in:
+  - road_signs/mandatory/
+  - road_signs/cautionary/
+  - road_signs/informatory/
+
+Content extracted to:
+  - road_signs/content/page_content.html
+  - road_signs/content/page_content.txt
+  - road_signs/content/extracted_content.json

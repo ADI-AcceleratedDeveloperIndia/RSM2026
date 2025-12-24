@@ -1,19 +1,58 @@
-export function generateReferenceId(context: string): string {
-  const now = new Date();
-  const datePart = [
-    now.getFullYear().toString(),
-    (now.getMonth() + 1).toString().padStart(2, "0"),
-    now.getDate().toString().padStart(2, "0"),
-  ].join("");
+// Fixed Reference ID Format: KRMR-RSM-2026-PDL-RHL-EVT-00001
+// KRMR = Karimnagar (hardcoded)
+// RSM = Road Safety Month (hardcoded)
+// 2026 = Year (hardcoded)
+// PDL = Officer code (Padala Rahul)
+// RHL = Officer code (Rahul)
+// EVT-00001 = Event ID (5 digits, 00001 to 100000)
 
-  let randomPart: string;
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    randomPart = crypto.randomUUID().slice(0, 8).replace(/-/g, "").toUpperCase();
-  } else {
-    randomPart = Math.random().toString(36).slice(2, 10).toUpperCase();
+const DISTRICT_CODE = "KRMR";
+const PROGRAM_CODE = "RSM";
+const YEAR = "2026";
+const OFFICER_CODE_1 = "PDL"; // Padala
+const OFFICER_CODE_2 = "RHL"; // Rahul
+
+export function generateEventId(eventNumber: number): string {
+  if (eventNumber < 1 || eventNumber > 100000) {
+    throw new Error("Event number must be between 1 and 100000");
   }
-
-  return `RSM-${context.toUpperCase()}-${datePart}-${randomPart}`;
+  const eventId = eventNumber.toString().padStart(5, "0");
+  return `EVT-${eventId}`;
 }
 
+export function generateEventReferenceId(eventNumber: number): string {
+  const eventId = generateEventId(eventNumber);
+  return `${DISTRICT_CODE}-${PROGRAM_CODE}-${YEAR}-${OFFICER_CODE_1}-${OFFICER_CODE_2}-${eventId}`;
+}
 
+export function generateCertificateNumber(
+  type: "MERIT" | "PARTICIPANT" | "ORGANIZER",
+  certificateNumber: number
+): string {
+  if (certificateNumber < 1 || certificateNumber > 100000) {
+    throw new Error("Certificate number must be between 1 and 100000");
+  }
+  const certNum = certificateNumber.toString().padStart(5, "0");
+  return `${DISTRICT_CODE}-${PROGRAM_CODE}-${YEAR}-${OFFICER_CODE_1}-${OFFICER_CODE_2}-${type}-${certNum}`;
+}
+
+export function generateTemporaryOrganizerId(): string {
+  const timestamp = Date.now().toString(36).toUpperCase();
+  const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+  return `TEMP-ORG-${timestamp}-${random}`;
+}
+
+export function generateFinalOrganizerId(organizerNumber: number): string {
+  if (organizerNumber < 1 || organizerNumber > 100000) {
+    throw new Error("Organizer number must be between 1 and 100000");
+  }
+  const orgNum = organizerNumber.toString().padStart(5, "0");
+  return `${DISTRICT_CODE}-${PROGRAM_CODE}-${YEAR}-${OFFICER_CODE_1}-${OFFICER_CODE_2}-ORGANIZER-${orgNum}`;
+}
+
+// Simple reference ID generator for activity completion tracking
+export function generateReferenceId(prefix: string): string {
+  const timestamp = Date.now().toString(36).toUpperCase();
+  const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+  return `${prefix}-${timestamp}-${random}`;
+}

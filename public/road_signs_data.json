@@ -1,0 +1,557 @@
+{
+  "source": {
+    "name": "Maruti Suzuki Driving School",
+    "url": "https://www.marutisuzukidrivingschool.com/mock-llr-road-sign",
+    "attribution": "Road signs and descriptions sourced from Maruti Suzuki Driving School's educational materials. Used for educational purposes only."
+  },
+  "totalSigns": 87,
+  "categories": {
+    "mandatory": {
+      "id": "mandatory",
+      "name": "Mandatory Signs",
+      "description": "These road signals and signs are used to make road users aware of specific laws and regulations that must be followed.",
+      "count": 32,
+      "signs": [
+        {
+          "id": 1,
+          "image": "road_signs/mandatory/mandatory_01.jpg",
+          "name": "Stop",
+          "description": "This sign indicates that the vehicle must come to a complete halt."
+        },
+        {
+          "id": 2,
+          "image": "road_signs/mandatory/mandatory_02.jpg",
+          "name": "Give Way",
+          "description": "This sign indicates that the driver must give way to traffic on the main road."
+        },
+        {
+          "id": 3,
+          "image": "road_signs/mandatory/mandatory_03.jpg",
+          "name": "No Entry",
+          "description": "This sign indicates that entry is prohibited for all vehicles."
+        },
+        {
+          "id": 4,
+          "image": "road_signs/mandatory/mandatory_04.jpg",
+          "name": "One Way",
+          "description": "This sign indicates that traffic is allowed to move only in one direction."
+        },
+        {
+          "id": 5,
+          "image": "road_signs/mandatory/mandatory_05.jpg",
+          "name": "No Left Turn",
+          "description": "This sign indicates that left turn is prohibited."
+        },
+        {
+          "id": 6,
+          "image": "road_signs/mandatory/mandatory_06.jpg",
+          "name": "No Right Turn",
+          "description": "This sign indicates that right turn is prohibited."
+        },
+        {
+          "id": 7,
+          "image": "road_signs/mandatory/mandatory_07.jpg",
+          "name": "No U-Turn",
+          "description": "This sign indicates that U-turn is prohibited."
+        },
+        {
+          "id": 8,
+          "image": "road_signs/mandatory/mandatory_08.jpg",
+          "name": "No Overtaking",
+          "description": "This sign indicates that overtaking is prohibited."
+        },
+        {
+          "id": 9,
+          "image": "road_signs/mandatory/mandatory_09.jpg",
+          "name": "Speed Limit",
+          "description": "This sign indicates the maximum speed limit allowed on that road."
+        },
+        {
+          "id": 10,
+          "image": "road_signs/mandatory/mandatory_10.jpg",
+          "name": "No Horn",
+          "description": "This sign indicates that honking is prohibited in that area."
+        },
+        {
+          "id": 11,
+          "image": "road_signs/mandatory/mandatory_11.jpg",
+          "name": "No Parking",
+          "description": "This sign indicates that parking is not allowed."
+        },
+        {
+          "id": 12,
+          "image": "road_signs/mandatory/mandatory_12.jpg",
+          "name": "No Stopping",
+          "description": "This sign indicates that stopping is not allowed."
+        },
+        {
+          "id": 13,
+          "image": "road_signs/mandatory/mandatory_13.jpg",
+          "name": "Compulsory Turn Left",
+          "description": "This sign indicates that vehicles must turn left."
+        },
+        {
+          "id": 14,
+          "image": "road_signs/mandatory/mandatory_14.jpg",
+          "name": "Compulsory Turn Right",
+          "description": "This sign indicates that vehicles must turn right."
+        },
+        {
+          "id": 15,
+          "image": "road_signs/mandatory/mandatory_15.jpg",
+          "name": "Compulsory Go Straight",
+          "description": "This sign indicates that vehicles must go straight ahead."
+        },
+        {
+          "id": 16,
+          "image": "road_signs/mandatory/mandatory_16.jpg",
+          "name": "Compulsory Turn Left Ahead",
+          "description": "This sign indicates that vehicles must turn left ahead."
+        },
+        {
+          "id": 17,
+          "image": "road_signs/mandatory/mandatory_17.jpg",
+          "name": "Compulsory Turn Right Ahead",
+          "description": "This sign indicates that vehicles must turn right ahead."
+        },
+        {
+          "id": 18,
+          "image": "road_signs/mandatory/mandatory_18.jpg",
+          "name": "Compulsory Sound Horn",
+          "description": "This sign indicates that drivers must sound their horn."
+        },
+        {
+          "id": 19,
+          "image": "road_signs/mandatory/mandatory_19.jpg",
+          "name": "Compulsory Keep Left",
+          "description": "This sign indicates that vehicles must keep to the left."
+        },
+        {
+          "id": 20,
+          "image": "road_signs/mandatory/mandatory_20.jpg",
+          "name": "Compulsory Keep Right",
+          "description": "This sign indicates that vehicles must keep to the right."
+        },
+        {
+          "id": 21,
+          "image": "road_signs/mandatory/mandatory_21.jpg",
+          "name": "Compulsory Cycle Track",
+          "description": "This sign indicates that only cycles are allowed."
+        },
+        {
+          "id": 22,
+          "image": "road_signs/mandatory/mandatory_22.jpg",
+          "name": "Compulsory Sound Horn Prohibited",
+          "description": "This sign indicates that honking is prohibited."
+        },
+        {
+          "id": 23,
+          "image": "road_signs/mandatory/mandatory_23.jpg",
+          "name": "Vehicles Prohibited in Both Directions",
+          "description": "This sign indicates that vehicles are not allowed in both directions."
+        },
+        {
+          "id": 24,
+          "image": "road_signs/mandatory/mandatory_24.jpg",
+          "name": "All Motor Vehicles Prohibited",
+          "description": "This sign indicates that all motor vehicles are prohibited."
+        },
+        {
+          "id": 25,
+          "image": "road_signs/mandatory/mandatory_25.jpg",
+          "name": "Goods Vehicles Prohibited",
+          "description": "This sign indicates that goods vehicles are not allowed."
+        },
+        {
+          "id": 26,
+          "image": "road_signs/mandatory/mandatory_26.jpg",
+          "name": "Hand Cart Prohibited",
+          "description": "This sign indicates that hand carts are not allowed."
+        },
+        {
+          "id": 27,
+          "image": "road_signs/mandatory/mandatory_27.jpg",
+          "name": "Tonga Prohibited",
+          "description": "This sign indicates that tongas (horse-drawn carriages) are not allowed."
+        },
+        {
+          "id": 28,
+          "image": "road_signs/mandatory/mandatory_28.jpg",
+          "name": "Bullock Cart Prohibited",
+          "description": "This sign indicates that bullock carts are not allowed."
+        },
+        {
+          "id": 29,
+          "image": "road_signs/mandatory/mandatory_29.jpg",
+          "name": "Pedestrians Prohibited",
+          "description": "This sign indicates that pedestrians are not allowed."
+        },
+        {
+          "id": 30,
+          "image": "road_signs/mandatory/mandatory_30.jpg",
+          "name": "Cycles Prohibited",
+          "description": "This sign indicates that cycles are not allowed."
+        },
+        {
+          "id": 31,
+          "image": "road_signs/mandatory/mandatory_31.jpg",
+          "name": "Right/Left Turn Prohibited",
+          "description": "This sign indicates that both right and left turns are prohibited."
+        },
+        {
+          "id": 32,
+          "image": "road_signs/mandatory/mandatory_32.jpg",
+          "name": "Overtaking Prohibited",
+          "description": "This sign indicates that overtaking is not allowed."
+        }
+      ]
+    },
+    "cautionary": {
+      "id": "cautionary",
+      "name": "Cautionary Signs",
+      "description": "These signs are used to warn road users of potential hazards or dangerous conditions ahead.",
+      "count": 36,
+      "signs": [
+        {
+          "id": 1,
+          "image": "road_signs/cautionary/cautionary_01.jpg",
+          "name": "Right Hand Curve",
+          "description": "This sign indicates that there is a right-hand curve ahead on the road."
+        },
+        {
+          "id": 2,
+          "image": "road_signs/cautionary/cautionary_02.jpg",
+          "name": "Left Hand Curve",
+          "description": "This sign indicates that there is a left-hand curve ahead on the road."
+        },
+        {
+          "id": 3,
+          "image": "road_signs/cautionary/cautionary_03.jpg",
+          "name": "Right Hair Pin Bend",
+          "description": "This sign indicates that there is a sharp right turn ahead."
+        },
+        {
+          "id": 4,
+          "image": "road_signs/cautionary/cautionary_04.jpg",
+          "name": "Left Hair Pin Bend",
+          "description": "This sign indicates that there is a sharp left turn ahead."
+        },
+        {
+          "id": 5,
+          "image": "road_signs/cautionary/cautionary_05.jpg",
+          "name": "Right Reverse Bend",
+          "description": "This sign indicates that there is a reverse right bend ahead."
+        },
+        {
+          "id": 6,
+          "image": "road_signs/cautionary/cautionary_06.jpg",
+          "name": "Left Reverse Bend",
+          "description": "This sign indicates that there is a reverse left bend ahead."
+        },
+        {
+          "id": 7,
+          "image": "road_signs/cautionary/cautionary_07.jpg",
+          "name": "Steep Ascent",
+          "description": "This sign indicates that there is a steep uphill section ahead."
+        },
+        {
+          "id": 8,
+          "image": "road_signs/cautionary/cautionary_08.jpg",
+          "name": "Steep Descent",
+          "description": "This sign indicates that there is a steep downhill section ahead."
+        },
+        {
+          "id": 9,
+          "image": "road_signs/cautionary/cautionary_09.jpg",
+          "name": "Narrow Road Ahead",
+          "description": "This sign indicates that the road ahead becomes narrow."
+        },
+        {
+          "id": 10,
+          "image": "road_signs/cautionary/cautionary_10.jpg",
+          "name": "Road Wideness Ahead",
+          "description": "This sign indicates that the road ahead becomes wider."
+        },
+        {
+          "id": 11,
+          "image": "road_signs/cautionary/cautionary_11.jpg",
+          "name": "Narrow Bridge",
+          "description": "This sign indicates that there is a narrow bridge ahead."
+        },
+        {
+          "id": 12,
+          "image": "road_signs/cautionary/cautionary_12.jpg",
+          "name": "Slippery Road",
+          "description": "This sign indicates that the road surface is slippery."
+        },
+        {
+          "id": 13,
+          "image": "road_signs/cautionary/cautionary_13.jpg",
+          "name": "Loose Gravel",
+          "description": "This sign indicates that loose earth or gravel keeps falling on the road."
+        },
+        {
+          "id": 14,
+          "image": "road_signs/cautionary/cautionary_14.jpg",
+          "name": "Cycle Crossing",
+          "description": "This sign indicates that there is a cycle crossing ahead."
+        },
+        {
+          "id": 15,
+          "image": "road_signs/cautionary/cautionary_15.jpg",
+          "name": "Pedestrian Crossing",
+          "description": "This sign indicates that there is a pedestrian crossing ahead."
+        },
+        {
+          "id": 16,
+          "image": "road_signs/cautionary/cautionary_16.jpg",
+          "name": "School Ahead",
+          "description": "This sign indicates that there is a school ahead, so drivers should be cautious."
+        },
+        {
+          "id": 17,
+          "image": "road_signs/cautionary/cautionary_17.jpg",
+          "name": "Men at Work",
+          "description": "This sign indicates that there are workers on the road ahead."
+        },
+        {
+          "id": 18,
+          "image": "road_signs/cautionary/cautionary_18.jpg",
+          "name": "Cattle",
+          "description": "This sign indicates that cattle may be present on the road."
+        },
+        {
+          "id": 19,
+          "image": "road_signs/cautionary/cautionary_19.jpg",
+          "name": "Falling Rocks",
+          "description": "This sign indicates that the road ahead is prone to falling rocks, especially in hilly areas."
+        },
+        {
+          "id": 20,
+          "image": "road_signs/cautionary/cautionary_20.jpg",
+          "name": "Ferry",
+          "description": "This sign indicates that there is a ferry service ahead to cross the river."
+        },
+        {
+          "id": 21,
+          "image": "road_signs/cautionary/cautionary_21.jpg",
+          "name": "Cross Road",
+          "description": "This sign indicates that there is a crossing of roads ahead."
+        },
+        {
+          "id": 22,
+          "image": "road_signs/cautionary/cautionary_22.jpg",
+          "name": "Gap in Median",
+          "description": "This sign indicates that there is a gap in the divider of the road."
+        },
+        {
+          "id": 23,
+          "image": "road_signs/cautionary/cautionary_23.jpg",
+          "name": "Side Road Right",
+          "description": "This sign indicates that there is a right side turn on the road in addition to straight movement."
+        },
+        {
+          "id": 24,
+          "image": "road_signs/cautionary/cautionary_24.jpg",
+          "name": "Side Road Left",
+          "description": "This sign indicates that there is a left side turn on the road."
+        },
+        {
+          "id": 25,
+          "image": "road_signs/cautionary/cautionary_25.jpg",
+          "name": "Y-Intersections",
+          "description": "This sign depicts the actual formation of road ahead."
+        },
+        {
+          "id": 26,
+          "image": "road_signs/cautionary/cautionary_26.jpg",
+          "name": "T-Intersection",
+          "description": "This sign indicates that straight ahead the traffic has to either turn left or right."
+        },
+        {
+          "id": 27,
+          "image": "road_signs/cautionary/cautionary_27.jpg",
+          "name": "Staggered Intersection",
+          "description": "These signs indicate that there are left and right turns available on the straight road."
+        },
+        {
+          "id": 28,
+          "image": "road_signs/cautionary/cautionary_28.jpg",
+          "name": "Major Road Ahead",
+          "description": "This sign is erected on arterial roads before it crosses a major road."
+        },
+        {
+          "id": 29,
+          "image": "road_signs/cautionary/cautionary_29.jpg",
+          "name": "Roundabout",
+          "description": "This sign indicates that there is a roundabout ahead which is a substitute for intersection."
+        },
+        {
+          "id": 30,
+          "image": "road_signs/cautionary/cautionary_30.jpg",
+          "name": "Dangerous Dip",
+          "description": "This sign cautions the drivers that there is a dip ahead on the road."
+        },
+        {
+          "id": 31,
+          "image": "road_signs/cautionary/cautionary_31.jpg",
+          "name": "Hump or Rough Road",
+          "description": "This sign indicates that there is a hump on the road ahead."
+        },
+        {
+          "id": 32,
+          "image": "road_signs/cautionary/cautionary_32.jpg",
+          "name": "Barrier Ahead",
+          "description": "This sign indicates that there is a toll collection point etc. ahead."
+        },
+        {
+          "id": 33,
+          "image": "road_signs/cautionary/cautionary_33.jpg",
+          "name": "Speedbreaker",
+          "description": "This sign indicates that there is a speedbreaker on the road ahead."
+        },
+        {
+          "id": 34,
+          "image": "road_signs/cautionary/cautionary_34.jpg",
+          "name": "Railway Crossing",
+          "description": "This sign indicates that there is a railway crossing ahead."
+        },
+        {
+          "id": 35,
+          "image": "road_signs/cautionary/cautionary_35.jpg",
+          "name": "Railway Crossing (Unmanned)",
+          "description": "This sign indicates that there is an unmanned railway crossing ahead."
+        },
+        {
+          "id": 36,
+          "image": "road_signs/cautionary/cautionary_36.jpg",
+          "name": "Railway Crossing (Manned)",
+          "description": "This sign indicates that there is a manned railway crossing ahead."
+        }
+      ]
+    },
+    "informatory": {
+      "id": "informatory",
+      "name": "Informatory Signs",
+      "description": "Informatory road signs are used to provide important information on direction, destination, roadside facilities, etc. to the road user. Following informative road signs helps a driver in saving time, reaching destination without wandering around. These signs are generally facilitators to the driver.",
+      "count": 19,
+      "signs": [
+        {
+          "id": 1,
+          "image": "road_signs/informatory/informatory_01.jpg",
+          "name": "Public Telephone",
+          "description": "This sign indicates the availability of Telephone near road."
+        },
+        {
+          "id": 2,
+          "image": "road_signs/informatory/informatory_02.jpg",
+          "name": "Petrol Pump",
+          "description": "This informatory sign indicates that there is a Petrol Pump ahead."
+        },
+        {
+          "id": 3,
+          "image": "road_signs/informatory/informatory_03.jpg",
+          "name": "Hospital",
+          "description": "This sign indicates that there is Hospital nearby."
+        },
+        {
+          "id": 4,
+          "image": "road_signs/informatory/informatory_04.jpg",
+          "name": "Eating Place",
+          "description": "This sign indicates that there is an eating-place in the vicinity."
+        },
+        {
+          "id": 5,
+          "image": "road_signs/informatory/informatory_05.jpg",
+          "name": "First Aid Post",
+          "description": "This sign shows that there is a First Aid facility nearby which is very useful in case of emergency or accidents."
+        },
+        {
+          "id": 6,
+          "image": "road_signs/informatory/informatory_06.jpg",
+          "name": "Light Refreshment",
+          "description": "This sign indicates there is facility of Light refreshment nearby on the road."
+        },
+        {
+          "id": 7,
+          "image": "road_signs/informatory/informatory_07.jpg",
+          "name": "Resting Place",
+          "description": "This sign is erected near motel, lodge or any other facility for resting on the road."
+        },
+        {
+          "id": 8,
+          "image": "road_signs/informatory/informatory_08.jpg",
+          "name": "No Thorough Road",
+          "description": "This sign is erected at the entry of such roads from which no exit is available."
+        },
+        {
+          "id": 9,
+          "image": "road_signs/informatory/informatory_09.jpg",
+          "name": "No Thorough Side Road",
+          "description": "This sign indicates that there is no through side road available on the main road."
+        },
+        {
+          "id": 10,
+          "image": "road_signs/informatory/informatory_10.jpg",
+          "name": "Park this Side",
+          "description": "This sign is erected at destination telling exactly where to park your vehicles."
+        },
+        {
+          "id": 11,
+          "image": "road_signs/informatory/informatory_11.jpg",
+          "name": "Parking Both sides",
+          "description": "This sign is erected at destination telling exactly where to park your vehicles. This sign indicates that vehicles can be parked on both sides."
+        },
+        {
+          "id": 12,
+          "image": "road_signs/informatory/informatory_12.jpg",
+          "name": "Parking Scooters & Motorcycles",
+          "description": "This sign is erected at destination, which is meant for parking of scooters and motorcycles."
+        },
+        {
+          "id": 13,
+          "image": "road_signs/informatory/informatory_13.jpg",
+          "name": "Parking Lot Cycles",
+          "description": "This particular sign indicates that this parking is meant for cycles."
+        },
+        {
+          "id": 14,
+          "image": "road_signs/informatory/informatory_14.jpg",
+          "name": "Taxi Stand",
+          "description": "This sign is erected at destination which is meant for parking taxis only."
+        },
+        {
+          "id": 15,
+          "image": "road_signs/informatory/informatory_15.jpg",
+          "name": "Auto Rickshaw Stand",
+          "description": "This sign is erected at destination, which is meant for parking Auto rickshaws."
+        },
+        {
+          "id": 16,
+          "image": "road_signs/informatory/informatory_16.jpg",
+          "name": "Cycle Rickshaw Stand",
+          "description": "This sign is erected at destination, which is meant for parking Cycle rickshaws."
+        },
+        {
+          "id": 17,
+          "image": "road_signs/informatory/informatory_17.jpg",
+          "name": "Flood Gauge",
+          "description": "This sign is erected on highways/roads near river, canal, lake etc. This sign indicates the level of water. It also cautions the danger level of the water."
+        },
+        {
+          "id": 18,
+          "image": "road_signs/informatory/informatory_18.jpg",
+          "name": "Destination Sign",
+          "description": "This sign indicates the direction and distance to various destinations falling on that particular road. These signs are generally installed before intersections."
+        },
+        {
+          "id": 19,
+          "image": "road_signs/informatory/informatory_19.jpg",
+          "name": "Direction Sign",
+          "description": "This sign shows the direction and distance of the destination/place written on it."
+        }
+      ]
+    }
+  }
+}
+

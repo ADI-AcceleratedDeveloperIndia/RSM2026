@@ -1,16 +1,58 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import HelmetPrototype from "./HelmetPrototype";
 import TripleRidingSimulation from "./TripleRidingSimulation";
 import DrunkDriveSimulation from "./DrunkDriveSimulation";
-import { BrainCircuit, Sparkles, ShieldCheck, WineOff } from "lucide-react";
+import { BrainCircuit, Sparkles, ShieldCheck, WineOff, Trophy, ArrowRight } from "lucide-react";
 
 export default function SimulationPage() {
-  const { t } = useTranslation("common");
+  const { t, i18n } = useTranslation("common");
   const { t: tc } = useTranslation("content");
+  const router = useRouter();
+  const [completedSims, setCompletedSims] = useState<Set<string>>(new Set());
+  const [allCompleted, setAllCompleted] = useState(false);
+
+  useEffect(() => {
+    // Check sessionStorage for completed simulations
+    const helmet = sessionStorage.getItem("sim_helmet_completed");
+    const triple = sessionStorage.getItem("sim_triple_completed");
+    const drunk = sessionStorage.getItem("sim_drunk_completed");
+    
+    const completed = new Set<string>();
+    if (helmet) completed.add("helmet");
+    if (triple) completed.add("triple");
+    if (drunk) completed.add("drunk");
+    
+    setCompletedSims(completed);
+    setAllCompleted(completed.size === 3);
+  }, []);
+
+  const handleSimComplete = (simId: string) => {
+    const updated = new Set(completedSims);
+    updated.add(simId);
+    setCompletedSims(updated);
+    
+    // Save to sessionStorage
+    sessionStorage.setItem(`sim_${simId}_completed`, "true");
+    
+    if (updated.size === 3) {
+      setAllCompleted(true);
+      // Set score for certificate (3/3 = 100%)
+      sessionStorage.setItem("simulationScore", "3");
+      sessionStorage.setItem("simulationTotal", "3");
+      sessionStorage.setItem("activityType", "simulation");
+    }
+  };
+
+  const handleContinueToCertificate = () => {
+    router.push("/certificates/generate");
+  };
   
   return (
     <div className="rs-container py-12 space-y-12">
@@ -74,19 +116,39 @@ export default function SimulationPage() {
             </div>
 
             <TabsContent value="helmet" className="mt-6">
-              <HelmetPrototype />
+              <HelmetPrototype onComplete={() => handleSimComplete("helmet")} />
             </TabsContent>
 
             <TabsContent value="triple" className="mt-6">
-              <TripleRidingSimulation />
+              <TripleRidingSimulation onComplete={() => handleSimComplete("triple")} />
             </TabsContent>
 
             <TabsContent value="drunk" className="mt-6">
-              <DrunkDriveSimulation />
+              <DrunkDriveSimulation onComplete={() => handleSimComplete("drunk")} />
             </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
+
+      {allCompleted && (
+        <Card className="max-w-4xl mx-auto bg-emerald-50 border-emerald-200">
+          <CardContent className="py-8 text-center space-y-4">
+            <Trophy className="h-16 w-16 text-yellow-500 mx-auto" />
+            <p className="text-2xl font-bold text-emerald-900">
+              {i18n.language === "te" ? "అన్ని సిమ్యులేషన్‌లు పూర్తయ్యాయి!" : "All Simulations Complete!"}
+            </p>
+            <p className="text-lg text-slate-600">
+              {i18n.language === "te"
+                ? "మీరు 3 సిమ్యులేషన్‌లలో విజయవంతమయ్యారు (3/3)"
+                : "You've successfully completed all 3 simulations (3/3)"}
+            </p>
+            <Button onClick={handleContinueToCertificate} className="rs-btn-primary gap-2">
+              {i18n.language === "te" ? "సర్టిఫికేట్‌కు కొనసాగండి" : "Continue to Certificate"}
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="rs-card p-6">
         <h3 className="text-lg font-semibold text-emerald-900 mb-3">{tc("moreScenariosArrivingSoon") || "More scenarios arriving soon"}</h3>

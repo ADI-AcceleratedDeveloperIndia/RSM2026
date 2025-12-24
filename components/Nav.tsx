@@ -10,13 +10,14 @@ import { Menu, X, Home, Scale, GraduationCap, ShieldCheck, FileText, Cpu, Award,
 
 const navIcons: Record<string, ReactNode> = {
   "/": <Home className="h-4 w-4" />,
-  "/road-safety": <ShieldHalf className="h-4 w-4" />,
-  "/quiz": <ShieldCheck className="h-4 w-4" />,
+  "/basics": <Scale className="h-4 w-4" />,
   "/simulation": <Cpu className="h-4 w-4" />,
-  "/certificates": <Award className="h-4 w-4" />,
-  "/certificates/regional": <MapPin className="h-4 w-4" />,
+  "/quiz": <ShieldCheck className="h-4 w-4" />,
+  "/guides": <GraduationCap className="h-4 w-4" />,
+  "/prevention": <ShieldHalf className="h-4 w-4" />,
   "/events": <CalendarDays className="h-4 w-4" />,
-  "/admin": <FileText className="h-4 w-4" />,
+  "/certificates": <Award className="h-4 w-4" />,
+  "/organizer": <FileText className="h-4 w-4" />,
 };
 
 export default function Nav() {
@@ -37,14 +38,15 @@ export default function Nav() {
   };
 
   const navLinks = [
-    { href: "/", label: t("home"), key: "/" },
-    { href: "/road-safety", label: t("roadSafety"), key: "/road-safety" },
-    { href: "/quiz", label: t("quiz"), key: "/quiz" },
-    { href: "/simulation", label: t("simulation"), key: "/simulation" },
-    { href: "/certificates", label: t("certificates"), key: "/certificates" },
-    { href: "/events", label: t("events"), key: "/events" },
-    { href: "/certificates/regional", label: t("regionalEvent"), key: "/certificates/regional" },
-    { href: "/admin", label: t("admin"), key: "/admin" },
+    { href: "/", label: t("home") || "Home", key: "/" },
+    { href: "/basics", label: "For All", key: "/basics" },
+    { href: "/simulation", label: "School", key: "/simulation" },
+    { href: "/quiz", label: "Entrance", key: "/quiz" },
+    { href: "/guides", label: "Undergrad", key: "/guides" },
+    { href: "/prevention", label: "Grad / Graduates", key: "/prevention" },
+    { href: "/events", label: t("events") || "Events", key: "/events" },
+    { href: "/certificates", label: t("certificates") || "Certificates", key: "/certificates" },
+    { href: "/organizer", label: "Organizer", key: "/organizer" },
   ];
 
   if (!mounted) return null;

@@ -2,16 +2,18 @@ import { Schema, model, models } from "mongoose";
 
 const EventSchema = new Schema({
   referenceId: { type: String, required: true, unique: true, index: true },
-  title: String,
-  organiserName: String,
-  organiserRole: String,
-  institution: String,
-  date: Date,
-  location: String,
-  regionCode: String,
+  eventNumber: { type: Number, required: true, unique: true, index: true }, // 1 to 100000
+  title: { type: String, required: true },
+  organizerId: { type: String, required: true, index: true }, // Final organizer ID
+  organizerName: { type: String, required: true },
+  institution: { type: String, required: true },
+  date: { type: Date, required: true },
+  location: { type: String, required: true, default: "Karimnagar" },
+  approved: { type: Boolean, default: false }, // Must be approved by admin
   photos: [String],
-  approved: { type: Boolean, default: true },
   createdAt: { type: Date, default: Date.now },
+  approvedAt: { type: Date },
+  approvedBy: { type: String },
 });
 
 export default models.Event || model("Event", EventSchema);

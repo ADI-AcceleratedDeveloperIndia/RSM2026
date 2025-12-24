@@ -5,7 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "react-i18next";
+import { useRouter } from "next/navigation";
 import { generateReferenceId } from "@/lib/reference";
+import { Trophy, ArrowRight, CheckCircle2, XCircle } from "lucide-react";
 
 type GuideSection = {
   id: string;
@@ -130,6 +132,7 @@ type GuideProgress = Record<string, boolean[]>;
 export default function GuidesPage() {
   const { t } = useTranslation("common");
   const { t: tc } = useTranslation("content");
+  const router = useRouter();
   
   const [progress, setProgress] = useState<GuideProgress>(() =>
     GUIDE_SECTIONS.reduce((acc, section) => {
@@ -138,6 +141,12 @@ export default function GuidesPage() {
     }, {} as GuideProgress)
   );
   const [referenceId, setReferenceId] = useState<string | null>(null);
+  const [quizMode, setQuizMode] = useState(false);
+  const [quizQuestions, setQuizQuestions] = useState<{ question: string; options: string[]; correct: number }[]>([]);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
 
   const totalSteps = useMemo(
     () => GUIDE_SECTIONS.reduce((total, section) => total + section.steps.length, 0),
@@ -170,6 +179,66 @@ export default function GuidesPage() {
 
       return updated;
     });
+  };
+
+  const startQuiz = () => {
+    // Create quiz questions from guide content
+    const questions = [
+      {
+        question: "What should you inspect before every long ride?",
+        options: ["Tyre pressure, chain slack, and brake feel", "Only tyre pressure", "Only brake feel", "Nothing"],
+        correct: 0,
+      },
+      {
+        question: "How should mirrors be set?",
+        options: ["So shoulders sit just outside the frame", "Completely inside frame", "Doesn't matter", "Only left mirror"],
+        correct: 0,
+      },
+      {
+        question: "When should you use low beam?",
+        options: ["When you sight reflective signboards or approaching vehicles", "Always", "Never", "Only at night"],
+        correct: 0,
+      },
+      {
+        question: "What should you do when first rain hits?",
+        options: ["Slow to walking pace", "Speed up", "Continue normal speed", "Stop immediately"],
+        correct: 0,
+      },
+      {
+        question: "What are the highway helplines?",
+        options: ["1033 and 112", "100 and 101", "911", "108"],
+        correct: 0,
+      },
+    ];
+    setQuizQuestions(questions);
+    setQuizMode(true);
+    setCurrentQuestion(0);
+    setScore(0);
+    setShowResult(false);
+  };
+
+  const handleQuizAnswer = (answerIndex: number) => {
+    if (selectedAnswer !== null) return;
+    setSelectedAnswer(answerIndex);
+    if (answerIndex === quizQuestions[currentQuestion].correct) {
+      setScore(score + 1);
+    }
+  };
+
+  const handleNextQuestion = () => {
+    if (currentQuestion < quizQuestions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+      setSelectedAnswer(null);
+    } else {
+      setShowResult(true);
+    }
+  };
+
+  const handleContinueToCertificate = () => {
+    sessionStorage.setItem("guidesScore", score.toString());
+    sessionStorage.setItem("guidesTotal", quizQuestions.length.toString());
+    sessionStorage.setItem("activityType", "guides");
+    router.push("/certificates/generate");
   };
 
   return (
@@ -238,18 +307,84 @@ export default function GuidesPage() {
         })}
       </div>
 
-      {referenceId && (
+      {referenceId && !quizMode && (
         <Card className="mt-10 bg-green-50 border-green-200">
-          <CardContent className="py-6 text-center space-y-2">
+          <CardContent className="py-6 text-center space-y-4">
             <p className="text-lg font-semibold text-green-800">
               {tc("fantasticRevisitedHabits") || "Fantastic! You consciously revisited every habit in this guide."}
             </p>
             <p className="text-sm text-green-800">
-              {tc("noteCompletionReferenceId") || "Note your completion reference ID and share it with your coordinator if asked."}
+              {tc("noteCompletionReferenceId") || "Now test your knowledge with a quiz to earn a certificate."}
             </p>
-            <Badge variant="default" className="text-base px-4 py-2">
-              {referenceId}
-            </Badge>
+            <Button onClick={startQuiz} className="rs-btn-primary gap-2">
+              Start Quiz
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {quizMode && !showResult && quizQuestions.length > 0 && (
+        <Card className="mt-10">
+          <CardHeader>
+            <CardTitle>Quiz: Test Your Knowledge</CardTitle>
+            <CardDescription>Question {currentQuestion + 1} of {quizQuestions.length}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-lg font-semibold">{quizQuestions[currentQuestion].question}</p>
+            <div className="space-y-2">
+              {quizQuestions[currentQuestion].options.map((option, idx) => {
+                const isSelected = selectedAnswer === idx;
+                const isCorrect = idx === quizQuestions[currentQuestion].correct;
+                const showFeedback = selectedAnswer !== null;
+
+                return (
+                  <Button
+                    key={idx}
+                    onClick={() => handleQuizAnswer(idx)}
+                    disabled={selectedAnswer !== null}
+                    variant={isSelected ? (isCorrect ? "default" : "destructive") : "outline"}
+                    className="w-full text-left justify-start h-auto py-3"
+                  >
+                    <div className="flex items-center gap-3 w-full">
+                      {showFeedback && isSelected && (
+                        isCorrect ? (
+                          <CheckCircle2 className="h-5 w-5 text-white flex-shrink-0" />
+                        ) : (
+                          <XCircle className="h-5 w-5 text-white flex-shrink-0" />
+                        )
+                      )}
+                      <span className="flex-1">{option}</span>
+                    </div>
+                  </Button>
+                );
+              })}
+            </div>
+            {selectedAnswer !== null && (
+              <Button onClick={handleNextQuestion} className="w-full rs-btn-primary">
+                {currentQuestion < quizQuestions.length - 1 ? "Next Question" : "View Results"}
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {showResult && (
+        <Card className="mt-10 bg-emerald-50 border-emerald-200">
+          <CardContent className="py-6 text-center space-y-4">
+            <Trophy className="h-16 w-16 text-yellow-500 mx-auto" />
+            <p className="text-2xl font-bold text-emerald-900">
+              Quiz Complete!
+            </p>
+            <p className="text-3xl font-bold text-emerald-600">
+              {score} / {quizQuestions.length}
+            </p>
+            <p className="text-lg text-slate-600">
+              {Math.round((score / quizQuestions.length) * 100)}%
+            </p>
+            <Button onClick={handleContinueToCertificate} className="rs-btn-primary gap-2">
+              Continue to Certificate
+              <ArrowRight className="h-4 w-4" />
+            </Button>
           </CardContent>
         </Card>
       )}

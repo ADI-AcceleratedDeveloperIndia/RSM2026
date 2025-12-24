@@ -12,7 +12,11 @@ const TARGET_HITBOX = {
 };
 const MENTOR_SIZE = { width: 120, height: 120 };
 
-export default function DrunkDriveSimulation() {
+interface DrunkDriveSimulationProps {
+  onComplete?: () => void;
+}
+
+export default function DrunkDriveSimulation({ onComplete }: DrunkDriveSimulationProps) {
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState<[number, number]>([0, 0]);
   const [mentorPosition, setMentorPosition] = useState<[number, number] | null>(null);
@@ -122,6 +126,11 @@ export default function DrunkDriveSimulation() {
         }
       } catch {
         // non-blocking logging failure
+      }
+      
+      // Call onComplete callback
+      if (onComplete) {
+        onComplete();
       }
     }
 

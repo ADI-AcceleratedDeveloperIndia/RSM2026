@@ -35,12 +35,20 @@ export async function GET(request: NextRequest) {
     // No QR code
     const qrDataUrl = "";
 
-    // Get signature URLs
+    // Get signature URLs - For Karimnagar regional certificates, always include RTA signature
     let rtaSignatureUrl = "";
-    if (certificate.type !== "organiser" && certificate.regionCode) {
-      const sigMap = await SignatureMap.findOne({ regionCode: certificate.regionCode });
+    // Check if this is a regional certificate (activityType is "online" or has eventReferenceId)
+    const isRegionalCertificate = certificate.activityType === "online" || certificate.eventReferenceId;
+    
+    if (certificate.type !== "ORGANIZER" && isRegionalCertificate) {
+      // For Karimnagar, use Padala Rahul's signature
+      // Check SignatureMap first, then fallback to default path
+      const sigMap = await SignatureMap.findOne({ regionCode: "karimnagar" });
       if (sigMap?.signatureUrl) {
         rtaSignatureUrl = sigMap.signatureUrl;
+      } else {
+        // Default Karimnagar RTA signature path (Padala Rahul's signature)
+        rtaSignatureUrl = "/assets/signatures/Official1.png";
       }
     }
 

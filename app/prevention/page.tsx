@@ -5,7 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
+import { useRouter } from "next/navigation";
 import { generateReferenceId } from "@/lib/reference";
+import { Trophy, ArrowRight, CheckCircle2, XCircle } from "lucide-react";
 
 type PreventionSection = {
   id: string;
@@ -110,6 +112,7 @@ type PreventionProgress = Record<string, boolean[]>;
 export default function PreventionPage() {
   const { t } = useTranslation("common");
   const { t: tc } = useTranslation("content");
+  const router = useRouter();
   
   const [progress, setProgress] = useState<PreventionProgress>(() =>
     PREVENTION_SECTIONS.reduce((acc, section) => {
@@ -118,6 +121,12 @@ export default function PreventionPage() {
     }, {} as PreventionProgress)
   );
   const [referenceId, setReferenceId] = useState<string | null>(null);
+  const [quizMode, setQuizMode] = useState(false);
+  const [quizQuestions, setQuizQuestions] = useState<{ question: string; options: string[]; correct: number }[]>([]);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
 
   const totalSteps = useMemo(
     () => PREVENTION_SECTIONS.reduce((total, section) => total + section.steps.length, 0),
@@ -150,6 +159,65 @@ export default function PreventionPage() {
 
       return updated;
     });
+  };
+
+  const startQuiz = () => {
+    const questions = [
+      {
+        question: "What should you check a day in advance?",
+        options: ["Weather, road closures, and festival diversions", "Only weather", "Nothing", "Only road closures"],
+        correct: 0,
+      },
+      {
+        question: "Who should you scan for near crossings?",
+        options: ["School vans, senior citizens, and differently-abled persons", "Only school vans", "No one", "Only cyclists"],
+        correct: 0,
+      },
+      {
+        question: "How often should you check brake pads and wipers?",
+        options: ["Monthly", "Yearly", "Never", "Weekly"],
+        correct: 0,
+      },
+      {
+        question: "Where should you place reflective triangles at night?",
+        options: ["50 metres behind your vehicle", "10 metres", "5 metres", "Doesn't matter"],
+        correct: 0,
+      },
+      {
+        question: "What should you do first after an incident?",
+        options: ["Call for medical help before sharing on social media", "Share on social media", "Nothing", "Run away"],
+        correct: 0,
+      },
+    ];
+    setQuizQuestions(questions);
+    setQuizMode(true);
+    setCurrentQuestion(0);
+    setScore(0);
+    setShowResult(false);
+  };
+
+  const handleQuizAnswer = (answerIndex: number) => {
+    if (selectedAnswer !== null) return;
+    setSelectedAnswer(answerIndex);
+    if (answerIndex === quizQuestions[currentQuestion].correct) {
+      setScore(score + 1);
+    }
+  };
+
+  const handleNextQuestion = () => {
+    if (currentQuestion < quizQuestions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+      setSelectedAnswer(null);
+    } else {
+      setShowResult(true);
+    }
+  };
+
+  const handleContinueToCertificate = () => {
+    sessionStorage.setItem("preventionScore", score.toString());
+    sessionStorage.setItem("preventionTotal", quizQuestions.length.toString());
+    sessionStorage.setItem("activityType", "prevention");
+    router.push("/certificates/generate");
   };
 
   return (
@@ -217,18 +285,84 @@ export default function PreventionPage() {
         })}
       </div>
 
-      {referenceId && (
+      {referenceId && !quizMode && (
         <Card className="mt-10 bg-amber-50 border-amber-200">
-          <CardContent className="py-6 text-center space-y-2">
+          <CardContent className="py-6 text-center space-y-4">
             <p className="text-lg font-semibold text-amber-900">
               {tc("thankYouForPledging") || "Thank you for pledging to prevent incidents before they occur."}
             </p>
             <p className="text-sm text-amber-900">
-              {tc("preventionReferenceIdCanBeShared") || "Your prevention reference ID can be shared with campaign coordinators or event leads."}
+              {tc("preventionReferenceIdCanBeShared") || "Now test your knowledge with a quiz to earn a certificate."}
             </p>
-            <Badge variant="secondary" className="text-base px-4 py-2">
-              {referenceId}
-            </Badge>
+            <Button onClick={startQuiz} className="rs-btn-primary gap-2">
+              Start Quiz
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {quizMode && !showResult && quizQuestions.length > 0 && (
+        <Card className="mt-10">
+          <CardHeader>
+            <CardTitle>Quiz: Test Your Knowledge</CardTitle>
+            <CardDescription>Question {currentQuestion + 1} of {quizQuestions.length}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-lg font-semibold">{quizQuestions[currentQuestion].question}</p>
+            <div className="space-y-2">
+              {quizQuestions[currentQuestion].options.map((option, idx) => {
+                const isSelected = selectedAnswer === idx;
+                const isCorrect = idx === quizQuestions[currentQuestion].correct;
+                const showFeedback = selectedAnswer !== null;
+
+                return (
+                  <Button
+                    key={idx}
+                    onClick={() => handleQuizAnswer(idx)}
+                    disabled={selectedAnswer !== null}
+                    variant={isSelected ? (isCorrect ? "default" : "destructive") : "outline"}
+                    className="w-full text-left justify-start h-auto py-3"
+                  >
+                    <div className="flex items-center gap-3 w-full">
+                      {showFeedback && isSelected && (
+                        isCorrect ? (
+                          <CheckCircle2 className="h-5 w-5 text-white flex-shrink-0" />
+                        ) : (
+                          <XCircle className="h-5 w-5 text-white flex-shrink-0" />
+                        )
+                      )}
+                      <span className="flex-1">{option}</span>
+                    </div>
+                  </Button>
+                );
+              })}
+            </div>
+            {selectedAnswer !== null && (
+              <Button onClick={handleNextQuestion} className="w-full rs-btn-primary">
+                {currentQuestion < quizQuestions.length - 1 ? "Next Question" : "View Results"}
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {showResult && (
+        <Card className="mt-10 bg-emerald-50 border-emerald-200">
+          <CardContent className="py-6 text-center space-y-4">
+            <Trophy className="h-16 w-16 text-yellow-500 mx-auto" />
+            <p className="text-2xl font-bold text-emerald-900">
+              Quiz Complete!
+            </p>
+            <p className="text-3xl font-bold text-emerald-600">
+              {score} / {quizQuestions.length}
+            </p>
+            <p className="text-lg text-slate-600">
+              {Math.round((score / quizQuestions.length) * 100)}%
+            </p>
+            <Button onClick={handleContinueToCertificate} className="rs-btn-primary gap-2">
+              Continue to Certificate
+              <ArrowRight className="h-4 w-4" />
+            </Button>
           </CardContent>
         </Card>
       )}

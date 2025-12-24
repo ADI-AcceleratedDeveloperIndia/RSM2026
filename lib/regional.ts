@@ -1,24 +1,16 @@
-export interface RegionalAuthority {
-  code: string;
-  district: string;
-  officerName: string;
-  officerTitle: string;
-  photo: string;
-  description: string;
-}
+// Karimnagar-only configuration
+export const DISTRICT_NAME = "Karimnagar";
+export const OFFICER_NAME = "Sri Padala Rahul Garu";
+export const OFFICER_TITLE = "Regional Transport Authority Member, Karimnagar";
+export const OFFICER_PHOTO = "/assets/leadership/Karimnagarrtamemberpadalarahul.webp";
 
-export const REGIONAL_AUTHORITIES: Record<string, RegionalAuthority> = {
-  karimnagar: {
-    code: "karimnagar",
-    district: "Karimnagar",
-    officerName: "Sri Padala Rahul Garu",
-    officerTitle: "Regional Transport Authority Member, Karimnagar",
-    photo: "/assets/leadership/Karimnagarrtamemberpadalarahul.webp",
-    description:
-      "Leads district-wide enforcement and awareness drives focusing on student community road safety pledges and compliance.",
-  },
-};
-
-export const getRegionalAuthority = (code: string | null | undefined) =>
-  code ? REGIONAL_AUTHORITIES[code.toLowerCase()] : undefined;
+// Single district - no need for multiple authorities
+export const getRegionalAuthority = () => ({
+  code: "karimnagar",
+  district: DISTRICT_NAME,
+  officerName: OFFICER_NAME,
+  officerTitle: OFFICER_TITLE,
+  photo: OFFICER_PHOTO,
+  description: "Leads district-wide enforcement and awareness drives focusing on student community road safety pledges and compliance.",
+});
 

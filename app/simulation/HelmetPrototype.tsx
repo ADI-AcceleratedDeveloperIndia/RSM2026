@@ -12,7 +12,11 @@ const HEAD_HITBOX = {
 };
 const HELMET_SIZE = { width: 100, height: 80 };
 
-export default function HelmetPrototype() {
+interface HelmetPrototypeProps {
+  onComplete?: () => void;
+}
+
+export default function HelmetPrototype({ onComplete }: HelmetPrototypeProps) {
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState<[number, number]>([0, 0]);
   const [helmetPosition, setHelmetPosition] = useState<[number, number] | null>(null);
@@ -132,6 +136,11 @@ export default function HelmetPrototype() {
           }
         } catch {
           // Ignore logging errors so the learner experience is not interrupted
+        }
+        
+        // Call onComplete callback
+        if (onComplete) {
+          onComplete();
         }
       }
 

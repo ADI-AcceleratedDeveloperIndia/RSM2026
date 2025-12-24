@@ -12,7 +12,11 @@ const TARGET_HITBOX = {
 };
 const DISCIPLINE_SIZE = { width: 120, height: 100 };
 
-export default function TripleRidingSimulation() {
+interface TripleRidingSimulationProps {
+  onComplete?: () => void;
+}
+
+export default function TripleRidingSimulation({ onComplete }: TripleRidingSimulationProps) {
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState<[number, number]>([0, 0]);
   const [disciplinePosition, setDisciplinePosition] = useState<[number, number] | null>(null);
@@ -144,6 +148,11 @@ export default function TripleRidingSimulation() {
           }
         } catch {
           // Non-blocking if logging fails
+        }
+        
+        // Call onComplete callback
+        if (onComplete) {
+          onComplete();
         }
       }
 
