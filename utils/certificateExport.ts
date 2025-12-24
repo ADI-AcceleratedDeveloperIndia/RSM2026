@@ -7,19 +7,20 @@ export async function exportCertificateToPdf(element: HTMLElement, fileName: str
     throw new Error("Certificate element not found");
   }
 
-  // Wait for images to load
+  // Wait for images to load (with shorter timeout)
   const images = element.querySelectorAll("img");
   await Promise.all(
     Array.from(images).map(
       (img) =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve) => {
           if (img.complete) {
             resolve();
             return;
           }
           const timeout = setTimeout(() => {
-            reject(new Error("Image load timeout"));
-          }, 10000); // 10 second timeout per image
+            // Continue even if image times out
+            resolve();
+          }, 3000); // 3 second timeout per image (reduced from 10)
           img.onload = () => {
             clearTimeout(timeout);
             resolve();
@@ -38,7 +39,8 @@ export async function exportCertificateToPdf(element: HTMLElement, fileName: str
 
   const html2canvas = html2canvasModule.default ?? html2canvasModule;
 
-  const scale = 2.5;
+  // Reduced scale for faster generation (2.0 instead of 2.5)
+  const scale = 2.0;
 
   // Add timeout to html2canvas operation (30 seconds)
   const canvasPromise = html2canvas(element, {
@@ -93,14 +95,14 @@ export async function exportCertificateToPdf(element: HTMLElement, fileName: str
     },
   });
 
-  // Add overall timeout wrapper
+  // Add overall timeout wrapper (increased to 45 seconds for slower devices)
   const timeoutPromise = new Promise<never>((_, reject) => {
-    setTimeout(() => reject(new Error("PDF generation timed out after 30 seconds")), 30000);
+    setTimeout(() => reject(new Error("PDF generation timed out after 45 seconds")), 45000);
   });
 
   const canvas = await Promise.race([canvasPromise, timeoutPromise]);
 
-  const imgData = canvas.toDataURL("image/png", 0.95); // Slightly lower quality for faster processing
+  const imgData = canvas.toDataURL("image/png", 0.9); // Lower quality (0.9) for faster processing
 
   const pxToPt = (px: number) => (px * 72) / 96;
   const pdfWidth = pxToPt(canvas.width);
