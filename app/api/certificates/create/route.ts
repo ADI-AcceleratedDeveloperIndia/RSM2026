@@ -84,12 +84,12 @@ export async function POST(request: NextRequest) {
     let attempts = 0;
     let certificate;
     let certificateId: string | null = null;
-    const maxAttempts = 5; // Reduced retries for faster response
-    const maxRetryDelay = 200; // Maximum 200ms delay per retry
+    const maxAttempts = 10; // Increased retries for better reliability
+    const maxRetryDelay = 300; // Maximum 300ms delay per retry
     
     while (attempts < maxAttempts) {
       try {
-        // Use a transaction-like approach: find and increment atomically
+        // Find the last certificate number for this type
         const lastCert = await Certificate.findOne({ type: validated.type })
           .sort({ certificateNumber: -1 })
           .select('certificateNumber')
@@ -107,7 +107,25 @@ export async function POST(request: NextRequest) {
           );
         }
 
+        // Generate unique certificate ID
         certificateId = generateCertificateNumber(validated.type, nextCertNumber);
+        
+        // Check if certificateId already exists (extra safety check)
+        const existingCert = await Certificate.findOne({ certificateId }).lean();
+        if (existingCert) {
+          attempts++;
+          if (attempts >= maxAttempts) {
+            return NextResponse.json(
+              { error: "Certificate ID collision. Please try again." },
+              { status: 500 }
+            );
+          }
+          // Add random jitter to avoid simultaneous retries
+          const delay = Math.min(100 * attempts + Math.random() * 100, maxRetryDelay);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
+        }
+
         const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
         const userIpHash = hashIp(ip);
 
@@ -131,15 +149,10 @@ export async function POST(request: NextRequest) {
         break; // Success, exit retry loop
       } catch (saveError: any) {
         // Check if it's a duplicate key error (E11000)
-        // This can be from certificateId (unique) or compound index (type + certificateNumber)
         const isDuplicateKeyError = 
-          saveError.code === 11000 && (
-            saveError.keyPattern?.certificateId || 
-            saveError.keyPattern?.certificateNumber || 
-            (saveError.keyPattern?.type && saveError.keyPattern?.certificateNumber) ||
-            saveError.message?.includes('duplicate key') ||
-            saveError.message?.includes('E11000')
-          );
+          saveError.code === 11000 || 
+          saveError.message?.includes('duplicate key') ||
+          saveError.message?.includes('E11000');
         
         if (isDuplicateKeyError) {
           attempts++;
@@ -148,6 +161,7 @@ export async function POST(request: NextRequest) {
               error: saveError.message,
               code: saveError.code,
               keyPattern: saveError.keyPattern,
+              keyValue: saveError.keyValue,
               attempts
             });
             return NextResponse.json(
@@ -155,8 +169,8 @@ export async function POST(request: NextRequest) {
               { status: 500 }
             );
           }
-          // Faster retry with smaller delays (max 200ms)
-          const delay = Math.min(50 * attempts, maxRetryDelay);
+          // Exponential backoff with jitter
+          const delay = Math.min(50 * Math.pow(1.5, attempts) + Math.random() * 50, maxRetryDelay);
           await new Promise(resolve => setTimeout(resolve, delay));
           continue;
         }
@@ -164,6 +178,7 @@ export async function POST(request: NextRequest) {
         console.error("Certificate creation error (non-duplicate):", {
           error: saveError.message,
           code: saveError.code,
+          name: saveError.name,
           stack: saveError.stack
         });
         throw saveError;
@@ -171,8 +186,13 @@ export async function POST(request: NextRequest) {
     }
 
     if (!certificate || !certificateId) {
+      console.error("Certificate creation failed: certificate or certificateId is null", {
+        attempts,
+        certificate: !!certificate,
+        certificateId
+      });
       return NextResponse.json(
-        { error: "Failed to create certificate" },
+        { error: "Failed to create certificate. Please try again." },
         { status: 500 }
       );
     }
