@@ -1,12 +1,11 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import Certificate, { CertificateData } from "@/components/certificates/Certificate";
 import { getRegionalAuthority } from "@/lib/regional";
-import { exportCertificateToPdf } from "@/utils/certificateExport";
 import { Download, ArrowLeft, Award, Loader2 } from "lucide-react";
 
 function LoadingFallback() {
@@ -32,11 +31,11 @@ function CertificatePreviewContent() {
   const { t: tc } = useTranslation("content");
   const router = useRouter();
   const searchParams = useSearchParams();
-  const certificateRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const [certificateData, setCertificateData] = useState<CertificateData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [downloadSignature, setDownloadSignature] = useState<string | null>(null);
 
   useEffect(() => {
     const certId = searchParams.get("certId");
@@ -75,6 +74,9 @@ function CertificatePreviewContent() {
               photo: regionalAuthority.photo,
             } : undefined,
           });
+          if (data.signature) {
+            setDownloadSignature(data.signature);
+          }
         } else {
           router.replace("/certificates/generate");
         }
@@ -87,37 +89,31 @@ function CertificatePreviewContent() {
   }, [searchParams, router, i18n.language]);
 
   const handleDownload = async () => {
-    if (!certificateRef.current || isDownloading || !certificateData) return;
+    if (isDownloading || !certificateData) return;
     setIsDownloading(true);
     setDownloadError(null);
 
     try {
-      // Check if certificate element exists and is visible
-      if (!certificateRef.current) {
-        throw new Error("Certificate element not found");
+      const certId = certificateData.referenceId;
+      if (!certId || !downloadSignature) {
+        throw new Error("Missing download signature");
       }
-      
-      // Small delay to ensure rendering is complete
-      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-
-      await exportCertificateToPdf(
-        certificateRef.current,
-        `${certificateData.fullName.replace(/\s+/g, "_")}_certificate.png`
-      );
+      const url = `/api/certificates/download?cid=${encodeURIComponent(certId)}&sig=${encodeURIComponent(downloadSignature)}`;
+      window.open(url, "_blank");
     } catch (error: any) {
       console.error("Certificate download failed:", error);
       const errorMessage = error?.message || "Unknown error";
       if (errorMessage.includes("timeout") || errorMessage.includes("timed out")) {
         setDownloadError(
           i18n.language === "te" 
-            ? "PNG సృష్టి చాలా సమయం తీసుకుంటోంది. దయచేసి మళ్లీ ప్రయత్నించండి."
-            : "PNG generation is taking too long. Please try again."
+            ? "PDF సృష్టి చాలా సమయం తీసుకుంటోంది. దయచేసి మళ్లీ ప్రయత్నించండి."
+            : "PDF generation is taking too long. Please try again."
         );
       } else {
         setDownloadError(
           i18n.language === "te"
-            ? "PNG సృష్టించలేకపోయింది. దయచేసి కొన్ని సెకన్ల తర్వాత మళ్లీ ప్రయత్నించండి."
-            : "Could not generate the PNG. Please retry after a few seconds."
+            ? "PDF సృష్టించలేకపోయింది. దయచేసి కొన్ని సెకన్ల తర్వాత మళ్లీ ప్రయత్నించండి."
+            : "Could not generate the PDF. Please retry after a few seconds."
         );
       }
     } finally {
@@ -162,11 +158,11 @@ function CertificatePreviewContent() {
             {isDownloading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />{" "}
-                {i18n.language === "te" ? "PNG సృష్టిస్తోంది..." : "Generating PNG..."}
+                {i18n.language === "te" ? "PDF సృష్టిస్తోంది..." : "Generating PDF..."}
               </>
             ) : (
               <>
-                <Download className="h-4 w-4" /> {i18n.language === "te" ? "PNG డౌన్‌లోడ్" : "Download PNG"}
+                <Download className="h-4 w-4" /> {i18n.language === "te" ? "PDF డౌన్‌లోడ్" : "Download PDF"}
               </>
             )}
           </Button>
@@ -180,7 +176,7 @@ function CertificatePreviewContent() {
       )}
 
       <div className="rounded-2xl sm:rounded-3xl border border-emerald-100 bg-slate-100/80 p-2 sm:p-4 md:p-8 shadow-inner overflow-x-auto">
-        <Certificate ref={certificateRef} data={certificateData} />
+        <Certificate data={certificateData} />
       </div>
     </div>
   );
