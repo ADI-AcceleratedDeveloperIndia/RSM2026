@@ -84,8 +84,8 @@ export async function POST(request: NextRequest) {
     let attempts = 0;
     let certificate;
     let certificateId: string | null = null;
-    const maxAttempts = 10; // Increased retries for better reliability
-    const maxRetryDelay = 300; // Maximum 300ms delay per retry
+    const maxAttempts = 15; // Increased retries for better reliability
+    const baseDelay = 25; // Base delay in ms
     
     while (attempts < maxAttempts) {
       try {
@@ -115,14 +115,19 @@ export async function POST(request: NextRequest) {
         if (existingCert) {
           attempts++;
           if (attempts >= maxAttempts) {
+            console.error("Certificate ID collision after max attempts:", {
+              certificateId,
+              attempts,
+              type: validated.type
+            });
             return NextResponse.json(
-              { error: "Certificate ID collision. Please try again." },
+              { error: "Certificate creation is busy. Please try again in a moment." },
               { status: 500 }
             );
           }
-          // Add random jitter to avoid simultaneous retries
-          const delay = Math.min(100 * attempts + Math.random() * 100, maxRetryDelay);
-          await new Promise(resolve => setTimeout(resolve, delay));
+          // Exponential backoff with jitter
+          const delay = baseDelay * Math.pow(2, attempts) + Math.random() * 50;
+          await new Promise(resolve => setTimeout(resolve, Math.min(delay, 500)));
           continue;
         }
 
@@ -162,16 +167,18 @@ export async function POST(request: NextRequest) {
               code: saveError.code,
               keyPattern: saveError.keyPattern,
               keyValue: saveError.keyValue,
-              attempts
+              attempts,
+              type: validated.type,
+              certificateId
             });
             return NextResponse.json(
               { error: "Certificate creation is busy. Please try again in a moment." },
               { status: 500 }
             );
           }
-          // Exponential backoff with jitter
-          const delay = Math.min(50 * Math.pow(1.5, attempts) + Math.random() * 50, maxRetryDelay);
-          await new Promise(resolve => setTimeout(resolve, delay));
+          // Exponential backoff with jitter - more aggressive
+          const delay = baseDelay * Math.pow(2, attempts) + Math.random() * 100;
+          await new Promise(resolve => setTimeout(resolve, Math.min(delay, 500)));
           continue;
         }
         // If it's not a duplicate key error, log and throw it
@@ -179,7 +186,8 @@ export async function POST(request: NextRequest) {
           error: saveError.message,
           code: saveError.code,
           name: saveError.name,
-          stack: saveError.stack
+          stack: saveError.stack,
+          type: validated.type
         });
         throw saveError;
       }
