@@ -91,7 +91,18 @@ function CertificatePreviewContent() {
   }, [searchParams, router, i18n.language]);
 
   const handleDownload = async () => {
-    if (isDownloading || !certificateData || !certificateRef.current) return;
+    if (isDownloading || !certificateData) {
+      console.log("Download blocked:", { isDownloading, hasData: !!certificateData });
+      return;
+    }
+    
+    if (!certificateRef.current) {
+      console.error("Certificate ref is null");
+      setDownloadError("Certificate element not found. Please refresh the page.");
+      return;
+    }
+
+    console.log("Starting PDF download...");
     setIsDownloading(true);
     setDownloadError(null);
 
@@ -99,14 +110,18 @@ function CertificatePreviewContent() {
       const certId = certificateData.referenceId || "certificate";
       const fileName = `certificate-${certId}.pdf`;
       
+      console.log("Calling exportCertificateToPdf with:", { fileName, hasElement: !!certificateRef.current });
+      
       // Use client-side PDF generation
       await exportCertificateToPdf(certificateRef.current, fileName);
+      
+      console.log("PDF download completed successfully");
     } catch (error: any) {
       console.error("Certificate download failed:", error);
       setDownloadError(
         i18n.language === "te"
           ? "PDF సృష్టించలేకపోయింది. దయచేసి మళ్లీ ప్రయత్నించండి."
-          : "Failed to generate PDF. Please try again."
+          : `Failed to generate PDF: ${error?.message || "Unknown error"}`
       );
     } finally {
       setIsDownloading(false);
@@ -168,7 +183,9 @@ function CertificatePreviewContent() {
       )}
 
       <div className="rounded-2xl sm:rounded-3xl border border-emerald-100 bg-slate-100/80 p-2 sm:p-4 md:p-8 shadow-inner overflow-x-auto">
-        <Certificate data={certificateData} />
+        <div ref={certificateRef}>
+          <Certificate data={certificateData} />
+        </div>
       </div>
     </div>
   );
