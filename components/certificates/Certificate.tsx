@@ -40,6 +40,7 @@ export interface CertificateData {
   issueDate: string;
   email?: string;
   score?: string;
+  total?: string;
   details?: string;
   eventName?: string;
   referenceId?: string;
