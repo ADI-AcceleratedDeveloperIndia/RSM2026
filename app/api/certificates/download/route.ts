@@ -9,8 +9,7 @@ import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 
 // Configure Chromium for serverless environments
-chromium.setGraphicsMode(false);
-chromium.setHeadlessMode(true);
+chromium.setGraphicsMode = false;
 
 // Check if we're in a serverless environment (Vercel)
 const isServerless = process.env.VERCEL === "1" || process.env.AWS_LAMBDA_FUNCTION_NAME;
