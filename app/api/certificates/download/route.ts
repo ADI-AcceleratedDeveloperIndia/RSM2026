@@ -8,7 +8,12 @@ import { verifyCertificateUrl } from "@/lib/hmac";
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 
-chromium.setGraphicsMode = false;
+// Configure Chromium for serverless environments
+chromium.setGraphicsMode(false);
+chromium.setHeadlessMode(true);
+
+// Check if we're in a serverless environment (Vercel)
+const isServerless = process.env.VERCEL === "1" || process.env.AWS_LAMBDA_FUNCTION_NAME;
 
 export async function GET(request: NextRequest) {
   try {
@@ -81,12 +86,47 @@ export async function GET(request: NextRequest) {
 
     // Set timeout for PDF generation (30 seconds max)
     const pdfGenerationPromise = (async () => {
+      // Configure Chromium args for serverless
+      const chromiumArgs = isServerless 
+        ? [
+            ...chromium.args,
+            "--disable-gpu",
+            "--disable-dev-shm-usage",
+            "--disable-setuid-sandbox",
+            "--no-first-run",
+            "--no-sandbox",
+            "--no-zygote",
+            "--single-process",
+            "--disable-extensions",
+            "--disable-background-networking",
+            "--disable-background-timer-throttling",
+            "--disable-backgrounding-occluded-windows",
+            "--disable-breakpad",
+            "--disable-client-side-phishing-detection",
+            "--disable-default-apps",
+            "--disable-features=TranslateUI",
+            "--disable-hang-monitor",
+            "--disable-ipc-flooding-protection",
+            "--disable-popup-blocking",
+            "--disable-prompt-on-repost",
+            "--disable-renderer-backgrounding",
+            "--disable-sync",
+            "--disable-translate",
+            "--metrics-recording-only",
+            "--no-default-browser-check",
+            "--safebrowsing-disable-auto-update",
+            "--enable-automation",
+            "--password-store=basic",
+            "--use-mock-keychain",
+          ]
+        : chromium.args;
+
       const browser = await puppeteer.launch({
-        args: chromium.args,
+        args: chromiumArgs,
         defaultViewport: chromium.defaultViewport,
-        executablePath: await chromium.executablePath(),
+        executablePath: isServerless ? await chromium.executablePath() : undefined,
         headless: true,
-        timeout: 30000, // 30 second timeout
+        timeout: 30000,
       });
 
       try {
