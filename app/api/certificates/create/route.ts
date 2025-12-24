@@ -80,60 +80,37 @@ export async function POST(request: NextRequest) {
       eventTitle = activityEventTitles[validated.activityType] || "Online Road Safety Event";
     }
 
-    // Get next certificate number for this type with retry logic for race conditions
-    let attempts = 0;
+    // Get next certificate number for this type - simplified approach
+    const lastCert = await Certificate.findOne({ type: validated.type })
+      .sort({ certificateNumber: -1 })
+      .select('certificateNumber')
+      .lean() as { certificateNumber?: number } | null;
+    
+    let nextCertNumber = 1;
+    if (lastCert && typeof lastCert.certificateNumber === 'number') {
+      nextCertNumber = lastCert.certificateNumber + 1;
+    }
+
+    if (nextCertNumber > 100000) {
+      return NextResponse.json(
+        { error: "Maximum certificate limit reached for this type" },
+        { status: 400 }
+      );
+    }
+
+    // Generate unique certificate ID
+    const certificateId = generateCertificateNumber(validated.type, nextCertNumber);
+    
+    const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
+    const userIpHash = hashIp(ip);
+
+    // Try to create certificate with simple retry on duplicate key error
     let certificate;
-    let certificateId: string | null = null;
-    const maxAttempts = 15; // Increased retries for better reliability
-    const baseDelay = 25; // Base delay in ms
+    let attempts = 0;
+    const maxAttempts = 5;
     
     while (attempts < maxAttempts) {
       try {
-        // Find the last certificate number for this type
-        const lastCert = await Certificate.findOne({ type: validated.type })
-          .sort({ certificateNumber: -1 })
-          .select('certificateNumber')
-          .lean() as { certificateNumber?: number } | null;
-        
-        let nextCertNumber = 1;
-        if (lastCert && typeof lastCert.certificateNumber === 'number') {
-          nextCertNumber = lastCert.certificateNumber + 1;
-        }
-
-        if (nextCertNumber > 100000) {
-          return NextResponse.json(
-            { error: "Maximum certificate limit reached for this type" },
-            { status: 400 }
-          );
-        }
-
-        // Generate unique certificate ID
-        certificateId = generateCertificateNumber(validated.type, nextCertNumber);
-        
-        // Check if certificateId already exists (extra safety check)
-        const existingCert = await Certificate.findOne({ certificateId }).lean();
-        if (existingCert) {
-          attempts++;
-          if (attempts >= maxAttempts) {
-            console.error("Certificate ID collision after max attempts:", {
-              certificateId,
-              attempts,
-              type: validated.type
-            });
-            return NextResponse.json(
-              { error: "Certificate creation is busy. Please try again in a moment." },
-              { status: 500 }
-            );
-          }
-          // Exponential backoff with jitter
-          const delay = baseDelay * Math.pow(2, attempts) + Math.random() * 50;
-          await new Promise(resolve => setTimeout(resolve, Math.min(delay, 500)));
-          continue;
-        }
-
-        const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
-        const userIpHash = hashIp(ip);
-
         certificate = new Certificate({
           certificateId,
           certificateNumber: nextCertNumber,
@@ -151,7 +128,7 @@ export async function POST(request: NextRequest) {
         });
 
         await certificate.save();
-        break; // Success, exit retry loop
+        break; // Success
       } catch (saveError: any) {
         // Check if it's a duplicate key error (E11000)
         const isDuplicateKeyError = 
@@ -159,46 +136,40 @@ export async function POST(request: NextRequest) {
           saveError.message?.includes('duplicate key') ||
           saveError.message?.includes('E11000');
         
-        if (isDuplicateKeyError) {
+        if (isDuplicateKeyError && attempts < maxAttempts - 1) {
           attempts++;
-          if (attempts >= maxAttempts) {
-            console.error("Certificate creation failed after retries:", {
-              error: saveError.message,
-              code: saveError.code,
-              keyPattern: saveError.keyPattern,
-              keyValue: saveError.keyValue,
-              attempts,
-              type: validated.type,
-              certificateId
-            });
-            return NextResponse.json(
-              { error: "Certificate creation is busy. Please try again in a moment." },
-              { status: 500 }
-            );
-          }
-          // Exponential backoff with jitter - more aggressive
-          const delay = baseDelay * Math.pow(2, attempts) + Math.random() * 100;
-          await new Promise(resolve => setTimeout(resolve, Math.min(delay, 500)));
+          // Get fresh certificate number
+          const freshLastCert = await Certificate.findOne({ type: validated.type })
+            .sort({ certificateNumber: -1 })
+            .select('certificateNumber')
+            .lean() as { certificateNumber?: number } | null;
+          
+          nextCertNumber = (freshLastCert && typeof freshLastCert.certificateNumber === 'number') 
+            ? freshLastCert.certificateNumber + 1 
+            : 1;
+          
+          // Regenerate certificate ID with new number
+          const newCertificateId = generateCertificateNumber(validated.type, nextCertNumber);
+          certificateId = newCertificateId;
+          
+          // Small delay before retry
+          await new Promise(resolve => setTimeout(resolve, 50 + Math.random() * 50));
           continue;
         }
-        // If it's not a duplicate key error, log and throw it
-        console.error("Certificate creation error (non-duplicate):", {
+        
+        // If not a duplicate key error or max attempts reached, throw
+        console.error("Certificate creation error:", {
           error: saveError.message,
           code: saveError.code,
           name: saveError.name,
-          stack: saveError.stack,
+          attempts,
           type: validated.type
         });
         throw saveError;
       }
     }
 
-    if (!certificate || !certificateId) {
-      console.error("Certificate creation failed: certificate or certificateId is null", {
-        attempts,
-        certificate: !!certificate,
-        certificateId
-      });
+    if (!certificate) {
       return NextResponse.json(
         { error: "Failed to create certificate. Please try again." },
         { status: 500 }
