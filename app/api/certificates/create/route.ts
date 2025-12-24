@@ -208,11 +208,23 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       console.error("Certificate validation error:", error.errors);
-      return NextResponse.json({ error: error.errors }, { status: 400 });
+      return NextResponse.json({ 
+        error: "Invalid certificate data",
+        details: error.errors 
+      }, { status: 400 });
     }
-    console.error("Certificate creation error:", error);
+    
+    // Log full error details for debugging
+    console.error("Certificate creation error:", {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      error: error
+    });
+    
     const errorMessage = error instanceof Error ? error.message : "Failed to create certificate";
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return NextResponse.json({ 
+      error: errorMessage || "Failed to create certificate. Please try again." 
+    }, { status: 500 });
   }
 }
 
