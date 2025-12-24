@@ -23,27 +23,11 @@ Add these environment variables in your Vercel project settings:
    - Your app's origin URL (defaults to `http://localhost:3000`)
    - Example: `https://your-domain.vercel.app`
 
-5. **ADMIN_EMAIL**
-   - Admin login email (defaults to `admin@example.com`)
-
-6. **ADMIN_PASSWORD**
-   - Admin login password (defaults to `changeMeNow!`)
-
-7. **CERT_HMAC_SECRET**
+5. **CERT_HMAC_SECRET**
    - Secret for HMAC certificate URL signing
    - Generate with: `openssl rand -base64 32`
 
-8. **MINISTER_NAME**
-   - Minister's name for certificates (defaults to `Ponnam Prabhakar`)
-
-9. **MINISTER_TITLE**
-   - Minister's title (defaults to `Hon'ble Cabinet Minister`)
-
-10. **PRINCIPAL_SECRETARY_NAME**
-    - Principal Secretary name (defaults to `Principal Secretary`)
-
-11. **PRINCIPAL_SECRETARY_TITLE**
-    - Principal Secretary title (defaults to `Principal Secretary, Transport Department`)
+**Note:** Minister and Secretary names are already hardcoded in the application, so they don't need to be set as environment variables.
 
 ## How to Add in Vercel
 

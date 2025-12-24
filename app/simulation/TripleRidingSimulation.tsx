@@ -250,6 +250,8 @@ export default function TripleRidingSimulation({ onComplete }: TripleRidingSimul
                       ? "/media/simulation%20media/helmet%20wearing/helmet.png"
                       : draggedItem === "discipline"
                       ? "/media/simulation%20media/triple%20riding/discipline.png"
+                      : draggedItem === "speedometer"
+                      ? "/media/simulation%20media/overspeed/drag%20speedometer.png"
                       : "/media/simulation%20media/drunkndrive/soberman.png"
                   }
                   alt={draggedItem}

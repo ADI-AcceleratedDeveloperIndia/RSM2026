@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
-import { Presentation } from "lucide-react";
+import { Presentation, BookOpen } from "lucide-react";
 
 
 export default function SiteFooter() {
@@ -20,6 +20,15 @@ export default function SiteFooter() {
     if (typeof window !== "undefined") {
       localStorage.setItem("i18nextLng", lng);
     }
+  };
+
+  const handleDownloadStudyMaterial = () => {
+    const link = document.createElement("a");
+    link.href = "/assets/Road_Safety_Study_Material.pdf";
+    link.download = "Road_Safety_Study_Material.pdf";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const quickLinks = [
@@ -175,6 +184,13 @@ export default function SiteFooter() {
               <Presentation className="h-4 w-4" />
               {t("presentation") || "Presentation"}
             </a>
+            <button
+              onClick={handleDownloadStudyMaterial}
+              className="rs-btn-secondary text-sm gap-2 inline-flex items-center hover:bg-emerald-700 transition-colors"
+            >
+              <BookOpen className="h-4 w-4" />
+              {t("studyMaterial") || "Study Material"}
+            </button>
           </div>
           <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400">
             <p className="font-medium">{t("driveSafe")}</p>

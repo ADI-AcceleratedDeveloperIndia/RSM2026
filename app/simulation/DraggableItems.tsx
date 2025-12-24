@@ -27,6 +27,11 @@ export default function DraggableItems({ onDragStart, isCompleted, correctItemTy
       image: "/media/simulation%20media/drunkndrive/soberman.png",
       label: "Non-Drunk Person",
     },
+    {
+      type: "speedometer",
+      image: "/media/simulation%20media/overspeed/drag%20speedometer.png",
+      label: "Speedometer",
+    },
   ];
 
   const handleItemClick = (e: React.PointerEvent, itemType: string) => {

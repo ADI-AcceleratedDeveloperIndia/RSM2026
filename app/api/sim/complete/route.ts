@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { sceneId, success, attempts, seconds } = body;
 
-    if (!sceneId || typeof success !== "boolean" || !attempts || !seconds) {
+    if (!sceneId || typeof success !== "boolean" || typeof attempts !== "number" || typeof seconds !== "number") {
       return NextResponse.json({ error: "Invalid data" }, { status: 400 });
     }
 

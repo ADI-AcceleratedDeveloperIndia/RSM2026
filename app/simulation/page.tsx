@@ -9,7 +9,8 @@ import { useTranslation } from "react-i18next";
 import HelmetPrototype from "./HelmetPrototype";
 import TripleRidingSimulation from "./TripleRidingSimulation";
 import DrunkDriveSimulation from "./DrunkDriveSimulation";
-import { BrainCircuit, Sparkles, ShieldCheck, WineOff, Trophy, ArrowRight } from "lucide-react";
+import OverspeedSimulation from "./OverspeedSimulation";
+import { BrainCircuit, Sparkles, ShieldCheck, WineOff, Trophy, ArrowRight, Gauge } from "lucide-react";
 
 export default function SimulationPage() {
   const { t, i18n } = useTranslation("common");
@@ -23,14 +24,16 @@ export default function SimulationPage() {
     const helmet = sessionStorage.getItem("sim_helmet_completed");
     const triple = sessionStorage.getItem("sim_triple_completed");
     const drunk = sessionStorage.getItem("sim_drunk_completed");
+    const overspeed = sessionStorage.getItem("sim_overspeed_completed");
     
     const completed = new Set<string>();
     if (helmet) completed.add("helmet");
     if (triple) completed.add("triple");
     if (drunk) completed.add("drunk");
+    if (overspeed) completed.add("overspeed");
     
     setCompletedSims(completed);
-    setAllCompleted(completed.size === 3);
+    setAllCompleted(completed.size === 4);
   }, []);
 
   const handleSimComplete = (simId: string) => {
@@ -41,11 +44,11 @@ export default function SimulationPage() {
     // Save to sessionStorage
     sessionStorage.setItem(`sim_${simId}_completed`, "true");
     
-    if (updated.size === 3) {
+    if (updated.size === 4) {
       setAllCompleted(true);
-      // Set score for certificate (3/3 = 100%)
-      sessionStorage.setItem("simulationScore", "3");
-      sessionStorage.setItem("simulationTotal", "3");
+      // Set score for certificate (4/4 = 100%)
+      sessionStorage.setItem("simulationScore", "4");
+      sessionStorage.setItem("simulationTotal", "4");
       sessionStorage.setItem("activityType", "simulation");
     }
   };
@@ -86,7 +89,7 @@ export default function SimulationPage() {
         <CardContent>
           <Tabs defaultValue="helmet" className="w-full">
             <div className="space-y-4">
-              <TabsList className="grid w-full grid-cols-3 gap-2 bg-transparent p-0">
+              <TabsList className="grid w-full grid-cols-4 gap-2 bg-transparent p-0">
                 <TabsTrigger
                   value="helmet"
                   className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-lg flex items-center justify-center gap-2 rounded-lg border-2 border-emerald-200 bg-white px-3 py-3 text-sm font-semibold text-emerald-700 transition-all hover:border-emerald-400 hover:bg-emerald-50"
@@ -111,6 +114,14 @@ export default function SimulationPage() {
                   <span className="hidden sm:inline">Violation 3</span>
                   <span className="sm:hidden">V3</span>
                 </TabsTrigger>
+                <TabsTrigger
+                  value="overspeed"
+                  className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-lg flex items-center justify-center gap-2 rounded-lg border-2 border-emerald-200 bg-white px-3 py-3 text-sm font-semibold text-emerald-700 transition-all hover:border-emerald-400 hover:bg-emerald-50"
+                >
+                  <Gauge className="h-5 w-5" />
+                  <span className="hidden sm:inline">Violation 4</span>
+                  <span className="sm:hidden">V4</span>
+                </TabsTrigger>
               </TabsList>
               <p className="text-xs text-slate-500 text-center">{tc("tapViolationToSwitch") || "Tap a violation above to switch the scenario."}</p>
             </div>
@@ -126,6 +137,10 @@ export default function SimulationPage() {
             <TabsContent value="drunk" className="mt-6">
               <DrunkDriveSimulation onComplete={() => handleSimComplete("drunk")} />
             </TabsContent>
+
+            <TabsContent value="overspeed" className="mt-6">
+              <OverspeedSimulation onComplete={() => handleSimComplete("overspeed")} />
+            </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
@@ -139,8 +154,8 @@ export default function SimulationPage() {
             </p>
             <p className="text-lg text-slate-600">
               {i18n.language === "te"
-                ? "మీరు 3 సిమ్యులేషన్‌లలో విజయవంతమయ్యారు (3/3)"
-                : "You've successfully completed all 3 simulations (3/3)"}
+                ? "మీరు 4 సిమ్యులేషన్‌లలో విజయవంతమయ్యారు (4/4)"
+                : "You've successfully completed all 4 simulations (4/4)"}
             </p>
             <Button onClick={handleContinueToCertificate} className="rs-btn-primary gap-2">
               {i18n.language === "te" ? "సర్టిఫికేట్‌కు కొనసాగండి" : "Continue to Certificate"}

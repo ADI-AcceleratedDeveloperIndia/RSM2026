@@ -4,24 +4,24 @@ import { useState, useRef, useCallback } from "react";
 import DraggableItems from "./DraggableItems";
 
 const BASE_DIMENSIONS = { width: 500, height: 500 };
-const HEAD_HITBOX = {
-  x: 250,
-  y: 100,
-  width: 120,
-  height: 80,
+const SPEEDOMETER_HITBOX = {
+  x: 200,
+  y: 200,
+  width: 200,
+  height: 200,
 };
-const HELMET_SIZE = { width: 100, height: 80 };
+const SPEEDOMETER_SIZE = { width: 120, height: 120 };
 
-interface HelmetPrototypeProps {
+interface OverspeedSimulationProps {
   onComplete?: () => void;
 }
 
-export default function HelmetPrototype({ onComplete }: HelmetPrototypeProps) {
+export default function OverspeedSimulation({ onComplete }: OverspeedSimulationProps) {
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState<[number, number]>([0, 0]);
-  const [helmetPosition, setHelmetPosition] = useState<[number, number] | null>(null);
+  const [speedometerPosition, setSpeedometerPosition] = useState<[number, number] | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [imageSrc, setImageSrc] = useState("/media/simulation%20media/helmet%20wearing/without%20helmet.png");
+  const [imageSrc, setImageSrc] = useState("/media/simulation%20media/overspeed/overspeed.png");
   const [isCompleted, setIsCompleted] = useState(false);
   const [referenceId, setReferenceId] = useState<string | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -36,22 +36,20 @@ export default function HelmetPrototype({ onComplete }: HelmetPrototypeProps) {
     const canvasRect = canvasRef.current?.getBoundingClientRect();
     
     if (canvasRect) {
-      // Start from the cursor position relative to the canvas
       const startX = e.clientX - canvasRect.left;
       const startY = e.clientY - canvasRect.top;
       
-      // Create position for any item type, but only helmet will work
-      if (!helmetPosition) {
-        setHelmetPosition([startX - HELMET_SIZE.width / 2, startY - HELMET_SIZE.height / 2]);
-        setDragOffset([HELMET_SIZE.width / 2, HELMET_SIZE.height / 2]);
-      } else if (helmetPosition) {
+      if (!speedometerPosition) {
+        setSpeedometerPosition([startX - SPEEDOMETER_SIZE.width / 2, startY - SPEEDOMETER_SIZE.height / 2]);
+        setDragOffset([SPEEDOMETER_SIZE.width / 2, SPEEDOMETER_SIZE.height / 2]);
+      } else if (speedometerPosition) {
         setDragOffset([
-          e.clientX - canvasRect.left - helmetPosition[0],
-          e.clientY - canvasRect.top - helmetPosition[1],
+          e.clientX - canvasRect.left - speedometerPosition[0],
+          e.clientY - canvasRect.top - speedometerPosition[1],
         ]);
       }
     }
-  }, [helmetPosition, isCompleted]);
+  }, [speedometerPosition, isCompleted]);
 
   const handleDrag = useCallback(
     (e: React.PointerEvent) => {
@@ -61,7 +59,7 @@ export default function HelmetPrototype({ onComplete }: HelmetPrototypeProps) {
       const rect = canvasRef.current.getBoundingClientRect();
       const x = e.clientX - rect.left - dragOffset[0];
       const y = e.clientY - rect.top - dragOffset[1];
-      setHelmetPosition([x, y]);
+      setSpeedometerPosition([x, y]);
     },
     [draggedItem, dragOffset, isCompleted]
   );
@@ -73,17 +71,13 @@ export default function HelmetPrototype({ onComplete }: HelmetPrototypeProps) {
         return;
       }
 
-      e.preventDefault();
-      e.stopPropagation();
-
-      // Get current helmet position
-      if (!helmetPosition) {
+      if (!speedometerPosition) {
         setDraggedItem(null);
         return;
       }
 
-      const currentX = helmetPosition[0];
-      const currentY = helmetPosition[1];
+      const currentX = speedometerPosition[0];
+      const currentY = speedometerPosition[1];
 
       const rect = canvasRef.current?.getBoundingClientRect();
       if (!rect) {
@@ -94,37 +88,35 @@ export default function HelmetPrototype({ onComplete }: HelmetPrototypeProps) {
       const scaleX = rect.width / BASE_DIMENSIONS.width;
       const scaleY = rect.height / BASE_DIMENSIONS.height;
 
-      const helmetLeft = currentX;
-      const helmetRight = currentX + HELMET_SIZE.width;
-      const helmetTop = currentY;
-      const helmetBottom = currentY + HELMET_SIZE.height;
+      const speedometerLeft = currentX;
+      const speedometerRight = currentX + SPEEDOMETER_SIZE.width;
+      const speedometerTop = currentY;
+      const speedometerBottom = currentY + SPEEDOMETER_SIZE.height;
 
-      const headLeft = HEAD_HITBOX.x * scaleX;
-      const headRight = (HEAD_HITBOX.x + HEAD_HITBOX.width) * scaleX;
-      const headTop = HEAD_HITBOX.y * scaleY;
-      const headBottom = (HEAD_HITBOX.y + HEAD_HITBOX.height) * scaleY;
+      const targetLeft = SPEEDOMETER_HITBOX.x * scaleX;
+      const targetRight = (SPEEDOMETER_HITBOX.x + SPEEDOMETER_HITBOX.width) * scaleX;
+      const targetTop = SPEEDOMETER_HITBOX.y * scaleY;
+      const targetBottom = (SPEEDOMETER_HITBOX.y + SPEEDOMETER_HITBOX.height) * scaleY;
 
       const overlaps = !(
-        helmetRight < headLeft ||
-        helmetLeft > headRight ||
-        helmetBottom < headTop ||
-        helmetTop > headBottom
+        speedometerRight < targetLeft ||
+        speedometerLeft > targetRight ||
+        speedometerBottom < targetTop ||
+        speedometerTop > targetBottom
       );
 
-      // Only accept helmet item, not others
-      if (overlaps && draggedItem === "helmet") {
-        // Success! Replace image immediately with updated version
-        setImageSrc("/media/simulation%20media/helmet%20wearing/with%20helmet.png?v=" + Date.now());
+      // Only accept speedometer item
+      if (overlaps && draggedItem === "speedometer") {
+        setImageSrc("/media/simulation%20media/overspeed/corrected%20speed.png?v=" + Date.now());
         setShowSuccess(true);
         setIsCompleted(true);
         
-        // Log completion
         try {
           const response = await fetch("/api/sim/complete", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              sceneId: "bike_no_helmet_prototype",
+              sceneId: "car_overspeed_prototype",
               success: true,
               attempts: 1,
               seconds: 0,
@@ -135,10 +127,9 @@ export default function HelmetPrototype({ onComplete }: HelmetPrototypeProps) {
             setReferenceId(payload.referenceId);
           }
         } catch {
-          // Ignore logging errors so the learner experience is not interrupted
+          // Ignore logging errors
         }
         
-        // Call onComplete callback
         if (onComplete) {
           onComplete();
         }
@@ -146,24 +137,20 @@ export default function HelmetPrototype({ onComplete }: HelmetPrototypeProps) {
 
       setDraggedItem(null);
     },
-    [draggedItem, helmetPosition, isCompleted]
+    [draggedItem, speedometerPosition, isCompleted, onComplete]
   );
 
   return (
     <div className="w-full max-w-5xl mx-auto">
-      {/* Instructions - No title revealing the violation */}
       <div className="mb-6 text-center">
         <p className="text-gray-700">
           Drag the correct item from the sidebar onto the scene to fix the violation.
         </p>
       </div>
 
-      {/* Main Container with Sidebar */}
       <div ref={containerRef} className="flex flex-col lg:flex-row gap-4 items-stretch">
-        {/* Left Sidebar - All Draggable Items */}
-        <DraggableItems onDragStart={handleDragStart} isCompleted={isCompleted} correctItemType="helmet" />
+        <DraggableItems onDragStart={handleDragStart} isCompleted={isCompleted} correctItemType="speedometer" />
 
-        {/* Canvas Area */}
         <div className="flex-1 order-1 lg:order-none w-full">
           <div
             ref={canvasRef}
@@ -175,7 +162,6 @@ export default function HelmetPrototype({ onComplete }: HelmetPrototypeProps) {
             onPointerUp={handleDragEnd}
             onPointerLeave={handleDragEnd}
           >
-            {/* White background layer - ensures no transparency shows */}
             <div
               className="absolute inset-0 bg-white"
               style={{
@@ -183,10 +169,9 @@ export default function HelmetPrototype({ onComplete }: HelmetPrototypeProps) {
               }}
             />
 
-            {/* Background Scene - Bike with rider */}
             <img
               src={imageSrc}
-              alt="Bike rider"
+              alt="Overspeed violation"
               className="absolute inset-0 w-full h-full object-contain"
               style={{
                 opacity: 1,
@@ -196,15 +181,14 @@ export default function HelmetPrototype({ onComplete }: HelmetPrototypeProps) {
               draggable={false}
             />
 
-            {/* Draggable Item - When being dragged */}
-            {helmetPosition && !isCompleted && draggedItem && (
+            {speedometerPosition && !isCompleted && draggedItem && (
               <div
                 className="absolute cursor-move touch-none select-none"
                 style={{
-                  left: `${helmetPosition[0]}px`,
-                  top: `${helmetPosition[1]}px`,
-                  width: `${HELMET_SIZE.width}px`,
-                  height: `${HELMET_SIZE.height}px`,
+                  left: `${speedometerPosition[0]}px`,
+                  top: `${speedometerPosition[1]}px`,
+                  width: `${SPEEDOMETER_SIZE.width}px`,
+                  height: `${SPEEDOMETER_SIZE.height}px`,
                   zIndex: 50,
                   opacity: 1,
                   transform: "scale(1.1)",
@@ -213,16 +197,8 @@ export default function HelmetPrototype({ onComplete }: HelmetPrototypeProps) {
                 }}
               >
                 <img
-                  src={
-                    draggedItem === "helmet"
-                      ? "/media/simulation%20media/helmet%20wearing/helmet.png"
-                      : draggedItem === "discipline"
-                      ? "/media/simulation%20media/triple%20riding/discipline.png"
-                      : draggedItem === "speedometer"
-                      ? "/media/simulation%20media/overspeed/drag%20speedometer.png"
-                      : "/media/simulation%20media/drunkndrive/soberman.png"
-                  }
-                  alt={draggedItem}
+                  src="/media/simulation%20media/overspeed/drag%20speedometer.png"
+                  alt="Speedometer"
                   className="w-full h-full object-contain"
                   style={{
                     opacity: 1,
@@ -235,10 +211,9 @@ export default function HelmetPrototype({ onComplete }: HelmetPrototypeProps) {
         </div>
       </div>
 
-      {/* Success Message */}
       {showSuccess && (
         <div className="mt-6 p-4 bg-green-100 border-2 border-green-400 text-green-800 rounded-lg text-center animate-fade-in space-y-2">
-          <p className="text-lg font-bold">✅ Helmet Saves Lives! Always Wear One.</p>
+          <p className="text-lg font-bold">✅ Speed Kills! Always maintain safe speed limits.</p>
           {referenceId && (
             <p className="text-sm text-green-900">
               Reference ID: <span className="font-semibold">{referenceId}</span>
@@ -249,3 +224,4 @@ export default function HelmetPrototype({ onComplete }: HelmetPrototypeProps) {
     </div>
   );
 }
+

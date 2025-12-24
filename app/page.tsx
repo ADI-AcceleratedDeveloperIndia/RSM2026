@@ -16,11 +16,33 @@ import {
   TrafficCone,
   AlertTriangle,
   Footprints,
+  Music,
 } from "lucide-react";
+import { useState, useRef } from "react";
 
 export default function Home() {
   const { t } = useTranslation("common");
   const { t: tc } = useTranslation("content");
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const handleAnthemClick = () => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio("/assets/ROADSAFETY3.wav");
+      audioRef.current.addEventListener("ended", () => setIsPlaying(false));
+    }
+
+    if (isPlaying) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      setIsPlaying(false);
+    } else {
+      audioRef.current.play().catch((err) => {
+        console.error("Error playing anthem:", err);
+      });
+      setIsPlaying(true);
+    }
+  };
   const leadershipProfiles = [
     {
       title: tc("honChiefMinister"),
@@ -114,6 +136,14 @@ export default function Home() {
                   <BrainCircuit className="h-5 w-5" />
                   {tc("launchSimulationLab")}
                 </Link>
+                <button
+                  onClick={handleAnthemClick}
+                  className="rs-btn-secondary"
+                  aria-label="Play Road Safety Anthem"
+                >
+                  <Music className="h-5 w-5" />
+                  {isPlaying ? "Stop Anthem" : "Anthem"}
+                </button>
               </div>
             </div>
             <div className="relative flex-1 min-w-[280px]">
