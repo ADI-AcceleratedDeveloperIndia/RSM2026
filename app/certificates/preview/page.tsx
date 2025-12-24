@@ -92,13 +92,13 @@ function CertificatePreviewContent() {
     setDownloadError(null);
 
     try {
-      // Minimal wait - just ensure DOM is ready
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      
       // Check if certificate element exists and is visible
-      if (!certificateRef.current || certificateRef.current.offsetHeight === 0) {
-        throw new Error("Certificate element is not visible");
+      if (!certificateRef.current) {
+        throw new Error("Certificate element not found");
       }
+      
+      // Small delay to ensure rendering is complete
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
       await exportCertificateToPdf(
         certificateRef.current,
