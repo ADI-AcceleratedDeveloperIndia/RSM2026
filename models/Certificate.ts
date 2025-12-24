@@ -2,11 +2,12 @@ import { Schema, model, models } from "mongoose";
 
 const CertificateSchema = new Schema({
   certificateId: { type: String, index: true, unique: true, required: true },
-  certificateNumber: { type: Number, required: true, unique: true, index: true }, // 1 to 100000 per type
+  certificateNumber: { type: Number, required: true }, // 1 to 100000 per type
   type: {
     type: String,
     enum: ["ORGANIZER", "PARTICIPANT", "MERIT"],
     required: true,
+    index: true,
   },
   fullName: { type: String, required: true },
   institution: String,
@@ -24,6 +25,9 @@ const CertificateSchema = new Schema({
   userEmail: String,
   userIpHash: String,
 });
+
+// Compound unique index: certificateNumber must be unique per type
+CertificateSchema.index({ type: 1, certificateNumber: 1 }, { unique: true });
 
 export default models.Certificate || model("Certificate", CertificateSchema);
 

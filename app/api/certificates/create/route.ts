@@ -67,41 +67,114 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
+    } else {
+      // No organizer reference ID - set default online event title based on activity type
+      const activityEventTitles: Record<string, string> = {
+        quiz: "Online Quiz Event",
+        simulation: "Online Simulation Event",
+        basics: "Online Basics Event",
+        guides: "Online Safety Guides Event",
+        prevention: "Online Prevention Event",
+        online: "Online Road Safety Event",
+      };
+      eventTitle = activityEventTitles[validated.activityType] || "Online Road Safety Event";
     }
 
-    // Get next certificate number for this type
-    const lastCert = await Certificate.findOne({ type: validated.type })
-      .sort({ certificateNumber: -1 });
-    const nextCertNumber = lastCert ? lastCert.certificateNumber + 1 : 1;
+    // Get next certificate number for this type with retry logic for race conditions
+    let attempts = 0;
+    let certificate;
+    let certificateId: string | null = null;
+    const maxAttempts = 10; // Increased retries
+    
+    while (attempts < maxAttempts) {
+      try {
+        // Use a transaction-like approach: find and increment atomically
+        const lastCert = await Certificate.findOne({ type: validated.type })
+          .sort({ certificateNumber: -1 })
+          .select('certificateNumber')
+          .lean() as { certificateNumber?: number } | null;
+        
+        let nextCertNumber = 1;
+        if (lastCert && typeof lastCert.certificateNumber === 'number') {
+          nextCertNumber = lastCert.certificateNumber + 1;
+        }
 
-    if (nextCertNumber > 100000) {
+        if (nextCertNumber > 100000) {
+          return NextResponse.json(
+            { error: "Maximum certificate limit reached for this type" },
+            { status: 400 }
+          );
+        }
+
+        certificateId = generateCertificateNumber(validated.type, nextCertNumber);
+        const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
+        const userIpHash = hashIp(ip);
+
+        certificate = new Certificate({
+          certificateId,
+          certificateNumber: nextCertNumber,
+          type: validated.type,
+          fullName: validated.fullName,
+          institution: validated.institution,
+          score: validated.score,
+          total: validated.total,
+          activityType: validated.activityType,
+          eventReferenceId: eventReferenceId,
+          eventTitle: eventTitle,
+          organizerReferenceId: validated.organizerReferenceId,
+          userEmail: validated.userEmail,
+          userIpHash,
+        });
+
+        await certificate.save();
+        break; // Success, exit retry loop
+      } catch (saveError: any) {
+        // Check if it's a duplicate key error (E11000)
+        // This can be from certificateId (unique) or compound index (type + certificateNumber)
+        const isDuplicateKeyError = 
+          saveError.code === 11000 && (
+            saveError.keyPattern?.certificateId || 
+            saveError.keyPattern?.certificateNumber || 
+            (saveError.keyPattern?.type && saveError.keyPattern?.certificateNumber) ||
+            saveError.message?.includes('duplicate key') ||
+            saveError.message?.includes('E11000')
+          );
+        
+        if (isDuplicateKeyError) {
+          attempts++;
+          if (attempts >= maxAttempts) {
+            console.error("Certificate creation failed after retries:", {
+              error: saveError.message,
+              code: saveError.code,
+              keyPattern: saveError.keyPattern,
+              attempts
+            });
+            return NextResponse.json(
+              { error: "Failed to create certificate. Please try again in a moment." },
+              { status: 500 }
+            );
+          }
+          // Exponential backoff with jitter
+          const delay = 50 * Math.pow(2, attempts) + Math.random() * 50;
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
+        }
+        // If it's not a duplicate key error, log and throw it
+        console.error("Certificate creation error (non-duplicate):", {
+          error: saveError.message,
+          code: saveError.code,
+          stack: saveError.stack
+        });
+        throw saveError;
+      }
+    }
+
+    if (!certificate || !certificateId) {
       return NextResponse.json(
-        { error: "Maximum certificate limit reached for this type" },
-        { status: 400 }
+        { error: "Failed to create certificate" },
+        { status: 500 }
       );
     }
-
-    const certificateId = generateCertificateNumber(validated.type, nextCertNumber);
-    const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
-    const userIpHash = hashIp(ip);
-
-    const certificate = new Certificate({
-      certificateId,
-      certificateNumber: nextCertNumber,
-      type: validated.type,
-      fullName: validated.fullName,
-      institution: validated.institution,
-      score: validated.score,
-      total: validated.total,
-      activityType: validated.activityType,
-      eventReferenceId: eventReferenceId,
-      eventTitle: eventTitle,
-      organizerReferenceId: validated.organizerReferenceId,
-      userEmail: validated.userEmail,
-      userIpHash,
-    });
-
-    await certificate.save();
 
     const sig = await signCertificateUrl(certificateId);
     const downloadUrl = `/api/certificates/download?cid=${certificateId}&sig=${sig}`;

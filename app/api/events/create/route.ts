@@ -77,8 +77,10 @@ export async function POST(request: NextRequest) {
       institution: organizer.institution,
       date: new Date(validated.date),
       location: validated.location || "Karimnagar",
-      approved: false, // Must be approved by admin
+      approved: true, // Auto-approve events from approved organizers
       photos: validated.photos || [],
+      approvedAt: new Date(),
+      approvedBy: "system",
     });
 
     await event.save();

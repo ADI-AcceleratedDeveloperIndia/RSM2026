@@ -39,11 +39,11 @@ export default function Nav() {
 
   const navLinks = [
     { href: "/", label: t("home") || "Home", key: "/" },
-    { href: "/basics", label: i18n.language === "te" ? "అందరికీ" : "For All", key: "/basics" },
-    { href: "/simulation", label: i18n.language === "te" ? "పాఠశాల" : "School", key: "/simulation" },
-    { href: "/quiz", label: i18n.language === "te" ? "ఇంటర్" : "Inter", key: "/quiz" },
-    { href: "/guides", label: i18n.language === "te" ? "అండర్ గ్రాడ్" : "Undergrad", key: "/guides" },
-    { href: "/prevention", label: i18n.language === "te" ? "గ్రాడ్యుయేట్స్" : "Graduates", key: "/prevention" },
+    { href: "/basics", label: i18n.language === "te" ? "బేసిక్స్ (అందరికీ)" : "Basics (For All)", key: "/basics" },
+    { href: "/simulation", label: i18n.language === "te" ? "సిమ్యులేషన్ (పాఠశాల)" : "Simulation (School)", key: "/simulation" },
+    { href: "/quiz", label: i18n.language === "te" ? "క్విజ్ (ఇంటర్)" : "Quiz (Inter)", key: "/quiz" },
+    { href: "/guides", label: i18n.language === "te" ? "సేఫ్టీ గైడ్స్ (అండర్ గ్రాడ్)" : "Safety Guides (Undergrad)", key: "/guides" },
+    { href: "/prevention", label: i18n.language === "te" ? "ప్రివెన్షన్ (గ్రాడ్యుయేట్స్)" : "Prevention (Graduates)", key: "/prevention" },
     { href: "/events", label: t("events") || "Events", key: "/events" },
     { href: "/certificates", label: t("certificates") || "Certificates", key: "/certificates" },
     { href: "/organizer", label: i18n.language === "te" ? "నిర్వాహకుడు" : "Organizer", key: "/organizer" },

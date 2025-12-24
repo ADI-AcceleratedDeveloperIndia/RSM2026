@@ -44,8 +44,6 @@ export default function QuizPage() {
   const [answers, setAnswers] = useState<number[]>([]);
   const [answeredQuestions, setAnsweredQuestions] = useState<Set<number>>(new Set());
   const [questionResults, setQuestionResults] = useState<Map<number, boolean>>(new Map()); // questionId -> isCorrect
-  const [name, setName] = useState("");
-  const [institution, setInstitution] = useState("");
   const [copiedRefId, setCopiedRefId] = useState(false);
   const [virtualQuizMaster, setVirtualQuizMaster] = useState<boolean>(false);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -608,13 +606,7 @@ export default function QuizPage() {
   const answeredCount = useMemo(() => answeredQuestions.size, [answeredQuestions]);
   const progress = questions.length ? Math.round((answeredCount / questions.length) * 100) : 0;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) {
-      alert(tc("pleaseEnterYourName"));
-      return;
-    }
-
+  const handleSubmit = async () => {
     // Check if all questions are answered
     const unansweredCount = questions.length - answeredQuestions.size;
     if (unansweredCount > 0) {
@@ -628,8 +620,8 @@ export default function QuizPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          fullName: name,
-          institution,
+          fullName: "Quiz Participant", // Temporary name, will be collected in certificate generation
+          institution: "",
           answers,
         }),
       });
@@ -657,10 +649,14 @@ export default function QuizPage() {
         sessionStorage.setItem("activityType", "quiz");
       }
       
-      // Hide celebration after 5 seconds and show results
+      // Hide celebration after 3 seconds and redirect to certificate generation
       setTimeout(() => {
         setShowCelebration(false);
-      }, 5000);
+        // Redirect to certificate generation after showing results briefly
+        setTimeout(() => {
+          router.push("/certificates/generate");
+        }, 2000);
+      }, 3000);
     } catch (error) {
       console.error("Error:", error);
       alert(tc("failedToSubmitQuiz"));
@@ -680,18 +676,6 @@ export default function QuizPage() {
     }
   };
 
-  const handleGenerateCertificate = () => {
-    if (!result?.referenceId) return;
-    const certificateType = result.certificateType ?? (result.passed ? "QUIZ" : "PAR");
-    const percentage = Math.round((result.score / result.total) * 100);
-    const scoreLabel = `${result.score}/${result.total} • ${percentage}%`;
-
-    router.push(
-      `/certificates/generate?type=${certificateType}&name=${encodeURIComponent(name)}&institution=${encodeURIComponent(
-        institution || ""
-      )}&score=${encodeURIComponent(scoreLabel)}&ref=${encodeURIComponent(result.referenceId)}`
-    );
-  };
 
   if (loading) {
     return (
@@ -708,12 +692,18 @@ export default function QuizPage() {
 
     return (
       <div className="rs-container py-14 max-w-3xl space-y-6">
-        <div className="rs-card p-8 space-y-4 bg-gradient-to-br from-emerald-50 to-white">
-          <div className="flex items-center gap-3 text-emerald-800">
-            <Trophy className="h-7 w-7" />
+        <div className="rs-card p-8 space-y-4 bg-gradient-to-br from-emerald-50 to-white text-center">
+          <div className="flex flex-col items-center gap-4">
+            <Trophy className="h-16 w-16 text-yellow-500" />
             <div>
-              <h1 className="text-2xl font-semibold">{tc("quizResults")}</h1>
-              <p className="text-sm text-emerald-700">{tc("meritThreshold").replace("{count}", meritCutoff.toString())}</p>
+              <h1 className="text-3xl font-bold text-emerald-900 mb-2">
+                {getCurrentLang() === "te" ? "అభినందనలు!" : "Congratulations!"}
+              </h1>
+              <p className="text-lg text-slate-600 mb-4">
+                {getCurrentLang() === "te" 
+                  ? "మీరు క్విజ్ పూర్తి చేశారు!" 
+                  : "You have completed the quiz!"}
+              </p>
             </div>
           </div>
 
@@ -721,7 +711,7 @@ export default function QuizPage() {
             <div className="rounded-2xl bg-white p-4 shadow-sm border border-emerald-100">
               <p className="text-sm text-emerald-600 font-semibold">{tc("yourScore")}</p>
               <p className="text-3xl font-bold text-emerald-900">{result.score} / {result.total}</p>
-              <p className="text-sm text-slate-500">{percentage}{tc("correctAnswers")}</p>
+              <p className="text-sm text-slate-500">{percentage}% {tc("correctAnswers")}</p>
             </div>
             <div className="rounded-2xl bg-white p-4 shadow-sm border border-emerald-100">
               <p className="text-sm text-emerald-600 font-semibold">{tc("certificateType")}</p>
@@ -730,31 +720,24 @@ export default function QuizPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-emerald-100 bg-white/90 p-5">
-            <p className="text-xs uppercase tracking-wide text-emerald-600">{tc("referenceId")}</p>
-            <div className="mt-2 flex flex-wrap items-center gap-3">
-              <span className="font-semibold text-emerald-900">{result.referenceId ?? tc("notAvailable")}</span>
-              {result.referenceId && (
+          {result.referenceId && (
+            <div className="rounded-2xl border border-emerald-100 bg-white/90 p-5">
+              <p className="text-xs uppercase tracking-wide text-emerald-600 mb-2">{tc("referenceId")}</p>
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <span className="font-semibold text-emerald-900 font-mono">{result.referenceId}</span>
                 <Button variant="outline" size="sm" onClick={handleCopyReference} type="button" className="gap-2">
                   <Copy className="h-4 w-4" /> {tc("copy")}
                 </Button>
-              )}
+              </div>
+              {copiedRefId && <p className="mt-2 text-xs text-emerald-600">{tc("referenceIdCopiedToClipboard")}</p>}
             </div>
-            {copiedRefId && <p className="mt-1 text-xs text-emerald-600">{tc("referenceIdCopiedToClipboard")}</p>}
-            <p className="mt-3 text-xs text-slate-500">
-              {tc("keepThisReferenceIdSafe")}
-            </p>
-          </div>
+          )}
 
-          <div className="rounded-2xl bg-emerald-600 text-white p-5 space-y-3 shadow-lg">
-            <p className="font-semibold text-lg flex items-center gap-2">
-              <Sparkles className="h-5 w-5" />
-              {isMerit
-                ? tc("congratulationsUnlockedMerit")
-                : tc("greatEffortUnlockedParticipant")}
-            </p>
-            <p className="text-sm text-emerald-100">
-              {tc("useButtonBelowToGenerate")}
+          <div className="flex flex-col items-center gap-4">
+            <p className="text-base text-slate-700">
+              {getCurrentLang() === "te" 
+                ? "మీ సర్టిఫికేట్‌ను సృష్టించడానికి క్రింది బటన్‌ను క్లిక్ చేయండి"
+                : "Click the button below to generate your certificate"}
             </p>
             <Button 
               onClick={() => {
@@ -766,9 +749,9 @@ export default function QuizPage() {
                 }
                 router.push("/certificates/generate");
               }} 
-              className="rs-btn-secondary text-sm"
+              className="rs-btn-primary text-base gap-2 px-8 py-6"
             >
-              <Award className="h-4 w-4" /> {isMerit ? tc("generateMeritCertificate") : tc("generateParticipantCertificate")}
+              <Award className="h-5 w-5" /> {getCurrentLang() === "te" ? "సర్టిఫికేట్ సృష్టించండి" : "Generate Certificate"}
             </Button>
           </div>
         </div>
@@ -843,31 +826,6 @@ export default function QuizPage() {
         </div>
       </div>
 
-      <div className="rs-card p-8">
-        <div className="grid md:grid-cols-2 gap-5">
-          <div className="space-y-3">
-            <Label htmlFor="name" className="text-sm font-semibold text-emerald-900">{t("name")} *</Label>
-            <Input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={tc("enterYourFullName")}
-              className="h-11 rounded-lg border-emerald-200"
-            />
-          </div>
-          <div className="space-y-3">
-            <Label htmlFor="institution" className="text-sm font-semibold text-emerald-900">{t("institution")}</Label>
-            <Input
-              id="institution"
-              value={institution}
-              onChange={(e) => setInstitution(e.target.value)}
-              placeholder={tc("schoolCollegeOrganisation")}
-              className="h-11 rounded-lg border-emerald-200"
-            />
-          </div>
-        </div>
-      </div>
-
       {/* Celebration Animation */}
       {showCelebration && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in">
@@ -920,7 +878,26 @@ export default function QuizPage() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-6">
+        <div className="flex justify-end">
+          <Button
+            onClick={handleSubmit}
+            disabled={submitting || answeredCount < questions.length}
+            className="rs-btn-primary"
+          >
+            {submitting ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                {getCurrentLang() === "te" ? "సమర్పిస్తోంది..." : "Submitting..."}
+              </>
+            ) : (
+              <>
+                <Trophy className="h-4 w-4 mr-2" />
+                {getCurrentLang() === "te" ? "క్విజ్ పూర్తి చేయండి" : "Complete Quiz"}
+              </>
+            )}
+          </Button>
+        </div>
         {questions.map((q, idx) => {
           const isAnswered = answeredQuestions.has(idx);
           const isCorrect = questionResults.get(idx);
@@ -1012,9 +989,9 @@ export default function QuizPage() {
 
         <div className="flex justify-center pt-4">
           <Button
-            type="submit"
+            onClick={handleSubmit}
             size="lg"
-            disabled={submitting || !name.trim()}
+            disabled={submitting || answeredCount < questions.length}
             className="rs-btn-primary text-base px-10"
           >
             {submitting ? (
@@ -1022,11 +999,13 @@ export default function QuizPage() {
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" /> {tc("submitting")}
               </>
             ) : (
-              tc("submitQuiz")
+              <>
+                <Trophy className="mr-2 h-5 w-5" /> {getCurrentLang() === "te" ? "క్విజ్ పూర్తి చేయండి" : "Complete Quiz"}
+              </>
             )}
           </Button>
         </div>
-      </form>
+      </div>
     </div>
   );
 }

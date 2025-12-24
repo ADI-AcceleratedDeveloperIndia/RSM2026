@@ -19,11 +19,12 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Telangana Road Safety Month",
   description: "Join Road Safety Month—learn, act, and lead by example.",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 5,
-  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({

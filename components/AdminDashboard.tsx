@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Award, FileText, Users, Download, Activity, MapPin, Calendar, CheckCircle2, XCircle, Clock, Eye } from "lucide-react";
+import { Award, FileText, Users, Download, Activity, MapPin, Calendar, CheckCircle2, XCircle, Clock, Eye, UserCheck, UserX } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 type Event = {
@@ -39,6 +39,21 @@ type EventParticipants = {
   totalParticipants: number;
 };
 
+type Organizer = {
+  _id: string;
+  temporaryId: string;
+  finalId?: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  institution: string;
+  designation: string;
+  status: "pending" | "approved" | "rejected";
+  approvedAt?: string;
+  approvedBy?: string;
+  createdAt: string;
+};
+
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
     totalCertificates: 0,
@@ -62,6 +77,10 @@ export default function AdminDashboard() {
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
   const [eventParticipants, setEventParticipants] = useState<EventParticipants | null>(null);
   const [loadingParticipants, setLoadingParticipants] = useState(false);
+  const [organizers, setOrganizers] = useState<Organizer[]>([]);
+  const [loadingOrganizers, setLoadingOrganizers] = useState(false);
+  const [allParticipants, setAllParticipants] = useState<Participant[]>([]);
+  const [loadingAllParticipants, setLoadingAllParticipants] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -98,6 +117,60 @@ export default function AdminDashboard() {
       .then((data) => setAppreciations(data.items || []))
       .catch(() => setAppreciations([]));
   }, []);
+
+  useEffect(() => {
+    loadOrganizers();
+    loadAllParticipants();
+  }, []);
+
+  const loadOrganizers = async () => {
+    setLoadingOrganizers(true);
+    try {
+      const response = await fetch("/api/admin/organizers/list");
+      const data = await response.json();
+      if (response.ok) {
+        setOrganizers(data.organizers || []);
+      }
+    } catch (error) {
+      console.error("Failed to load organizers:", error);
+    } finally {
+      setLoadingOrganizers(false);
+    }
+  };
+
+  const loadAllParticipants = async () => {
+    setLoadingAllParticipants(true);
+    try {
+      const response = await fetch("/api/admin/participants/list?limit=100");
+      const data = await response.json();
+      if (response.ok) {
+        setAllParticipants(data.participants || []);
+      }
+    } catch (error) {
+      console.error("Failed to load participants:", error);
+    } finally {
+      setLoadingAllParticipants(false);
+    }
+  };
+
+  const handleApproveOrganizer = async (temporaryId: string, action: "approve" | "reject") => {
+    try {
+      const response = await fetch("/api/admin/organizers/approve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ temporaryId, action }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        alert(action === "approve" ? `Organizer approved! Final ID: ${data.finalId}` : "Organizer rejected");
+        loadOrganizers();
+      } else {
+        alert(data.error || "Failed to process organizer");
+      }
+    } catch (error) {
+      alert("Failed to process organizer");
+    }
+  };
 
   const handleViewParticipants = async (eventReferenceId: string) => {
     setSelectedEvent(eventReferenceId);
@@ -311,6 +384,138 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Organizers Section */}
+      <div className="rs-card p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-emerald-900">Organizers</h2>
+            <p className="text-sm text-slate-600">Review and approve organizer registrations</p>
+          </div>
+          <Button onClick={loadOrganizers} variant="outline" size="sm" disabled={loadingOrganizers}>
+            Refresh
+          </Button>
+        </div>
+        {loadingOrganizers ? (
+          <div className="text-center py-8 text-slate-600">Loading organizers...</div>
+        ) : organizers.length === 0 ? (
+          <div className="text-sm text-slate-600 text-center py-8">No organizers registered yet</div>
+        ) : (
+          <div className="space-y-3">
+            {organizers.map((org) => (
+              <div
+                key={org._id}
+                className={`rounded-xl border p-4 ${
+                  org.status === "approved"
+                    ? "border-emerald-200 bg-emerald-50/50"
+                    : org.status === "rejected"
+                    ? "border-red-200 bg-red-50/50"
+                    : "border-yellow-200 bg-yellow-50/50"
+                }`}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="font-semibold text-emerald-900">{org.fullName}</div>
+                      {org.status === "approved" ? (
+                        <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                      ) : org.status === "rejected" ? (
+                        <XCircle className="h-4 w-4 text-red-600" />
+                      ) : (
+                        <Clock className="h-4 w-4 text-yellow-600" />
+                      )}
+                    </div>
+                    <div className="text-sm text-slate-600 space-y-1">
+                      <div>Email: {org.email}</div>
+                      <div>Phone: {org.phone}</div>
+                      <div>Institution: {org.institution}</div>
+                      <div>Designation: {org.designation}</div>
+                      <div className="text-xs font-mono text-slate-500">
+                        Temporary ID: {org.temporaryId}
+                      </div>
+                      {org.finalId && (
+                        <div className="text-xs font-mono text-emerald-700">
+                          Final ID: {org.finalId}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  {org.status === "pending" && (
+                    <div className="ml-4 flex gap-2">
+                      <Button
+                        size="sm"
+                        className="rs-btn-primary gap-2"
+                        onClick={() => handleApproveOrganizer(org.temporaryId, "approve")}
+                      >
+                        <UserCheck className="h-4 w-4" />
+                        Approve
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-2"
+                        onClick={() => handleApproveOrganizer(org.temporaryId, "reject")}
+                      >
+                        <UserX className="h-4 w-4" />
+                        Reject
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* All Participants Section */}
+      <div className="rs-card p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-emerald-900">All Participants</h2>
+            <p className="text-sm text-slate-600">View all certificate recipients</p>
+          </div>
+          <Button onClick={loadAllParticipants} variant="outline" size="sm" disabled={loadingAllParticipants}>
+            Refresh
+          </Button>
+        </div>
+        {loadingAllParticipants ? (
+          <div className="text-center py-8 text-slate-600">Loading participants...</div>
+        ) : allParticipants.length === 0 ? (
+          <div className="text-sm text-slate-600 text-center py-8">No participants yet</div>
+        ) : (
+          <div className="rs-table-wrapper">
+            <table className="rs-table text-sm">
+              <thead>
+                <tr>
+                  <th className="text-left">Name</th>
+                  <th className="text-left">Institution</th>
+                  <th className="text-left">Type</th>
+                  <th className="text-left">Score</th>
+                  <th className="text-left">Activity</th>
+                  <th className="text-left">Event</th>
+                  <th className="text-left">Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {allParticipants.map((p: any, idx: number) => (
+                  <tr key={idx}>
+                    <td className="font-medium">{p.fullName}</td>
+                    <td>{p.institution || "-"}</td>
+                    <td className="capitalize">{p.type}</td>
+                    <td>
+                      {p.score}/{p.total}
+                    </td>
+                    <td className="capitalize">{p.activityType}</td>
+                    <td className="text-xs">{p.eventTitle || "-"}</td>
+                    <td className="text-xs">{new Date(p.createdAt).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       <div className="rs-card p-6 space-y-4">
