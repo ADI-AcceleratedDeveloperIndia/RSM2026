@@ -97,23 +97,42 @@ export async function GET(request: NextRequest) {
       rtaSig: rtaSig ? `data:image/png;base64,${rtaSig}` : "",
     });
 
-    const browser = await puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath(),
-      headless: true,
+    // Set timeout for PDF generation (30 seconds max)
+    const pdfGenerationPromise = (async () => {
+      const browser = await puppeteer.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(),
+        headless: true,
+        timeout: 30000, // 30 second timeout
+      });
+
+      try {
+        const page = await browser.newPage();
+        await page.setContent(html, { 
+          waitUntil: "networkidle0",
+          timeout: 20000, // 20 second timeout for content loading
+        });
+
+        const pdf = await page.pdf({
+          format: "A4",
+          printBackground: true,
+          margin: { top: "0", right: "0", bottom: "0", left: "0" },
+          timeout: 10000, // 10 second timeout for PDF generation
+        });
+
+        return pdf;
+      } finally {
+        await browser.close();
+      }
+    })();
+
+    // Add overall timeout
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error("PDF generation timeout")), 30000);
     });
 
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: "networkidle0" });
-
-    const pdf = await page.pdf({
-      format: "A4",
-      printBackground: true,
-      margin: { top: "0", right: "0", bottom: "0", left: "0" },
-    });
-
-    await browser.close();
+    const pdf = await Promise.race([pdfGenerationPromise, timeoutPromise]) as Buffer;
 
     const pdfUint8Array = new Uint8Array(pdf);
     const pdfBlob = new Blob([pdfUint8Array.buffer], { type: "application/pdf" });
