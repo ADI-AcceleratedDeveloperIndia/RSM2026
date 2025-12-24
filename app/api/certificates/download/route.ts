@@ -117,9 +117,16 @@ export async function GET(request: NextRequest) {
         "Content-Disposition": `attachment; filename="certificate-${cid}.pdf"`,
       },
     });
-  } catch (error) {
-    console.error("PDF generation error:", error);
-    return NextResponse.json({ error: "Failed to generate PDF" }, { status: 500 });
+  } catch (error: any) {
+    console.error("PDF generation error:", {
+      message: error?.message || String(error),
+      stack: error?.stack,
+      error: error
+    });
+    return NextResponse.json({ 
+      error: "Failed to generate PDF",
+      details: error?.message || "Unknown error"
+    }, { status: 500 });
   }
 }
 
