@@ -49,7 +49,6 @@ export async function exportCertificateToPdf(element: HTMLElement, fileName: str
     logging: false,
     windowWidth: element.scrollWidth,
     windowHeight: element.scrollHeight,
-    timeout: 30000, // 30 second timeout
     ignoreElements: (element) => {
       // Ignore elements that might cause issues
       return element.classList.contains("no-export");
