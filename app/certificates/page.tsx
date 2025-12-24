@@ -2,7 +2,11 @@
 
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
-import { Award, Sparkles, ArrowRight } from "lucide-react";
+import { useState } from "react";
+import { Award, Sparkles, ArrowRight, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface CertificateInfo {
   code: string;
@@ -24,6 +28,50 @@ const getCertificateList = (tc: (key: string) => string): CertificateInfo[] => [
 export default function CertificatesPage() {
   const { t, i18n } = useTranslation("common");
   const { t: tc } = useTranslation("content");
+  const [fullName, setFullName] = useState("");
+  const [institution, setInstitution] = useState("");
+  const [eventRef, setEventRef] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleOfflineSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    if (!fullName.trim() || !eventRef.trim()) {
+      setError(i18n.language === "te" ? "పేరు మరియు ఈవెంట్ ID అవసరం" : "Name and Event Reference ID are required");
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch("/api/certificates/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "PARTICIPANT",
+          fullName: fullName.trim(),
+          institution: institution.trim() || undefined,
+          score: 100,
+          total: 100,
+          activityType: "online",
+          organizerReferenceId: eventRef.trim(),
+          userEmail: userEmail.trim() || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to create certificate");
+      }
+      if (!data.downloadUrl) {
+        throw new Error("Missing download URL");
+      }
+      window.open(data.downloadUrl, "_blank");
+    } catch (err: any) {
+      setError(err?.message || "Failed to create certificate");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="rs-container py-14 space-y-10">
@@ -69,6 +117,100 @@ export default function CertificatesPage() {
       <p className="text-xs text-slate-500 sm:hidden">
         {tc("tipDragSideways") || "Tip: drag sideways to view the full certificate table."}
       </p>
+
+      <div className="rs-card p-6 space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold text-emerald-900">
+              {i18n.language === "te" ? "ఆఫ్లైన్ ఈవెంట్ సర్టిఫికేట్" : "Offline Event Certificate"}
+            </h2>
+            <p className="text-sm text-slate-600">
+              {i18n.language === "te"
+                ? "ఆర్గనైజర్ ఈవెంట్ రిఫరెన్స్ IDతో ఆఫ్లైన్ ఈవెంట్లకు సర్టిఫికేట్‌ను సృష్టించండి."
+                : "Create a certificate for offline events using the organizer's event reference ID."}
+            </p>
+          </div>
+        </div>
+
+        {error && (
+          <div className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleOfflineSubmit} className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-1">
+            <Label htmlFor="fullName" className="text-sm font-semibold text-emerald-900">
+              {i18n.language === "te" ? "పూర్తి పేరు *" : "Full Name *"}
+            </Label>
+            <Input
+              id="fullName"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder={i18n.language === "te" ? "పాల్గొనేవారి పేరు" : "Participant name"}
+              required
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="institution" className="text-sm font-semibold text-emerald-900">
+              {i18n.language === "te" ? "సంస్థ (ఐచ్చికం)" : "Institution (optional)"}
+            </Label>
+            <Input
+              id="institution"
+              value={institution}
+              onChange={(e) => setInstitution(e.target.value)}
+              placeholder={i18n.language === "te" ? "పాఠశాల / కళాశాల / సంస్థ" : "School / College / Organization"}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="eventRef" className="text-sm font-semibold text-emerald-900">
+              {i18n.language === "te" ? "ఈవెంట్ రిఫరెన్స్ ID *" : "Event Reference ID *"}
+            </Label>
+            <Input
+              id="eventRef"
+              value={eventRef}
+              onChange={(e) => setEventRef(e.target.value)}
+              placeholder="KRMR-RSM-2026-PDL-RHL-EVT-00001"
+              required
+              className="font-mono text-xs"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="userEmail" className="text-sm font-semibold text-emerald-900">
+              {i18n.language === "te" ? "ఇమెయిల్ (ఐచ్చికం)" : "Email (optional)"}
+            </Label>
+            <Input
+              id="userEmail"
+              type="email"
+              value={userEmail}
+              onChange={(e) => setUserEmail(e.target.value)}
+              placeholder="email@example.com"
+            />
+          </div>
+
+          <div className="md:col-span-2">
+            <Button
+              type="submit"
+              className="rs-btn-primary w-full md:w-auto"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />{" "}
+                  {i18n.language === "te" ? "సృష్టిస్తోంది..." : "Generating..."}
+                </>
+              ) : (
+                <>
+                  <Award className="h-4 w-4" /> {i18n.language === "te" ? "సర్టిఫికేట్ సృష్టించండి" : "Generate & Download"}
+                </>
+              )}
+            </Button>
+          </div>
+        </form>
+      </div>
 
       <div className="rs-card p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
