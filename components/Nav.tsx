@@ -149,7 +149,7 @@ export default function Nav() {
         </div>
 
         {isOpen && (
-          <div className="xl:hidden pb-4">
+          <div className="lg:hidden pb-4">
             <div className="grid gap-2 rounded-2xl border border-emerald-100 bg-white/90 p-4 shadow-[0_12px_28px_rgba(7,80,55,0.15)]">
               {navLinks.map((link) => {
                 const active = pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href));
