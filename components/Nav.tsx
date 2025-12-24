@@ -39,14 +39,14 @@ export default function Nav() {
 
   const navLinks = [
     { href: "/", label: t("home") || "Home", key: "/" },
-    { href: "/basics", label: "For All", key: "/basics" },
-    { href: "/simulation", label: "School", key: "/simulation" },
-    { href: "/quiz", label: "Entrance", key: "/quiz" },
-    { href: "/guides", label: "Undergrad", key: "/guides" },
-    { href: "/prevention", label: "Grad / Graduates", key: "/prevention" },
+    { href: "/basics", label: i18n.language === "te" ? "అందరికీ" : "For All", key: "/basics" },
+    { href: "/simulation", label: i18n.language === "te" ? "పాఠశాల" : "School", key: "/simulation" },
+    { href: "/quiz", label: i18n.language === "te" ? "ఇంటర్" : "Inter", key: "/quiz" },
+    { href: "/guides", label: i18n.language === "te" ? "అండర్ గ్రాడ్" : "Undergrad", key: "/guides" },
+    { href: "/prevention", label: i18n.language === "te" ? "గ్రాడ్యుయేట్స్" : "Graduates", key: "/prevention" },
     { href: "/events", label: t("events") || "Events", key: "/events" },
     { href: "/certificates", label: t("certificates") || "Certificates", key: "/certificates" },
-    { href: "/organizer", label: "Organizer", key: "/organizer" },
+    { href: "/organizer", label: i18n.language === "te" ? "నిర్వాహకుడు" : "Organizer", key: "/organizer" },
   ];
 
   if (!mounted) return null;

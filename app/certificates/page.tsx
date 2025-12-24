@@ -22,7 +22,7 @@ const getCertificateList = (tc: (key: string) => string): CertificateInfo[] => [
 ];
 
 export default function CertificatesPage() {
-  const { t } = useTranslation("common");
+  const { t, i18n } = useTranslation("common");
   const { t: tc } = useTranslation("content");
 
   return (
@@ -39,11 +39,8 @@ export default function CertificatesPage() {
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
-            <Link href="/certificates/generate" className="rs-btn-primary">
-              <Sparkles className="h-4 w-4" /> {t("generateCertificate")}
-            </Link>
-            <Link href="/certificates/regional" className="rs-btn-secondary">
-              <ArrowRight className="h-4 w-4" /> {t("regionalEvent")} {t("certificates")}
+            <Link href="/certificates/regional" className="rs-btn-primary">
+              <Sparkles className="h-4 w-4" /> {i18n.language === "te" ? "కరీంనగర్ ప్రాంతీయ సర్టిఫికేట్" : "Karimnagar Regional Certificate"}
             </Link>
           </div>
         </div>

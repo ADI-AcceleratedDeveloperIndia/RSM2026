@@ -105,16 +105,16 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data }, ref)
         {/* Solid background layer for export safety */}
         <div className="absolute inset-0 bg-white/95" />
 
-        <div className="relative px-10 pt-12 pb-16 md:px-16 md:pt-16 md:pb-20" style={{ minHeight: "810px" }}>
+        <div className="relative px-4 sm:px-6 md:px-10 lg:px-16 pt-8 sm:pt-12 md:pt-16 pb-12 sm:pb-16 md:pb-20" style={{ minHeight: "810px" }}>
           {/* Header */}
           <div className="flex flex-col items-start justify-between gap-4 border-b border-green-200 pb-6 md:flex-row">
-            <div className="flex items-center justify-start gap-2" style={{ maxWidth: "380px" }}>
+            <div className="flex items-center justify-start gap-2 flex-wrap" style={{ maxWidth: "380px" }}>
               <Image
                 src="/assets/logo/Telangana-LOGO.png"
                 alt="Government of Telangana"
                 width={80}
                 height={80}
-                className="h-20 w-20 object-contain flex-shrink-0"
+                className="h-16 w-16 sm:h-20 sm:w-20 object-contain flex-shrink-0"
                 unoptimized
               />
               <Image
@@ -122,12 +122,12 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data }, ref)
                 alt="Telangana Road Safety Month 2026"
                 width={140}
                 height={90}
-                className="h-20 w-auto object-contain flex-shrink-0"
+                className="h-16 w-auto sm:h-20 sm:w-auto object-contain flex-shrink-0"
                 unoptimized
               />
             </div>
 
-            <div className="flex items-center gap-3 text-center" style={{ flex: 1, justifyContent: "flex-end" }}>
+            <div className="flex items-center gap-2 sm:gap-3 text-center flex-wrap justify-center md:justify-end" style={{ flex: 1 }}>
               {[
                 {
                   photo: "/assets/leadership/CM.png",
@@ -149,15 +149,15 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data }, ref)
                 .map((leader, index) => {
                   const item = leader as { photo: string; name: string; title: string };
                   return (
-                    <div key={`${item.name}-${index}`} className="flex flex-col items-center justify-start text-center" style={{ width: "160px", minHeight: "140px" }}>
+                    <div key={`${item.name}-${index}`} className="flex flex-col items-center justify-start text-center" style={{ width: "120px", minWidth: "100px", minHeight: "120px" }}>
                       <div
-                        className="relative h-20 w-20 overflow-hidden rounded-full border-4 border-green-600"
+                        className="relative h-16 w-16 sm:h-20 sm:w-20 overflow-hidden rounded-full border-2 sm:border-4 border-green-600"
                         style={{ boxShadow: "0 12px 30px rgba(0, 64, 32, 0.25)" }}
                       >
                         <Image src={item.photo} alt={item.name} fill className="object-cover" sizes="80px" unoptimized />
                       </div>
-                      <p className={`${inter.className} mt-2 text-xs font-semibold text-green-800`} style={{ lineHeight: "1.3", wordWrap: "break-word", maxWidth: "140px" }}>{item.name}</p>
-                      <p className={`${inter.className} text-[10px] text-gray-600 mt-1`} style={{ lineHeight: "1.3", wordWrap: "break-word", maxWidth: "140px" }}>{item.title}</p>
+                      <p className={`${inter.className} mt-1 sm:mt-2 text-[10px] sm:text-xs font-semibold text-green-800`} style={{ lineHeight: "1.3", wordWrap: "break-word", maxWidth: "110px" }}>{item.name}</p>
+                      <p className={`${inter.className} text-[9px] sm:text-[10px] text-gray-600 mt-0.5 sm:mt-1`} style={{ lineHeight: "1.3", wordWrap: "break-word", maxWidth: "110px" }}>{item.title}</p>
                     </div>
                   );
                 })}
@@ -167,11 +167,11 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data }, ref)
           {/* Title */}
           <div className="mt-10 text-center">
             <h1
-              className={`${playfair.className} text-3xl md:text-4xl font-semibold text-green-900 uppercase tracking-wide`}
+              className={`${playfair.className} text-2xl sm:text-3xl md:text-4xl font-semibold text-green-900 uppercase tracking-wide`}
             >
               {config.title}
             </h1>
-            <p className={`${inter.className} mt-3 text-base md:text-lg text-gray-700`}>
+            <p className={`${inter.className} mt-2 sm:mt-3 text-sm sm:text-base md:text-lg text-gray-700`}>
               {config.subtitle}
             </p>
           </div>
@@ -181,10 +181,10 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data }, ref)
             <p className={`${inter.className} text-sm uppercase tracking-[0.3em] text-gray-500`}>
               {isTelugu ? "ప్రదానం చేయబడింది" : "Presented to"}
             </p>
-            <p className={`${playfair.className} mt-4 text-3xl md:text-4xl font-semibold text-green-900`}>
+            <p className={`${playfair.className} mt-3 sm:mt-4 text-2xl sm:text-3xl md:text-4xl font-semibold text-green-900 break-words px-4`}>
               {data.fullName}
             </p>
-            <p className={`${inter.className} mt-2 text-base text-gray-600`}>
+            <p className={`${inter.className} mt-1 sm:mt-2 text-sm sm:text-base text-gray-600`}>
               {data.district && (isTelugu ? `జిల్లా: ${data.district}` : `District: ${data.district}`)}
             </p>
           </div>

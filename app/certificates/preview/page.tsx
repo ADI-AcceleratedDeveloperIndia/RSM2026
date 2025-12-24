@@ -160,7 +160,7 @@ function CertificatePreviewContent() {
         </div>
       )}
 
-      <div className="rounded-3xl border border-emerald-100 bg-slate-100/80 p-4 md:p-8 shadow-inner">
+      <div className="rounded-2xl sm:rounded-3xl border border-emerald-100 bg-slate-100/80 p-2 sm:p-4 md:p-8 shadow-inner overflow-x-auto">
         <Certificate ref={certificateRef} data={certificateData} />
       </div>
     </div>

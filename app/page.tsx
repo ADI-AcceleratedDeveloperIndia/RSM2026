@@ -115,19 +115,19 @@ export default function Home() {
   return (
     <div className="space-y-24">
       <section className="rs-hero-pattern">
-        <div className="rs-container py-8 md:py-12">
-          <div className="flex flex-col lg:flex-row items-start lg:items-center gap-12">
+        <div className="rs-container py-6 sm:py-8 md:py-12">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6 sm:gap-8 lg:gap-12">
             <div className="flex-1 space-y-4 text-white">
               <span className="rs-chip" style={{ background: "rgba(255,255,255,0.2)", color: "#ffffff" }}>
                 {tc("governmentOfTelangana")}
               </span>
-              <h1 className="text-4xl md:text-5xl font-semibold leading-tight">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold leading-tight">
                 {tc("togetherForSaferRoads")}
               </h1>
-              <p className="text-base md:text-lg text-white/80 max-w-xl">
+              <p className="text-sm sm:text-base md:text-lg text-white/80 max-w-xl">
                 {tc("roadSafetySharedResponsibility")}
               </p>
-              <div className="flex flex-wrap gap-3 pt-2">
+              <div className="flex flex-wrap gap-2 sm:gap-3 pt-2">
                 <Link href="/quiz" className="rs-btn-secondary">
                   <ShieldCheck className="h-5 w-5" />
                   {tc("takeQuizChallenge")}
@@ -146,8 +146,8 @@ export default function Home() {
                 </button>
               </div>
             </div>
-            <div className="relative flex-1 min-w-[280px]">
-              <div className="rs-roadstrap flex flex-col items-center gap-8 p-8 md:p-10 relative overflow-hidden" style={{ background: 'transparent' }}>
+            <div className="relative flex-1 min-w-[280px] w-full">
+              <div className="rs-roadstrap flex flex-col items-center gap-4 sm:gap-6 md:gap-8 p-4 sm:p-6 md:p-8 lg:p-10 relative overflow-hidden" style={{ background: 'transparent' }}>
                 {/* Video Background */}
                 <video
                   autoPlay
@@ -162,13 +162,13 @@ export default function Home() {
                 {/* Semi-transparent overlay to make video visible but not too bright */}
                 <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(255, 255, 255, 0.3)', zIndex: 1 }}></div>
                 
-                <div className="grid w-full max-w-md grid-cols-1 gap-6 sm:grid-cols-2" style={{ position: 'relative', zIndex: 10 }}>
+                <div className="grid w-full max-w-md grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2" style={{ position: 'relative', zIndex: 10 }}>
                   {leadershipProfiles.map((leader) => (
                     <div
                       key={leader.name}
-                      className="flex flex-col items-center gap-4 rounded-3xl border border-white/70 bg-white/95 p-6 text-emerald-900 backdrop-blur-lg shadow-[0_18px_38px_rgba(0,0,0,0.22)]"
+                      className="flex flex-col items-center gap-3 sm:gap-4 rounded-2xl sm:rounded-3xl border border-white/70 bg-white/95 p-4 sm:p-6 text-emerald-900 backdrop-blur-lg shadow-[0_18px_38px_rgba(0,0,0,0.22)]"
                     >
-                      <div className="relative h-40 w-40 overflow-hidden rounded-full border-4 border-white shadow-[0_16px_28px_rgba(0,0,0,0.18)]">
+                      <div className="relative h-32 w-32 sm:h-40 sm:w-40 overflow-hidden rounded-full border-2 sm:border-4 border-white shadow-[0_16px_28px_rgba(0,0,0,0.18)]">
                         <Image
                           src={leader.image}
                           alt={leader.alt}

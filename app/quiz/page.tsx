@@ -650,6 +650,13 @@ export default function QuizPage() {
         }, 500);
       }
       
+      // Store score for certificate generation
+      if (data.score !== undefined && data.total !== undefined) {
+        sessionStorage.setItem("quizScore", data.score.toString());
+        sessionStorage.setItem("quizTotal", data.total.toString());
+        sessionStorage.setItem("activityType", "quiz");
+      }
+      
       // Hide celebration after 5 seconds and show results
       setTimeout(() => {
         setShowCelebration(false);
@@ -749,7 +756,18 @@ export default function QuizPage() {
             <p className="text-sm text-emerald-100">
               {tc("useButtonBelowToGenerate")}
             </p>
-            <Button onClick={handleGenerateCertificate} className="rs-btn-secondary text-sm">
+            <Button 
+              onClick={() => {
+                // Store score for certificate generation
+                if (result.score !== undefined && result.total !== undefined) {
+                  sessionStorage.setItem("quizScore", result.score.toString());
+                  sessionStorage.setItem("quizTotal", result.total.toString());
+                  sessionStorage.setItem("activityType", "quiz");
+                }
+                router.push("/certificates/generate");
+              }} 
+              className="rs-btn-secondary text-sm"
+            >
               <Award className="h-4 w-4" /> {isMerit ? tc("generateMeritCertificate") : tc("generateParticipantCertificate")}
             </Button>
           </div>

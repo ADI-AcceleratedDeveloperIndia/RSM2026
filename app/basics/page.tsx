@@ -62,7 +62,24 @@ export default function BasicsPage() {
         setQuizQuestions(shuffled);
         // Generate options for each question
         const options = shuffled.map((sign) => {
-          const wrongAnswers = allSigns
+          if (!signsData) {
+            // Fallback if signsData is null
+            const wrongAnswers = allSigns
+              .filter((s) => s.id !== sign.id)
+              .sort(() => Math.random() - 0.5)
+              .slice(0, 3)
+              .map((s) => s.name);
+            return [sign.name, ...wrongAnswers].sort(() => Math.random() - 0.5);
+          }
+          // Get wrong answers from same category first, then others
+          const signCategory = signsData.categories.mandatory.signs.find(ms => ms.id === sign.id) ? "mandatory" :
+                             signsData.categories.cautionary.signs.find(cs => cs.id === sign.id) ? "cautionary" : "informatory";
+          const sameCategory = allSigns.filter((s) => {
+            const sCategory = signsData.categories.mandatory.signs.find(ms => ms.id === s.id) ? "mandatory" :
+                             signsData.categories.cautionary.signs.find(cs => cs.id === s.id) ? "cautionary" : "informatory";
+            return signCategory === sCategory && s.id !== sign.id;
+          });
+          const wrongAnswers = (sameCategory.length >= 3 ? sameCategory : allSigns)
             .filter((s) => s.id !== sign.id)
             .sort(() => Math.random() - 0.5)
             .slice(0, 3)
@@ -160,13 +177,13 @@ export default function BasicsPage() {
 
   if (quizMode === "learn") {
     return (
-      <div className="rs-container py-12">
+      <div className="rs-container py-6 sm:py-8 md:py-12">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-emerald-900 mb-4">
+          <div className="text-center mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-emerald-900 mb-3 sm:mb-4 px-4">
               {i18n.language === "te" ? "రోడ్ సైన్‌లు - ప్రాథమికాలు" : "Road Signs - Basics"}
             </h1>
-            <p className="text-lg text-slate-600 mb-6">
+            <p className="text-sm sm:text-base md:text-lg text-slate-600 mb-4 sm:mb-6 px-4">
               {i18n.language === "te"
                 ? "87 రోడ్ సైన్‌ల గురించి తెలుసుకోండి మరియు పరీక్షించండి"
                 : "Learn and test your knowledge of 87 road signs"}
@@ -207,10 +224,10 @@ export default function BasicsPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
             {filteredSigns.map((sign, index) => (
               <Card key={`${sign.image}-${index}`} className="overflow-hidden">
-                <div className="relative h-48 bg-slate-100">
+                <div className="relative h-32 sm:h-40 md:h-48 bg-slate-100">
                   <Image
                     src={`/${sign.image}`}
                     alt={sign.name}
@@ -288,18 +305,18 @@ export default function BasicsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="mb-6 flex justify-center">
-                <div className="relative w-64 h-64 bg-slate-100 rounded-lg overflow-hidden">
+              <div className="mb-4 sm:mb-6 flex justify-center">
+                <div className="relative w-full max-w-xs sm:max-w-sm md:w-64 md:h-64 aspect-square bg-slate-100 rounded-lg overflow-hidden">
                   <Image
                     src={`/${currentQuestion.image}`}
                     alt="Road sign"
                     fill
-                    className="object-contain p-4"
+                    className="object-contain p-3 sm:p-4"
                   />
                 </div>
               </div>
 
-              <div className="grid gap-3">
+              <div className="grid gap-2 sm:gap-3">
                 {currentOptions.map((option, idx) => {
                   const isSelected = selectedAnswer === option;
                   const isCorrect = option === currentQuestion.name;
@@ -319,7 +336,7 @@ export default function BasicsPage() {
                             : "outline"
                           : "outline"
                       }
-                      className={`h-auto py-4 text-left justify-start ${
+                      className={`h-auto py-3 sm:py-4 text-left justify-start text-sm sm:text-base ${
                         showFeedback && isCorrect
                           ? "bg-emerald-600 hover:bg-emerald-700 border-2 border-emerald-700"
                           : showFeedback && isSelected
