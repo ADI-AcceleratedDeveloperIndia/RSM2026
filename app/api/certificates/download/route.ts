@@ -36,7 +36,8 @@ export async function GET(request: NextRequest) {
     const qrDataUrl = "";
 
     // Load assets (in production, these should be stored securely)
-    // Only Minister's signature is used - no secretary or RTA signatures
+    // Include CM, Minister, and Padala Rahul (RTA) photos
+    const cmPhotoPath = join(process.cwd(), "public", "assets", "leadership", "CM.png");
     const ministerPhotoPath = join(process.cwd(), "public", "assets", "minister", "Sri-Ponnam-Prabhakar.jpg");
     const emblemPath = join(process.cwd(), "public", "assets", "seals", "telangana-emblem.png");
     const ministerSigPath = join(process.cwd(), "public", "assets", "signatures", "minister.png");
