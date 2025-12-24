@@ -1,0 +1,80 @@
+{
+  "questions": [
+    {
+      "id": 1,
+      "question": "What is the minimum age to obtain a driving license in India?",
+      "options": ["16 years", "18 years", "20 years", "21 years"]
+    },
+    {
+      "id": 2,
+      "question": "Is it mandatory to wear a helmet while riding a two-wheeler?",
+      "options": ["Yes, always", "Only on highways", "Only in cities", "No"]
+    },
+    {
+      "id": 3,
+      "question": "What should you do at a red traffic light?",
+      "options": ["Slow down", "Stop completely", "Speed up", "Ignore"]
+    },
+    {
+      "id": 4,
+      "question": "What is the maximum speed limit in residential areas?",
+      "options": ["30 km/h", "40 km/h", "50 km/h", "60 km/h"]
+    },
+    {
+      "id": 5,
+      "question": "When should you use indicators while driving?",
+      "options": ["Never", "Only when turning", "Before changing lanes or turning", "Only on highways"]
+    },
+    {
+      "id": 6,
+      "question": "What does a yellow traffic light mean?",
+      "options": ["Go", "Stop", "Slow down and prepare to stop", "Speed up"]
+    },
+    {
+      "id": 7,
+      "question": "Is it safe to use a mobile phone while driving?",
+      "options": ["Yes, if hands-free", "No, never", "Only for calls", "Only for messages"]
+    },
+    {
+      "id": 8,
+      "question": "What should pedestrians do before crossing the road?",
+      "options": ["Run across", "Look both ways", "Use phone", "Assume vehicles will stop"]
+    },
+    {
+      "id": 9,
+      "question": "What is the legal blood alcohol limit for driving in India?",
+      "options": ["0.03%", "0.05%", "0.08%", "Zero tolerance"]
+    },
+    {
+      "id": 10,
+      "question": "How much following distance should you maintain behind another vehicle?",
+      "options": ["1 meter", "At least a 2-second gap", "5 meters", "Doesn't matter"]
+    },
+    {
+      "id": 11,
+      "question": "What should you do if you see an ambulance with flashing lights?",
+      "options": ["Ignore it", "Give way immediately", "Slow down slightly", "Speed up"]
+    },
+    {
+      "id": 12,
+      "question": "Is it mandatory to wear seatbelts in the front seat?",
+      "options": ["Yes", "No", "Only on highways", "Only for drivers"]
+    },
+    {
+      "id": 13,
+      "question": "What should you do if your vehicle breaks down on a highway?",
+      "options": ["Leave it", "Move to the side and use hazard lights", "Stay in the middle", "Call and wait"]
+    },
+    {
+      "id": 14,
+      "question": "What does a zebra crossing indicate?",
+      "options": ["Parking area", "Pedestrian crossing", "No entry", "Speed limit"]
+    },
+    {
+      "id": 15,
+      "question": "What is the penalty for jumping a red light?",
+      "options": ["Warning", "Fine of ₹1000-5000", "No penalty", "License suspension"]
+    }
+  ]
+}
+

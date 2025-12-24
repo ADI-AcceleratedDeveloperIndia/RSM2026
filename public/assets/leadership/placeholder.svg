@@ -1,0 +1,6 @@
+﻿<svg width="320" height="320" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="160" cy="160" r="160" fill="#e0f2e9"/>
+  <circle cx="160" cy="120" r="50" fill="#10b981"/>
+  <path d="M 80 240 Q 80 180, 160 180 Q 240 180, 240 240 L 240 320 L 80 320 Z" fill="#10b981"/>
+  <text x="160" y="280" font-family="Arial" font-size="18" font-weight="bold" fill="#ffffff" text-anchor="middle">RTA Member</text>
+</svg>

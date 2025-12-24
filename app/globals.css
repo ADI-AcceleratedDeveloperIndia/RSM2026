@@ -1,0 +1,107 @@
+@import "tailwindcss";
+@import "../styles/theme.css";
+
+::selection {
+  background: rgba(0, 123, 79, 0.26);
+  color: #fff;
+}
+
+body {
+  background: var(--rs-color-bg);
+  color: var(--rs-color-text);
+  font-family: var(--font-geist-sans);
+  overflow-x: hidden;
+}
+
+main {
+  min-height: calc(100vh - 320px);
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+  20%, 40%, 60%, 80% { transform: translateX(10px); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(100px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes buzz {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-in-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.4s ease-out;
+}
+
+.animate-buzz {
+  animation: buzz 0.5s ease-in-out;
+}
+
+.certificate-export,
+.certificate-export * ,
+.certificate-export *::before,
+.certificate-export *::after {
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* Override Tailwind colors with standard hex/rgb for html2canvas compatibility */
+.certificate-export .text-green-800 { color: #166534 !important; }
+.certificate-export .text-green-900 { color: #14532d !important; }
+.certificate-export .text-green-600 { color: #16a34a !important; }
+.certificate-export .text-green-700 { color: #15803d !important; }
+.certificate-export .text-gray-500 { color: #6b7280 !important; }
+.certificate-export .text-gray-600 { color: #4b5563 !important; }
+.certificate-export .text-gray-700 { color: #374151 !important; }
+.certificate-export .text-gray-800 { color: #1f2937 !important; }
+.certificate-export .bg-white { background-color: #ffffff !important; }
+.certificate-export .border-green-200 { border-color: #bbf7d0 !important; }
+.certificate-export .border-green-600 { border-color: #16a34a !important; }
+
+@media print {
+  .certificate-preview-page {
+    padding: 0 !important;
+  }
+
+  .certificate-preview-page * {
+    visibility: hidden;
+  }
+
+  .certificate-preview-page .printable-certificate,
+  .certificate-preview-page .printable-certificate * {
+    visibility: visible;
+  }
+
+  .certificate-preview-page .printable-certificate {
+    position: absolute;
+    inset: 0;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 1200px;
+    background: #ffffff !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .certificate-preview-page .printable-certificate .certificate-export {
+    box-shadow: none !important;
+  }
+}
