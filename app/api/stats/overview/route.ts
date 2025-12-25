@@ -3,7 +3,7 @@ import connectDB from "@/lib/db";
 import Certificate from "@/models/Certificate";
 import Event from "@/models/Event";
 import QuizAttempt from "@/models/QuizAttempt";
-import SimulationPlay from "@/models/SimulationPlay";
+import SimStat from "@/models/SimStat";
 import { getCache, setCache } from "@/lib/cache";
 
 const CACHE_KEY = "stats:overview";
@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
       totalQuizAttempts: number;
       passRate: number;
       totalSimulationPlays: number;
+      successRate: number;
     }>(CACHE_KEY);
     
     if (cached) {
@@ -28,16 +29,18 @@ export async function GET(request: NextRequest) {
 
     await connectDB();
 
-    const [totalCertificates, totalAppreciations, totalEvents, totalQuizPasses, totalQuizAttempts, totalSimulationPlays] = await Promise.all([
+    const [totalCertificates, totalAppreciations, totalEvents, totalQuizPasses, totalQuizAttempts, totalSimulationPlays, simulationCompletions] = await Promise.all([
       Certificate.countDocuments(),
-      Certificate.countDocuments({ appreciationOptIn: true }),
+      Certificate.countDocuments({ appreciationOptIn: true, appreciationText: { $exists: true, $ne: "" } }),
       Event.countDocuments(),
       QuizAttempt.countDocuments({ passed: true }),
       QuizAttempt.countDocuments(),
-      SimulationPlay.countDocuments(),
+      SimStat.countDocuments(),
+      SimStat.countDocuments({ success: true }),
     ]);
 
     const passRate = totalQuizAttempts > 0 ? Math.round((totalQuizPasses / totalQuizAttempts) * 100) : 0;
+    const successRate = totalSimulationPlays > 0 ? Math.round((simulationCompletions / totalSimulationPlays) * 100) : 0;
 
     const result = {
       totalCertificates,
@@ -47,6 +50,7 @@ export async function GET(request: NextRequest) {
       totalQuizAttempts,
       passRate,
       totalSimulationPlays,
+      successRate,
     };
 
     // Cache the result

@@ -68,7 +68,8 @@ const generateSchema = z.object({
   score: z.string().optional(),
   details: z.string().optional(),
   eventName: z.string().optional(),
-  referenceId: z.string().optional(), // Event Reference ID (optional)
+  referenceId: z.string().optional(), // Event Reference ID
+  organizerId: z.string().optional(), // Organizer ID (for Scenario 5)
 });
 
 type GenerateForm = z.infer<typeof generateSchema>;
@@ -133,10 +134,13 @@ function CertificateGenerateContent() {
     }
   }, []);
 
+  // Check if coming from activity (auto-determine type)
+  const isFromActivity = activityData.score !== null && activityData.total !== null && activityData.activityType;
+
   const defaultType = useMemo(() => {
     // Auto-determine certificate type from activity score
-    if (activityData.score !== null && activityData.total !== null && activityData.activityType) {
-      const percentage = (activityData.score / activityData.total) * 100;
+    if (isFromActivity) {
+      const percentage = (activityData.score! / activityData.total!) * 100;
       // Certificate type based on score: < 60% = PAR, >= 60% but < 80% = MERIT, >= 80% = TOPPER
       if (percentage >= 80) {
         return "TOPPER";
@@ -155,10 +159,7 @@ function CertificateGenerateContent() {
       return fromQuery;
     }
     return "ORG"; // Default to Organizer for direct access (not from activity)
-  }, [searchParams, activityData]);
-  
-  // Check if coming from activity (auto-determine type)
-  const isFromActivity = activityData.score !== null && activityData.total !== null && activityData.activityType;
+  }, [searchParams, activityData, isFromActivity]);
 
   const referenceFromQuery = searchParams.get("ref");
 
@@ -180,6 +181,7 @@ function CertificateGenerateContent() {
       details: "",
       eventName: "",
       referenceId: referenceFromQuery || "",
+      organizerId: "",
     },
   });
 
@@ -187,6 +189,12 @@ function CertificateGenerateContent() {
   const districtValue = watch("district");
 
   useEffect(() => {
+    // Update certificate type when activity data loads
+    if (isFromActivity) {
+      const calculatedType = defaultType;
+      setValue("certificateType", calculatedType as GenerateForm["certificateType"]);
+    }
+
     // Pre-fill score from activity data
     if (activityData.score !== null && activityData.total !== null) {
       const percentage = Math.round((activityData.score / activityData.total) * 100);
@@ -194,7 +202,12 @@ function CertificateGenerateContent() {
     }
 
     const paramsToUpdate = [
-      { key: "type", setter: (val: string) => setValue("certificateType", val as GenerateForm["certificateType"]) },
+      // Only update type from query if NOT from activity
+      { key: "type", setter: (val: string) => {
+        if (!isFromActivity) {
+          setValue("certificateType", val as GenerateForm["certificateType"]);
+        }
+      }},
       { key: "name", setter: (val: string) => setValue("fullName", safeDecode(val)) },
       { key: "district", setter: (val: string) => setValue("district", safeDecode(val)) },
       { key: "date", setter: (val: string) => setValue("issueDate", val) },
@@ -211,7 +224,7 @@ function CertificateGenerateContent() {
         setter(value);
       }
     });
-  }, [searchParams, setValue, activityData]);
+  }, [searchParams, setValue, activityData, isFromActivity, defaultType]);
 
   useEffect(() => {
     if (regionalAuthority) {
@@ -263,7 +276,8 @@ function CertificateGenerateContent() {
           score: score,
           total: total,
           activityType: activityData.activityType || "online",
-          organizerReferenceId: eventRefId, // Pass event reference ID to fetch event details
+          organizerReferenceId: eventRefId, // Event Reference ID
+          organizerId: data.organizerId || undefined, // Organizer ID (for Scenario 5)
           userEmail: data.email || undefined,
         }),
       });
@@ -393,17 +407,45 @@ function CertificateGenerateContent() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="eventReferenceId" className="text-sm font-semibold text-emerald-900">Event Reference ID (Optional)</Label>
+            <Label htmlFor="eventReferenceId" className="text-sm font-semibold text-emerald-900">
+              Event Reference ID {isFromActivity ? "*" : "(Optional)"}
+            </Label>
             <Input
               id="eventReferenceId"
               placeholder="KRMR-RSM-2026-PDL-RHL-EVT-00001"
               className="h-11 rounded-lg border border-emerald-200 font-mono text-xs"
-              {...register("referenceId")}
+              {...register("referenceId", { 
+                required: isFromActivity ? "Event Reference ID is required when coming from an activity" : false 
+              })}
             />
             <p className="text-xs text-slate-500">
-              Enter Event Reference ID to link this certificate to an event. The event name will appear on the certificate.
+              {isFromActivity 
+                ? "Event Reference ID is required. Enter the Event ID you received from the organizer."
+                : "Enter Event Reference ID to link this certificate to an event. The event name will appear on the certificate."}
             </p>
+            {errors.referenceId && <p className="text-xs text-red-600">{errors.referenceId.message}</p>}
           </div>
+
+          {/* Organizer ID field for Scenario 5 (Online Organizer/Volunteer) */}
+          {!isFromActivity && (
+            <div className="space-y-2">
+              <Label htmlFor="organizerId" className="text-sm font-semibold text-emerald-900">
+                Organizer ID {selectedType !== "ORG" && selectedType !== "VOL" && selectedType !== "SCH" && selectedType !== "COL" ? "" : "*"}
+              </Label>
+              <Input
+                id="organizerId"
+                placeholder="KRMR-RSM-2026-PDL-RHL-ORGANIZER-00001"
+                className="h-11 rounded-lg border border-emerald-200 font-mono text-xs"
+                {...register("organizerId", {
+                  required: (selectedType === "ORG" || selectedType === "VOL" || selectedType === "SCH" || selectedType === "COL") && watch("referenceId") ? "Organizer ID is required when Event ID is provided" : false
+                })}
+              />
+              <p className="text-xs text-slate-500">
+                Required when generating Organizer, Volunteer, or Contributor certificates with an Event ID.
+              </p>
+              {errors.organizerId && <p className="text-xs text-red-600">{errors.organizerId.message}</p>}
+            </div>
+          )}
 
           <div className="grid md:grid-cols-2 gap-5">
             <div className="space-y-2">

@@ -32,6 +32,7 @@ export default function CertificatesPage() {
   const [fullName, setFullName] = useState("");
   const [institution, setInstitution] = useState("");
   const [eventRef, setEventRef] = useState("");
+  const [organizerId, setOrganizerId] = useState(""); // Organizer ID for scenarios 3, 4, 5
   const [userEmail, setUserEmail] = useState("");
   const [activityType, setActivityType] = useState("quiz"); // Default to quiz
   const [customActivity, setCustomActivity] = useState("");
@@ -70,6 +71,12 @@ export default function CertificatesPage() {
     setError(null);
     if (!fullName.trim() || !eventRef.trim()) {
       setError(i18n.language === "te" ? "పేరు మరియు ఈవెంట్ ID అవసరం" : "Name and Event Reference ID are required");
+      return;
+    }
+    
+    // Organizer ID is required for all offline scenarios (3, 4, 5)
+    if (!organizerId.trim()) {
+      setError(i18n.language === "te" ? "ఆర్గనైజర్ ID అవసరం" : "Organizer ID is required");
       return;
     }
     
@@ -125,7 +132,8 @@ export default function CertificatesPage() {
           score: scoreValue,
           total: totalValue,
           activityType: finalActivityType,
-          organizerReferenceId: eventRef.trim(),
+          organizerReferenceId: eventRef.trim(), // Event Reference ID
+          organizerId: organizerId.trim(), // Organizer ID (required for scenarios 3, 4, 5)
           userEmail: userEmail.trim() || undefined,
         }),
       });
@@ -242,6 +250,25 @@ export default function CertificatesPage() {
               required
               className="font-mono text-xs"
             />
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="organizerId" className="text-sm font-semibold text-emerald-900">
+              {i18n.language === "te" ? "ఆర్గనైజర్ ID *" : "Organizer ID *"}
+            </Label>
+            <Input
+              id="organizerId"
+              value={organizerId}
+              onChange={(e) => setOrganizerId(e.target.value)}
+              placeholder="KRMR-RSM-2026-PDL-RHL-ORGANIZER-00001"
+              required
+              className="font-mono text-xs"
+            />
+            <p className="text-xs text-slate-500 mt-1">
+              {i18n.language === "te"
+                ? "ఈవెంట్‌కు సంబంధించిన ఆర్గనైజర్ ID నమోదు చేయండి"
+                : "Enter the Organizer ID associated with this event"}
+            </p>
           </div>
 
           <div className="space-y-1">

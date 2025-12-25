@@ -15,7 +15,8 @@ const createCertSchema = z.object({
   score: z.number().min(0),
   total: z.number().min(1),
   activityType: z.string().min(1), // Allow any activity type (quiz, basics, simulation, guides, prevention, essay, custom, etc.)
-  organizerReferenceId: z.string().optional(), // Optional organizer reference ID
+  organizerReferenceId: z.string().optional(), // Event Reference ID (optional for online without event)
+  organizerId: z.string().optional(), // Organizer ID (required for scenarios 3, 4, 5)
   userEmail: z.string().email().optional(),
 });
 
@@ -47,37 +48,48 @@ export async function POST(request: NextRequest) {
 
     await connectDB();
 
-    // If organizer reference ID is provided, validate it and get event details
+    // If organizer reference ID (Event ID) is provided, validate it and get event details
     let eventReferenceId: string | undefined;
     let eventTitle: string | undefined;
     
     if (validated.organizerReferenceId) {
-      // Validate organizer reference ID format (should be event reference ID)
+      // Validate event reference ID
       const event = await Event.findOne({ 
         referenceId: validated.organizerReferenceId,
         approved: true 
       });
       
-      if (event) {
-        eventReferenceId = event.referenceId;
-        eventTitle = event.title;
-      } else {
+      if (!event) {
         return NextResponse.json(
-          { error: "Invalid or unapproved organizer reference ID" },
+          { error: "Invalid or unapproved Event Reference ID" },
           { status: 400 }
         );
       }
+
+      // If Organizer ID is provided (scenarios 3, 4, 5), verify Event belongs to Organizer
+      if (validated.organizerId) {
+        if (event.organizerId !== validated.organizerId) {
+          return NextResponse.json(
+            { error: "Event Reference ID does not belong to this Organizer ID" },
+            { status: 403 }
+          );
+        }
+      }
+
+      eventReferenceId = event.referenceId;
+      eventTitle = event.title;
     } else {
-      // No organizer reference ID - set default online event title based on activity type
+      // No event reference ID - set default online event title based on activity type (Scenario 2)
       const activityEventTitles: Record<string, string> = {
-        quiz: "Online Quiz Event",
-        simulation: "Online Simulation Event",
-        basics: "Online Basics Event",
-        guides: "Online Safety Guides Event",
-        prevention: "Online Prevention Event",
+        quiz: "Online Quiz",
+        simulation: "Online Simulation",
+        basics: "Online Basics",
+        guides: "Online Safety Guides",
+        prevention: "Online Prevention",
         online: "Online Road Safety Event",
       };
-      eventTitle = activityEventTitles[validated.activityType] || "Online Road Safety Event";
+      const activityTypeLower = validated.activityType.toLowerCase();
+      eventTitle = activityEventTitles[activityTypeLower] || `Online ${validated.activityType.charAt(0).toUpperCase() + validated.activityType.slice(1)}`;
     }
 
     const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";

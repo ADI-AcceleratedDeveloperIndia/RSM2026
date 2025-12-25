@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import Certificate, { CertificateCode, CertificateData } from "@/components/certificates/Certificate";
 import { getRegionalAuthority } from "@/lib/regional";
@@ -231,6 +232,96 @@ function CertificatePreviewContent() {
       <div className="rounded-3xl border border-emerald-100 bg-slate-100/80 p-4 md:p-8 shadow-inner">
         <Certificate ref={certificateRef} data={certificateData} />
       </div>
+
+      {/* Appreciation Form */}
+      {certificateData.referenceId && (
+        <AppreciationForm certificateId={certificateData.referenceId} />
+      )}
+    </div>
+  );
+}
+
+function AppreciationForm({ certificateId }: { certificateId: string }) {
+  const [appreciationText, setAppreciationText] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const { i18n } = useTranslation("common");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!appreciationText.trim()) {
+      alert(i18n.language === "te" ? "దయచేసి మీ అభినందనను నమోదు చేయండి" : "Please enter your appreciation");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/certificates/appreciation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          certificateId,
+          appreciationText: appreciationText.trim(),
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setSubmitted(true);
+        setAppreciationText("");
+      } else {
+        alert(data.error || (i18n.language === "te" ? "సమర్పణ విఫలమైంది" : "Submission failed"));
+      }
+    } catch (error) {
+      alert(i18n.language === "te" ? "సమర్పణ విఫలమైంది" : "Submission failed");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (submitted) {
+    return (
+      <div className="rs-card p-6 bg-emerald-50 border border-emerald-200">
+        <p className="text-emerald-800 font-semibold text-center">
+          {i18n.language === "te"
+            ? "మీ అభినందన విజయవంతంగా సమర్పించబడింది! ప్రభుత్వానికి ధన్యవాదాలు."
+            : "Thank you! Your appreciation has been submitted to the government."}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rs-card p-6 space-y-4">
+      <div>
+        <h3 className="text-lg font-semibold text-emerald-900">
+          {i18n.language === "te" ? "మీ అభిప్రాయం ఇవ్వండి" : "Share Your Feedback"}
+        </h3>
+        <p className="text-sm text-slate-600 mt-1">
+          {i18n.language === "te"
+            ? "మీ అభినందనను ప్రభుత్వానికి పంపండి. ఇది ప్రభుత్వానికి చేరుతుంది."
+            : "Your feedback will be sent to the government. This will reach the government."}
+        </p>
+      </div>
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <textarea
+          value={appreciationText}
+          onChange={(e) => setAppreciationText(e.target.value)}
+          placeholder={i18n.language === "te" ? "మీ అభినందనను ఇక్కడ నమోదు చేయండి..." : "Enter your appreciation message here..."}
+          className="w-full min-h-[100px] rounded-lg border border-emerald-200 px-4 py-3 text-sm focus:border-emerald-500 focus:outline-none resize-y"
+          required
+        />
+        <Button type="submit" className="rs-btn-primary" disabled={submitting}>
+          {submitting ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              {i18n.language === "te" ? "సమర్పిస్తోంది..." : "Submitting..."}
+            </>
+          ) : (
+            i18n.language === "te" ? "సమర్పించండి" : "Submit Appreciation"
+          )}
+        </Button>
+      </form>
     </div>
   );
 }

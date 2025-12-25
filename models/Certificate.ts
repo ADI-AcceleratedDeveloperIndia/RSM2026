@@ -23,6 +23,8 @@ const CertificateSchema = new Schema({
   createdAt: { type: Date, default: Date.now },
   userEmail: String,
   userIpHash: String,
+  appreciationOptIn: { type: Boolean, default: false },
+  appreciationText: String,
 });
 
 // Compound unique index: certificateNumber must be unique per type

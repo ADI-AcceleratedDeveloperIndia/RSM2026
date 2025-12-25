@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Award, FileText, Users, Download, Activity, MapPin, Calendar, CheckCircle2, XCircle, Clock, Eye, UserCheck, UserX } from "lucide-react";
+import { Award, FileText, Users, Download, Calendar, CheckCircle2, XCircle, Clock, Eye, ChevronDown, ChevronRight } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 type Event = {
@@ -50,9 +50,27 @@ type Organizer = {
   institution: string;
   designation: string;
   status: "pending" | "approved" | "rejected";
-  approvedAt?: string;
-  approvedBy?: string;
   createdAt: string;
+};
+
+type OrganizerWithEvents = Organizer & {
+  events: Event[];
+  eventCount: number;
+};
+
+type DailyReport = {
+  date: string;
+  stats: {
+    totalCertificates: number;
+    totalAppreciations: number;
+    totalEvents: number;
+    totalQuizPasses: number;
+    totalQuizAttempts: number;
+    passRate: number;
+    totalSimulationPlays: number;
+    successRate: number;
+    avgTimeSeconds: number;
+  };
 };
 
 export default function AdminDashboard() {
@@ -64,142 +82,172 @@ export default function AdminDashboard() {
     totalQuizAttempts: 0,
     passRate: 0,
     totalSimulationPlays: 0,
-  });
-  const [simStats, setSimStats] = useState({
-    totalSessions: 0,
-    totalCompletions: 0,
     successRate: 0,
-    categoryStats: [] as { category: string; total: number; successful: number }[],
     avgTimeSeconds: 0,
   });
   const [loading, setLoading] = useState(true);
-  const [appreciations, setAppreciations] = useState<{ fullName: string; appreciationText: string; createdAt: string }[]>([]);
-  const [events, setEvents] = useState<Event[]>([]);
+  const [organizers, setOrganizers] = useState<OrganizerWithEvents[]>([]);
+  const [loadingOrganizers, setLoadingOrganizers] = useState(false);
+  const [expandedOrganizers, setExpandedOrganizers] = useState<Set<string>>(new Set());
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
   const [eventParticipants, setEventParticipants] = useState<EventParticipants | null>(null);
   const [loadingParticipants, setLoadingParticipants] = useState(false);
-  const [organizers, setOrganizers] = useState<Organizer[]>([]);
-  const [loadingOrganizers, setLoadingOrganizers] = useState(false);
-  const [allParticipants, setAllParticipants] = useState<Participant[]>([]);
-  const [loadingAllParticipants, setLoadingAllParticipants] = useState(false);
+  const [dailyReports, setDailyReports] = useState<DailyReport[]>([]);
+  const [loadingReports, setLoadingReports] = useState(false);
+  const [appreciations, setAppreciations] = useState<{ fullName: string; appreciationText: string; createdAt: string }[]>([]);
+  const [loadingAppreciations, setLoadingAppreciations] = useState(false);
 
   useEffect(() => {
-    Promise.all([
-      fetch("/api/stats/overview").then((res) => res.json()).catch(() => ({})),
-      fetch("/api/sim/stats").then((res) => res.json()).catch(() => ({})),
-      fetch("/api/admin/events/list").then((res) => res.json()).catch(() => ({ events: [] })),
-    ])
-      .then(([overviewData, simData, eventsData]) => {
-        if (overviewData && typeof overviewData === 'object') {
-          setStats({
-            totalCertificates: overviewData.totalCertificates || 0,
-            totalAppreciations: overviewData.totalAppreciations || 0,
-            totalEvents: overviewData.totalEvents || 0,
-            totalQuizPasses: overviewData.totalQuizPasses || 0,
-            totalQuizAttempts: overviewData.totalQuizAttempts || 0,
-            passRate: overviewData.passRate || 0,
-            totalSimulationPlays: overviewData.totalSimulationPlays || 0,
-          });
-        }
-        if (simData && simData.categoryStats && Array.isArray(simData.categoryStats)) {
-          setSimStats(simData);
-        }
-        if (eventsData && eventsData.events) {
-          setEvents(eventsData.events);
-        }
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
-
-  useEffect(() => {
-    fetch("/api/admin/appreciations/list")
-      .then((res) => (res.ok ? res.json() : { items: [] }))
-      .then((data) => setAppreciations(data.items || []))
-      .catch(() => setAppreciations([]));
-  }, []);
-
-  useEffect(() => {
+    loadStats();
     loadOrganizers();
-    loadAllParticipants();
+    loadDailyReports();
+    loadAppreciations();
   }, []);
+
+  const loadAppreciations = async () => {
+    setLoadingAppreciations(true);
+    try {
+      const res = await fetch("/api/admin/appreciations/list");
+      const data = await res.json();
+      setAppreciations(data.items || []);
+    } catch (error) {
+      console.error("Error loading appreciations:", error);
+    } finally {
+      setLoadingAppreciations(false);
+    }
+  };
+
+  const loadStats = async () => {
+    try {
+      const overviewRes = await fetch("/api/stats/overview");
+      const overviewData = await overviewRes.json();
+
+      const totalQuizAttempts = overviewData.totalQuizAttempts || 0;
+      const totalQuizPasses = overviewData.totalQuizPasses || 0;
+      const passRate = totalQuizAttempts > 0 ? Math.round((totalQuizPasses / totalQuizAttempts) * 100) : 0;
+
+      const totalSimulationPlays = overviewData.totalSimulationPlays || 0;
+      const successRate = overviewData.successRate || 0;
+
+      setStats({
+        totalCertificates: overviewData.totalCertificates || 0,
+        totalAppreciations: overviewData.totalAppreciations || 0,
+        totalEvents: overviewData.totalEvents || 0,
+        totalQuizPasses,
+        totalQuizAttempts,
+        passRate,
+        totalSimulationPlays,
+        successRate,
+        avgTimeSeconds: 0, // Will be calculated from daily reports if needed
+      });
+    } catch (error) {
+      console.error("Error loading stats:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadOrganizers = async () => {
     setLoadingOrganizers(true);
     try {
-      const response = await fetch("/api/admin/organizers/list");
-      const data = await response.json();
-      if (response.ok) {
-        setOrganizers(data.organizers || []);
-      }
+      const [organizersRes, eventsRes] = await Promise.all([
+        fetch("/api/admin/organizers/list"),
+        fetch("/api/admin/events/list"),
+      ]);
+      const organizersData = await organizersRes.json();
+      const eventsData = await eventsRes.json();
+
+      const organizersMap = new Map<string, OrganizerWithEvents>();
+      
+      // Initialize organizers
+      organizersData.organizers.forEach((org: Organizer) => {
+        organizersMap.set(org.finalId || org.temporaryId, {
+          ...org,
+          events: [],
+          eventCount: 0,
+        });
+      });
+
+      // Group events by organizer
+      eventsData.events.forEach((event: Event) => {
+        const organizer = organizersMap.get(event.organizerId);
+        if (organizer) {
+          organizer.events.push(event);
+          organizer.eventCount++;
+        }
+      });
+
+      setOrganizers(Array.from(organizersMap.values()));
     } catch (error) {
-      console.error("Failed to load organizers:", error);
+      console.error("Error loading organizers:", error);
     } finally {
       setLoadingOrganizers(false);
     }
   };
 
-  const loadAllParticipants = async () => {
-    setLoadingAllParticipants(true);
+  const loadDailyReports = async () => {
+    setLoadingReports(true);
     try {
-      const response = await fetch("/api/admin/participants/list?limit=100");
-      const data = await response.json();
-      if (response.ok) {
-        setAllParticipants(data.participants || []);
-      }
+      const res = await fetch("/api/admin/daily-report/list");
+      const data = await res.json();
+      setDailyReports(data.reports || []);
     } catch (error) {
-      console.error("Failed to load participants:", error);
+      console.error("Error loading daily reports:", error);
     } finally {
-      setLoadingAllParticipants(false);
+      setLoadingReports(false);
     }
   };
 
-  const handleApproveOrganizer = async (temporaryId: string, action: "approve" | "reject") => {
-    try {
-      const response = await fetch("/api/admin/organizers/approve", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ temporaryId, action }),
-      });
-      const data = await response.json();
-      if (response.ok) {
-        alert(action === "approve" ? `Organizer approved! Final ID: ${data.finalId}` : "Organizer rejected");
-        loadOrganizers();
-      } else {
-        alert(data.error || "Failed to process organizer");
-      }
-    } catch (error) {
-      alert("Failed to process organizer");
+  const toggleOrganizer = (organizerId: string) => {
+    const newExpanded = new Set(expandedOrganizers);
+    if (newExpanded.has(organizerId)) {
+      newExpanded.delete(organizerId);
+    } else {
+      newExpanded.add(organizerId);
     }
+    setExpandedOrganizers(newExpanded);
   };
 
   const handleViewParticipants = async (eventReferenceId: string) => {
     setSelectedEvent(eventReferenceId);
     setLoadingParticipants(true);
     try {
-      const response = await fetch(`/api/admin/events/participants?eventReferenceId=${eventReferenceId}`);
-      const data = await response.json();
-      if (response.ok) {
-        setEventParticipants(data);
-      } else {
-        alert(data.error || "Failed to load participants");
-      }
+      const res = await fetch(`/api/admin/events/participants?eventReferenceId=${eventReferenceId}`);
+      const data = await res.json();
+      setEventParticipants(data);
     } catch (error) {
-      alert("Failed to load participants");
+      console.error("Error loading participants:", error);
     } finally {
       setLoadingParticipants(false);
     }
   };
 
-  const handleExport = async () => {
+  const handleDownloadDailyReport = async (date: string) => {
     try {
-      const response = await fetch("/api/admin/appreciations/export");
-      const blob = await response.blob();
+      const res = await fetch(`/api/admin/daily-report/download?date=${date}`);
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `daily-report-${date}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading report:", error);
+      alert("Failed to download report");
+    }
+  };
+
+  const handleExportAppreciations = async () => {
+    try {
+      const res = await fetch("/api/admin/appreciations/export");
+      const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
       a.download = "appreciations.csv";
       a.click();
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Export error:", error);
       alert("Failed to export");
@@ -208,6 +256,16 @@ export default function AdminDashboard() {
 
   const statCards = [
     {
+      label: "Total Organizers",
+      value: organizers.length,
+      icon: <Users className="h-6 w-6" />,
+    },
+    {
+      label: "Total Events",
+      value: stats.totalEvents,
+      icon: <Calendar className="h-6 w-6" />,
+    },
+    {
       label: "Total Certificates",
       value: stats.totalCertificates,
       icon: <FileText className="h-6 w-6" />,
@@ -215,16 +273,6 @@ export default function AdminDashboard() {
     {
       label: "Appreciations",
       value: stats.totalAppreciations,
-      icon: <Award className="h-6 w-6" />,
-    },
-    {
-      label: "Quiz Attempts",
-      value: stats.totalQuizAttempts,
-      icon: <Users className="h-6 w-6" />,
-    },
-    {
-      label: "Quiz Passes",
-      value: stats.totalQuizPasses,
       icon: <Award className="h-6 w-6" />,
     },
   ];
@@ -237,13 +285,14 @@ export default function AdminDashboard() {
             <span className="rs-chip">Transport Department • Admin • Karimnagar</span>
             <h1 className="text-3xl font-semibold text-emerald-900 mt-2">Admin Dashboard</h1>
             <p className="text-slate-600 max-w-2xl">
-              Monitor certificate issuance, quiz performance, simulation insights, and events for Karimnagar district.
+              Monitor organizers, events, participants, and download daily reports.
             </p>
           </div>
           <p className="text-sm text-emerald-700">{loading ? "Loading..." : "Data refreshed"}</p>
         </div>
       </div>
 
+      {/* Summary Statistics */}
       <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
         {statCards.map((card) => (
           <div key={card.label} className="rs-card p-5">
@@ -259,149 +308,33 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      <div className="grid md:grid-cols-2 gap-5">
+      {/* Performance Metrics */}
+      <div className="grid md:grid-cols-3 gap-5">
         <div className="rs-card p-6">
-          <p className="text-sm text-slate-600">Quiz pass rate</p>
+          <p className="text-sm text-slate-600">Quiz Pass Rate</p>
           <p className="text-4xl font-semibold text-emerald-900">{stats.passRate}%</p>
-          <p className="text-xs text-slate-500 mt-2">Passes vs attempts</p>
+          <p className="text-xs text-slate-500 mt-2">{stats.totalQuizPasses} / {stats.totalQuizAttempts} attempts</p>
         </div>
         <div className="rs-card p-6">
-          <p className="text-sm text-slate-600">Total simulation plays</p>
-          <p className="text-4xl font-semibold text-emerald-900">{stats.totalSimulationPlays}</p>
-          <p className="text-xs text-slate-500 mt-2">Includes all interactive scenarios</p>
+          <p className="text-sm text-slate-600">Success Rate</p>
+          <p className="text-4xl font-semibold text-emerald-900">{stats.successRate}%</p>
+          <p className="text-xs text-slate-500 mt-2">Website-wide success rate</p>
+        </div>
+        <div className="rs-card p-6">
+          <p className="text-sm text-slate-600">Appreciation Rate</p>
+          <p className="text-4xl font-semibold text-emerald-900">
+            {stats.totalCertificates > 0 ? Math.round((stats.totalAppreciations / stats.totalCertificates) * 100) : 0}%
+          </p>
+          <p className="text-xs text-slate-500 mt-2">{stats.totalAppreciations} / {stats.totalCertificates} certificates</p>
         </div>
       </div>
 
+      {/* Organizers with Events */}
       <div className="rs-card p-6 space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-emerald-900">Events</h2>
-            <p className="text-sm text-slate-600">Manage and view event participants</p>
-          </div>
-        </div>
-        <div className="space-y-3">
-          {events.length === 0 ? (
-            <div className="text-sm text-slate-600 text-center py-8">No events yet</div>
-          ) : (
-            events.map((event) => (
-              <div
-                key={event.referenceId}
-                className="rounded-xl border border-emerald-100 bg-white/90 p-4 hover:border-emerald-300 transition-colors"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="font-semibold text-emerald-900 text-lg">{event.title}</div>
-                      {event.approved ? (
-                        <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                      ) : (
-                        <Clock className="h-4 w-4 text-yellow-600" />
-                      )}
-                    </div>
-                    <div className="text-sm text-slate-600 mt-1">Organizer: {event.organizerName}</div>
-                    <div className="text-sm text-slate-600">Institution: {event.institution}</div>
-                    <div className="text-xs text-slate-500 mt-2 flex gap-4">
-                      <span className="inline-flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        {event.location}
-                      </span>
-                      <span className="inline-flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(event.date).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <div className="mt-2 space-y-1">
-                      <div className="text-xs">
-                        <span className="text-slate-600 font-medium">Event ID:</span>
-                        <span className="text-emerald-700 font-mono ml-2">{event.referenceId}</span>
-                      </div>
-                      <div className="text-xs">
-                        <span className="text-slate-600 font-medium">Organizer ID:</span>
-                        <span className="text-blue-700 font-mono ml-2">{event.organizerId}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="ml-4">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="gap-2"
-                      onClick={() => handleViewParticipants(event.referenceId)}
-                    >
-                      <Eye className="h-4 w-4" />
-                      View Participants
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-
-      <div className="rs-card p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h2 className="text-lg font-semibold text-emerald-900">Export Appreciations</h2>
-          <p className="text-sm text-slate-600">Download all appreciation messages as CSV.</p>
-        </div>
-        <Button onClick={handleExport} className="rs-btn-secondary text-sm">
-          <Download className="h-4 w-4" /> Export CSV
-        </Button>
-      </div>
-
-      <div className="rs-card p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-emerald-900">Simulation Statistics</h2>
-            <p className="text-sm text-slate-600">Spot the Violation metrics</p>
-          </div>
-          <span className="rs-chip">Avg Time: {simStats.avgTimeSeconds}s</span>
-        </div>
-        <div className="grid md:grid-cols-4 gap-4 text-sm text-slate-600">
-          <div>
-            <p>Total sessions</p>
-            <p className="text-2xl font-semibold text-emerald-900">{simStats.totalSessions}</p>
-          </div>
-          <div>
-            <p>Total completions</p>
-            <p className="text-2xl font-semibold text-emerald-900">{simStats.totalCompletions}</p>
-          </div>
-          <div>
-            <p>Success rate</p>
-            <p className="text-2xl font-semibold text-emerald-900">{simStats.successRate}%</p>
-          </div>
-          <div>
-            <p>Avg Time</p>
-            <p className="text-2xl font-semibold text-emerald-900">{simStats.avgTimeSeconds}s</p>
-          </div>
-        </div>
-        <div className="text-sm text-slate-600">
-          <div>
-            <h3 className="font-semibold text-emerald-900 mb-3">Completions by Category</h3>
-            <div className="space-y-2">
-              {simStats.categoryStats && simStats.categoryStats.length > 0 ? (
-                simStats.categoryStats.map((cat) => (
-                  <div key={cat.category} className="flex justify-between items-center">
-                    <span className="capitalize">{cat.category}</span>
-                    <span className="font-semibold text-emerald-800">
-                      {cat.successful} / {cat.total}
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <p>No data yet</p>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Organizers Section */}
-      <div className="rs-card p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-emerald-900">Organizers</h2>
-            <p className="text-sm text-slate-600">Review and approve organizer registrations</p>
+            <h2 className="text-lg font-semibold text-emerald-900">Organizers & Events</h2>
+            <p className="text-sm text-slate-600">Total: {organizers.length} organizers</p>
           </div>
           <Button onClick={loadOrganizers} variant="outline" size="sm" disabled={loadingOrganizers}>
             Refresh
@@ -437,112 +370,164 @@ export default function AdminDashboard() {
                       )}
                     </div>
                     <div className="text-sm text-slate-600 space-y-1">
-                      <div>Email: {org.email}</div>
-                      <div>Phone: {org.phone}</div>
                       <div>Institution: {org.institution}</div>
                       <div>Designation: {org.designation}</div>
-                      <div className="text-xs font-mono text-slate-500">
-                        Temporary ID: {org.temporaryId}
-                      </div>
                       {org.finalId && (
                         <div className="text-xs font-mono text-emerald-700">
-                          Final ID: {org.finalId}
+                          Organizer ID: {org.finalId}
                         </div>
                       )}
+                      <div className="text-xs font-semibold text-emerald-800 mt-2">
+                        Events: {org.eventCount}
+                      </div>
                     </div>
                   </div>
-                  {org.status === "pending" && (
-                    <div className="ml-4 flex gap-2">
-                      <Button
-                        size="sm"
-                        className="rs-btn-primary gap-2"
-                        onClick={() => handleApproveOrganizer(org.temporaryId, "approve")}
-                      >
-                        <UserCheck className="h-4 w-4" />
-                        Approve
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="gap-2"
-                        onClick={() => handleApproveOrganizer(org.temporaryId, "reject")}
-                      >
-                        <UserX className="h-4 w-4" />
-                        Reject
-                      </Button>
-                    </div>
-                  )}
                 </div>
+                {org.eventCount > 0 && (
+                  <div className="mt-3 pt-3 border-t border-emerald-200">
+                    <button
+                      onClick={() => toggleOrganizer(org._id)}
+                      className="flex items-center gap-2 text-sm font-medium text-emerald-700 hover:text-emerald-900"
+                    >
+                      {expandedOrganizers.has(org._id) ? (
+                        <ChevronDown className="h-4 w-4" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4" />
+                      )}
+                      {expandedOrganizers.has(org._id) ? "Hide" : "Show"} Events ({org.eventCount})
+                    </button>
+                    {expandedOrganizers.has(org._id) && (
+                      <div className="mt-3 space-y-2">
+                        {org.events.map((event) => (
+                          <div
+                            key={event.referenceId}
+                            className="rounded-lg border border-emerald-100 bg-white p-3"
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="font-medium text-emerald-900">{event.title}</div>
+                                <div className="text-xs text-slate-600 mt-1 space-y-1">
+                                  <div>Event ID: <span className="font-mono text-emerald-700">{event.referenceId}</span></div>
+                                  <div>Organizer ID: <span className="font-mono text-blue-700">{event.organizerId}</span></div>
+                                  <div>Date: {new Date(event.date).toLocaleDateString()}</div>
+                                  <div>Location: {event.location}</div>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    {event.approved ? (
+                                      <span className="text-xs text-emerald-600 flex items-center gap-1">
+                                        <CheckCircle2 className="h-3 w-3" /> Approved
+                                      </span>
+                                    ) : (
+                                      <span className="text-xs text-yellow-600 flex items-center gap-1">
+                                        <Clock className="h-3 w-3" /> Pending
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="gap-2 ml-3"
+                                onClick={() => handleViewParticipants(event.referenceId)}
+                              >
+                                <Eye className="h-4 w-4" />
+                                Participants
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
           </div>
         )}
       </div>
 
-      {/* All Participants Section */}
+      {/* Daily Reports */}
       <div className="rs-card p-6 space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-emerald-900">All Participants</h2>
-            <p className="text-sm text-slate-600">View all certificate recipients</p>
+            <h2 className="text-lg font-semibold text-emerald-900">Daily Reports</h2>
+            <p className="text-sm text-slate-600">Download 24-hour data (12 AM to 11:59 PM) for any date</p>
           </div>
-          <Button onClick={loadAllParticipants} variant="outline" size="sm" disabled={loadingAllParticipants}>
+          <Button onClick={loadDailyReports} variant="outline" size="sm" disabled={loadingReports}>
             Refresh
           </Button>
         </div>
-        {loadingAllParticipants ? (
-          <div className="text-center py-8 text-slate-600">Loading participants...</div>
-        ) : allParticipants.length === 0 ? (
-          <div className="text-sm text-slate-600 text-center py-8">No participants yet</div>
+        {loadingReports ? (
+          <div className="text-center py-8 text-slate-600">Loading reports...</div>
+        ) : dailyReports.length === 0 ? (
+          <div className="text-sm text-slate-600 text-center py-8">No daily reports available yet</div>
         ) : (
-          <div className="rs-table-wrapper">
-            <table className="rs-table text-sm">
-              <thead>
-                <tr>
-                  <th className="text-left">Name</th>
-                  <th className="text-left">Institution</th>
-                  <th className="text-left">Type</th>
-                  <th className="text-left">Score</th>
-                  <th className="text-left">Activity</th>
-                  <th className="text-left">Event</th>
-                  <th className="text-left">Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {allParticipants.map((p: any, idx: number) => (
-                  <tr key={idx}>
-                    <td className="font-medium">{p.fullName}</td>
-                    <td>{p.institution || "-"}</td>
-                    <td className="capitalize">{p.type}</td>
-                    <td>
-                      {p.score}/{p.total}
-                    </td>
-                    <td className="capitalize">{p.activityType}</td>
-                    <td className="text-xs">{p.eventTitle || "-"}</td>
-                    <td className="text-xs">{new Date(p.createdAt).toLocaleDateString()}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="space-y-2">
+            {dailyReports.map((report) => (
+              <div
+                key={report.date}
+                className="flex items-center justify-between rounded-lg border border-emerald-100 bg-white p-3"
+              >
+                <div>
+                  <div className="font-medium text-emerald-900">{report.date}</div>
+                  <div className="text-xs text-slate-600 mt-1">
+                    Certificates: {report.stats.totalCertificates} | Events: {report.stats.totalEvents} | 
+                    Pass Rate: {report.stats.passRate}% | Success Rate: {report.stats.successRate}%
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => handleDownloadDailyReport(report.date)}
+                >
+                  <Download className="h-4 w-4" />
+                  Download CSV
+                </Button>
+              </div>
+            ))}
           </div>
         )}
       </div>
 
+      {/* Appreciations */}
       <div className="rs-card p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-emerald-900">Appreciation Messages</h2>
-        <div className="space-y-4">
-          {appreciations.length === 0 ? (
-            <div className="text-sm text-slate-600">No appreciations yet.</div>
-          ) : (
-            appreciations.slice(0, 20).map((a, idx) => (
-              <div key={idx} className="rounded-xl border border-emerald-100 bg-white/90 p-4">
-                <div className="text-xs text-slate-500">{new Date(a.createdAt).toLocaleString()}</div>
-                <div className="font-semibold text-emerald-900">{a.fullName}</div>
-                <div className="mt-1 text-sm text-slate-600 whitespace-pre-wrap">{a.appreciationText}</div>
-              </div>
-            ))
-          )}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-emerald-900">Appreciation Messages</h2>
+            <p className="text-sm text-slate-600">Latest appreciation messages from certificate recipients</p>
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={loadAppreciations} variant="outline" size="sm" disabled={loadingAppreciations}>
+              Refresh
+            </Button>
+            <Button onClick={handleExportAppreciations} className="rs-btn-secondary text-sm">
+              <Download className="h-4 w-4" /> Export CSV
+            </Button>
+          </div>
         </div>
+        {loadingAppreciations ? (
+          <div className="text-center py-8 text-slate-600">Loading appreciations...</div>
+        ) : appreciations.length === 0 ? (
+          <div className="text-sm text-slate-600 text-center py-8">No appreciations yet</div>
+        ) : (
+          <div className="space-y-3 max-h-96 overflow-y-auto">
+            {appreciations.slice(0, 50).map((a, idx) => (
+              <div key={idx} className="rounded-xl border border-emerald-100 bg-white/90 p-4">
+                <div className="flex items-start justify-between mb-2">
+                  <div className="font-semibold text-emerald-900">{a.fullName}</div>
+                  <div className="text-xs text-slate-500">{new Date(a.createdAt).toLocaleString()}</div>
+                </div>
+                <div className="text-sm text-slate-600 whitespace-pre-wrap">{a.appreciationText}</div>
+              </div>
+            ))}
+            {appreciations.length > 50 && (
+              <div className="text-center text-sm text-slate-500 pt-2">
+                Showing latest 50 of {appreciations.length} appreciations. Export CSV to see all.
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Event Participants Dialog */}
@@ -568,58 +553,41 @@ export default function AdminDashboard() {
                   <span className="ml-2 font-medium text-emerald-900">{eventParticipants.event.organizerName}</span>
                 </div>
                 <div>
-                  <span className="text-sm text-slate-600">Location:</span>
-                  <span className="ml-2 font-medium text-emerald-900">{eventParticipants.event.location}</span>
-                </div>
-                <div>
-                  <span className="text-sm text-slate-600">Date:</span>
-                  <span className="ml-2 font-medium text-emerald-900">
-                    {new Date(eventParticipants.event.date).toLocaleDateString()}
-                  </span>
-                </div>
-                <div>
                   <span className="text-sm text-slate-600">Total Participants:</span>
                   <span className="ml-2 font-medium text-emerald-900">{eventParticipants.totalParticipants}</span>
-                </div>
-                <div>
-                  <span className="text-sm text-slate-600">Reference ID:</span>
-                  <span className="ml-2 font-mono text-xs text-emerald-900">{eventParticipants.event.referenceId}</span>
                 </div>
               </div>
 
               {eventParticipants.participants.length === 0 ? (
                 <div className="text-center py-8 text-slate-600">No participants yet for this event</div>
               ) : (
-                <div className="space-y-3">
-                  <h3 className="font-semibold text-emerald-900">Participants List</h3>
-                  <div className="rs-table-wrapper">
-                    <table className="rs-table text-sm">
-                      <thead>
-                        <tr>
-                          <th className="text-left">Name</th>
-                          <th className="text-left">Institution</th>
-                          <th className="text-left">Score</th>
-                          <th className="text-left">Activity</th>
-                          <th className="text-left">Certificate ID</th>
-                          <th className="text-left">Date</th>
+                <div className="rs-table-wrapper">
+                  <table className="rs-table text-sm">
+                    <thead>
+                      <tr>
+                        <th className="text-left">Name</th>
+                        <th className="text-left">Institution</th>
+                        <th className="text-left">Score</th>
+                        <th className="text-left">Activity</th>
+                        <th className="text-left">Certificate ID</th>
+                        <th className="text-left">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {eventParticipants.participants.map((p, idx) => (
+                        <tr key={idx}>
+                          <td className="font-medium">{p.name}</td>
+                          <td>{p.institution}</td>
+                          <td>
+                            {p.score}/{p.total} ({p.percentage}%)
+                          </td>
+                          <td className="capitalize">{p.activityType}</td>
+                          <td className="font-mono text-xs">{p.certificateId}</td>
+                          <td className="text-xs">{new Date(p.certificateDate).toLocaleDateString()}</td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {eventParticipants.participants.map((p, idx) => (
-                          <tr key={idx}>
-                            <td className="font-medium">{p.name}</td>
-                            <td>{p.institution}</td>
-                            <td>
-                              {p.score}/{p.total} ({p.percentage}%)
-                            </td>
-                            <td className="capitalize">{p.activityType}</td>
-                            <td className="font-mono text-xs">{p.certificateId}</td>
-                            <td className="text-xs">{new Date(p.certificateDate).toLocaleDateString()}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </div>

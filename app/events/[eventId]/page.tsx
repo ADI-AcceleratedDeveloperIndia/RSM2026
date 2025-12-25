@@ -18,6 +18,7 @@ type Event = {
   organizerName: string;
   institution: string;
   approved: boolean;
+  organizerId?: string;
   groupPhoto?: string;
   youtubeVideos?: string[];
 };
@@ -59,20 +60,15 @@ export default function EventDetailsPage() {
       alert(i18n.language === "te" ? "దయచేసి ఆర్గనైజర్ ID నమోదు చేయండి" : "Please enter Organizer ID");
       return;
     }
-    if (event && event.referenceId) {
-      // Check if organizerId matches event's organizer
-      fetch(`/api/organizer/events?eventReferenceId=${event.referenceId}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.events && data.events.length > 0) {
-            setIsOrganizer(true);
-          } else {
-            alert(i18n.language === "te" ? "ఈ ఈవెంట్‌కు మీరు ఆర్గనైజర్ కాదు" : "You are not the organizer of this event");
-          }
-        })
-        .catch(() => {
-          alert(i18n.language === "te" ? "తనిఖీ విఫలమైంది" : "Verification failed");
-        });
+    if (event && event.organizerId) {
+      // Directly check if entered organizerId matches event's organizerId
+      if (organizerId.trim() === event.organizerId) {
+        setIsOrganizer(true);
+      } else {
+        alert(i18n.language === "te" ? "ఈ ఈవెంట్‌కు మీరు ఆర్గనైజర్ కాదు" : "You are not the organizer of this event");
+      }
+    } else {
+      alert(i18n.language === "te" ? "ఈవెంట్ వివరాలు లోడ్ కావడంలో లోపం" : "Error loading event details");
     }
   };
 

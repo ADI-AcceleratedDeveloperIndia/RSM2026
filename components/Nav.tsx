@@ -54,7 +54,7 @@ export default function Nav() {
   return (
     <header className="sticky top-0 z-50 backdrop-blur bg-white/92 border-b border-emerald-100 shadow-[0_6px_20px_rgba(0,109,74,0.08)]">
       <div className="rs-container">
-        <div className="flex h-20 items-center justify-between gap-3 overflow-x-auto">
+        <div className="flex h-20 items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-emerald-200 bg-white shadow-[0_8px_18px_rgba(13,148,94,0.18)]">
               <Image
@@ -87,7 +87,7 @@ export default function Nav() {
             </div>
           </div>
 
-          <nav className="hidden xl:flex items-center gap-2 rounded-full border border-emerald-100 bg-white/70 px-2 py-1 shadow-[0_12px_24px_rgba(24,90,64,0.1)]">
+          <nav className="hidden lg:flex items-center gap-1.5 rounded-full border border-emerald-100 bg-white/70 px-1.5 py-1 shadow-[0_12px_24px_rgba(24,90,64,0.1)]">
             {navLinks.map((link) => {
               const active = pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href));
               return (
@@ -95,18 +95,18 @@ export default function Nav() {
                   key={link.href}
                   href={link.href}
                   title={link.label + (link.sublabel ? ` (${link.sublabel})` : "")}
-                  className={`relative flex flex-col items-center gap-0.5 rounded-full px-2.5 py-1.5 text-xs font-medium transition-all whitespace-nowrap group ${
+                  className={`relative flex flex-col items-center gap-0.5 rounded-full px-2 py-1 text-[11px] font-medium transition-all whitespace-nowrap group ${
                     active
                       ? "bg-emerald-600 text-white shadow-[0_10px_20px_rgba(7,80,55,0.3)]"
                       : "text-slate-600 hover:bg-emerald-50"
                   }`}
                 >
-                  <span className="flex items-center gap-1.5">
-                    <span className="text-sm">{navIcons[link.key]}</span>
-                    <span>{link.label}</span>
+                  <span className="flex items-center gap-1">
+                    <span className="text-xs">{navIcons[link.key]}</span>
+                    <span className="text-[11px]">{link.label}</span>
                   </span>
                   {link.sublabel && (
-                    <span className={`text-[10px] leading-tight ${active ? "text-emerald-100" : "text-slate-500"}`}>
+                    <span className={`text-[9px] leading-tight ${active ? "text-emerald-100" : "text-slate-500"}`}>
                       ({link.sublabel})
                     </span>
                   )}

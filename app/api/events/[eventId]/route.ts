@@ -19,7 +19,7 @@ export async function GET(
     await connectDB();
     
     const event = await Event.findOne({ referenceId: eventId })
-      .select("referenceId title date location organizerName institution approved groupPhoto youtubeVideos createdAt")
+      .select("referenceId title date location organizerName institution approved groupPhoto youtubeVideos organizerId createdAt")
       .lean();
 
     if (!event) {
