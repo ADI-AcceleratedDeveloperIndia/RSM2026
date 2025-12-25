@@ -192,8 +192,8 @@ export default function CertificatesPage() {
             </h2>
             <p className="text-sm text-slate-600">
               {i18n.language === "te"
-                ? "ఆర్గనైజర్ ఈవెంట్ రిఫరెన్స్ IDతో ఆఫ్లైన్ ఈవెంట్లకు సర్టిఫికేట్‌ను సృష్టించండి."
-                : "Create a certificate for offline events using the organizer's event reference ID."}
+                ? "ఆర్గనైజర్, వాలంటీర్, స్కూల్ కంట్రిబ్యూటర్, కాలేజ్ కోఆర్డినేటర్ సర్టిఫికేట్‌లను సృష్టించడానికి ఈ ఫారమ్‌ను ఉపయోగించండి. ఈవెంట్ రిఫరెన్స్ ID అవసరం."
+                : "Use this form to create Organizer, Volunteer, School Contributor, and College Coordinator certificates. Event Reference ID is required."}
             </p>
           </div>
         </div>

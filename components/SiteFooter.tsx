@@ -117,14 +117,6 @@ export default function SiteFooter() {
                 </li>
                 <li>
                   <Link 
-                    href="/certificates/generate"
-                    className="text-slate-300 hover:text-yellow-300 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-offset-2 focus:ring-offset-emerald-900 rounded"
-                  >
-                    {t("verifyCertificateLink")}
-                  </Link>
-                </li>
-                <li>
-                  <Link 
                     href="/events"
                     className="text-slate-300 hover:text-yellow-300 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-offset-2 focus:ring-offset-emerald-900 rounded"
                   >
@@ -179,7 +171,7 @@ export default function SiteFooter() {
               href="https://presentationslink.vercel.app/"
               target="_blank"
               rel="noopener noreferrer"
-              className="rs-btn-secondary text-sm gap-2 inline-flex items-center hover:bg-emerald-700 transition-colors text-black"
+              className="rs-btn-secondary text-sm gap-2 inline-flex items-center hover:bg-emerald-700 transition-colors"
             >
               <Presentation className="h-4 w-4" />
               {t("presentation") || "Presentation"}
