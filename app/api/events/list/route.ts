@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
     const events = await Event.find({ approved: true })
       .sort({ date: -1 })
       .limit(100)
+      .select("referenceId title date location organizerName institution approved groupPhoto youtubeVideos createdAt")
       .lean(); // Use lean() for better performance
 
     const result = { events };

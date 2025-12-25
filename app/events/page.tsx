@@ -16,6 +16,8 @@ type Event = {
   organizerName: string;
   institution: string;
   approved: boolean;
+  groupPhoto?: string;
+  youtubeVideos?: string[];
   createdAt: string;
 };
 
@@ -128,7 +130,11 @@ export default function EventsPage() {
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {events.map((event) => (
-              <div key={event.referenceId} className="rs-card p-6 space-y-4 hover:shadow-lg transition-shadow">
+              <div 
+                key={event.referenceId} 
+                className="rs-card p-6 space-y-4 hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => window.location.href = `/events/${event.referenceId}`}
+              >
                 <div className="space-y-2">
                   <div className="flex items-start justify-between gap-2">
                     <h3 className="text-lg font-semibold text-emerald-900 leading-tight">{event.title}</h3>
@@ -151,6 +157,13 @@ export default function EventsPage() {
                     <span>{new Date(event.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                   </div>
                 </div>
+                {(event.groupPhoto || (event.youtubeVideos && event.youtubeVideos.length > 0)) && (
+                  <div className="pt-2 border-t border-emerald-100">
+                    <p className="text-xs text-emerald-600">
+                      {i18n.language === "te" ? "మీడియా అందుబాటులో ఉంది" : "Media available"}
+                    </p>
+                  </div>
+                )}
               </div>
             ))}
           </div>

@@ -18,6 +18,7 @@ import {
   Footprints,
   Music,
   BookOpen,
+  Download,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
@@ -175,6 +176,21 @@ export default function Home() {
                 >
                   <Music className="h-5 w-5" />
                   {isPlaying ? "Stop Anthem" : "Anthem"}
+                </button>
+                <button
+                  onClick={() => {
+                    const link = document.createElement("a");
+                    link.href = "/assets/Road-Safety-Month-Poster.png";
+                    link.download = "Road-Safety-Month-Poster.png";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}
+                  className="rs-btn-secondary"
+                  aria-label="Download Road Safety Poster"
+                >
+                  <Download className="h-5 w-5" />
+                  Download Poster
                 </button>
               </div>
             </div>
