@@ -96,9 +96,9 @@ const CERTIFICATE_TYPES: Record<
     body: "Presented to coordinators who mobilised student communities, led campaigns, and ensured the success of Road Safety Month engagements on campus.",
   },
   TOPPER: {
-    title: "Simulation Topper Certificate",
-    subtitle: "Celebrating top performance in Telangana Road Safety Month simulations",
-    body: "Awarded to top-performing individuals who excelled in interactive simulations, demonstrating exceptional mastery of safe road behaviour and disciplined decision-making.",
+    title: "Topper Certificate",
+    subtitle: "Celebrating top performance in Telangana Road Safety Month activities",
+    body: "Awarded to top-performing individuals who excelled with outstanding scores, demonstrating exceptional mastery and understanding of road safety principles and best practices.",
   },
 };
 

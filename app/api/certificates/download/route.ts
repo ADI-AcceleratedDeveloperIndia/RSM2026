@@ -200,10 +200,18 @@ function generateCertificateHTML({
   const ministerName = process.env.MINISTER_NAME || "Ponnam Prabhakar";
   const ministerTitle = process.env.MINISTER_TITLE || "Hon'ble Cabinet Minister";
 
+  // Determine certificate type based on score (>=80% = Topper, 60-79% = Merit, <60% = Participant)
+  let displayType = certificate.type?.toLowerCase() || "participant";
+  if (certificate.type === "MERIT" && certificate.score !== undefined && certificate.total !== undefined && certificate.total > 0) {
+    const percentage = (certificate.score / certificate.total) * 100;
+    displayType = percentage >= 80 ? "topper" : "merit";
+  }
+
   const typeLabels: Record<string, string> = {
     organiser: "Organiser",
     participant: "Participant",
     merit: "Merit",
+    topper: "Topper",
   };
 
   return `
@@ -308,14 +316,14 @@ function generateCertificateHTML({
         <div></div>
       </div>
 
-      <div class="title">CERTIFICATE OF ${typeLabels[certificate.type]?.toUpperCase() || "PARTICIPATION"}</div>
+      <div class="title">CERTIFICATE OF ${typeLabels[displayType]?.toUpperCase() || "PARTICIPATION"}</div>
       <div class="subtitle">Road Safety Month - Telangana</div>
 
       <div class="content">
         <p style="text-align: center;">
           This is to certify that <span class="name">${certificate.fullName}</span>
           ${certificate.institution ? `<br/><span style="font-size: 18px; color: #2d5016; font-weight: 500;">${certificate.institution}</span>` : ""}
-          has ${certificate.type === "MERIT" ? "achieved merit in" : certificate.type === "ORGANIZER" ? "organized" : "participated in"} 
+          has ${displayType === "topper" ? "achieved top performance in" : displayType === "merit" ? "achieved merit in" : certificate.type === "ORGANIZER" ? "organized" : "participated in"} 
           ${certificate.activityType ? `<strong>${certificate.activityType.charAt(0).toUpperCase() + certificate.activityType.slice(1)}</strong>` : ""}
           ${certificate.eventTitle ? ` - ${certificate.eventTitle}` : ""}
           ${certificate.eventDate ? `on ${new Date(certificate.eventDate).toLocaleDateString()}` : ""}.

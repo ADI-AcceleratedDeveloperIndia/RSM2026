@@ -56,7 +56,22 @@ function CertificatePreviewContent() {
         .then((data) => {
           if (data.certificate) {
             const cert = data.certificate;
-            const certType: CertificateCode = cert.type === "MERIT" ? "QUIZ" : cert.type === "ORGANIZER" ? "ORG" : "PAR";
+            
+            // Determine certificate type based on database type and score
+            let certType: CertificateCode = "PAR";
+            if (cert.type === "ORGANIZER") {
+              certType = "ORG";
+            } else if (cert.type === "MERIT") {
+              // Check score to determine if TOPPER (>=80%) or MERIT (60-79%)
+              if (cert.score !== undefined && cert.total !== undefined && cert.total > 0) {
+                const percentage = (cert.score / cert.total) * 100;
+                certType = percentage >= 80 ? "TOPPER" : "QUIZ"; // QUIZ = Merit certificate
+              } else {
+                certType = "QUIZ"; // Default to Merit if score not available
+              }
+            } else {
+              certType = "PAR";
+            }
             
             setCertificateData({
               certificateType: certType,
