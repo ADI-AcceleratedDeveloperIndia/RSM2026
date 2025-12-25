@@ -225,7 +225,7 @@ export default function BasicsPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-5">
             {filteredSigns.map((sign) => (
               <Card 
-                key={sign.id} 
+                key={`${sign.tooltip.category}-${sign.id}-${sign.image}`} 
                 className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group"
                 title={sign.hover_text}
               >
