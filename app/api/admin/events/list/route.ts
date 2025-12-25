@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 
     const events = await Event.find(query)
       .sort({ createdAt: -1 })
-      .select("referenceId title date location organizerName institution approved createdAt")
+      .select("referenceId title date location organizerId organizerName institution approved createdAt")
       .lean();
 
     return NextResponse.json({ events });

@@ -195,10 +195,33 @@ export default function OrganizerPage() {
                     ? "మీరు ఇప్పుడు ఈవెంట్‌లను సృష్టించవచ్చు."
                     : "You can now create events."}
                 </p>
-                <div className="mt-4 pt-4 border-t border-emerald-200">
+                <div className="mt-4 pt-4 border-t border-emerald-200 space-y-3">
+                  <div>
+                    <p className="text-xs text-slate-600 mb-2">
+                      {i18n.language === "te"
+                        ? "మీ ఆర్గనైజర్ ID (ఈ ID ను సురక్షితంగా ఉంచండి):"
+                        : "Your Organizer ID (Save this ID safely):"}
+                    </p>
+                    <div className="flex items-center gap-2 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                      <code className="flex-1 text-sm font-mono text-emerald-900">{finalId}</code>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          copyToClipboard(finalId);
+                        }}
+                      >
+                        {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </div>
                   <Button
                     variant="outline"
-                    onClick={() => fetchEventIds(finalId)}
+                    onClick={() => {
+                      setMode("events");
+                      setEventCheckId(finalId);
+                      fetchEventIds(finalId);
+                    }}
                     disabled={loadingEvents}
                     className="w-full"
                   >
@@ -486,19 +509,19 @@ export default function OrganizerPage() {
                 <div>
                   <Label>
                     {i18n.language === "te"
-                      ? "ఆర్గనైజర్ ID లేదా ఈవెంట్ ID"
-                      : "Organizer ID or Event ID"} *
+                      ? "ఫైనల్ ఆర్గనైజర్ ID"
+                      : "Final Organizer ID"} *
                   </Label>
                   <Input
                     value={eventCheckId}
                     onChange={(e) => setEventCheckId(e.target.value)}
-                    placeholder="KRMR-RSM-2026-PDL-RHL-ORGANIZER-00001 or KRMR-RSM-2026-PDL-RHL-EVT-00002"
+                    placeholder="KRMR-RSM-2026-PDL-RHL-ORGANIZER-00001"
                     className="mt-2"
                   />
                   <p className="text-xs text-slate-500 mt-1">
                     {i18n.language === "te"
-                      ? "మీ ఆమోదించబడిన ఆర్గనైజర్ ID లేదా ఏదైనా ఈవెంట్ ID ను నమోదు చేయండి"
-                      : "Enter your approved Organizer ID (ORGANIZER-...) or any Event ID (EVT-...) to view all your event IDs"}
+                      ? "మీ ఆమోదించబడిన ఆర్గనైజర్ ID ను నమోదు చేయండి. మీరు 'స్టేటస్ తనిఖీ' లో దీన్ని కనుగొనవచ్చు."
+                      : "Enter your approved Organizer ID. You can find this in the 'Check Status' section after approval."}
                   </p>
                 </div>
                 <Button onClick={handleCheckEvents} className="w-full" disabled={loadingEvents}>

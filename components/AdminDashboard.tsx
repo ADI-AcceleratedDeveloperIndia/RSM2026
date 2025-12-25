@@ -10,6 +10,7 @@ type Event = {
   title: string;
   date: string;
   location: string;
+  organizerId: string;
   organizerName: string;
   institution: string;
   approved: boolean;
@@ -309,7 +310,16 @@ export default function AdminDashboard() {
                         {new Date(event.date).toLocaleDateString()}
                       </span>
                     </div>
-                    <div className="text-xs text-emerald-700 mt-2 font-mono">{event.referenceId}</div>
+                    <div className="mt-2 space-y-1">
+                      <div className="text-xs">
+                        <span className="text-slate-600 font-medium">Event ID:</span>
+                        <span className="text-emerald-700 font-mono ml-2">{event.referenceId}</span>
+                      </div>
+                      <div className="text-xs">
+                        <span className="text-slate-600 font-medium">Organizer ID:</span>
+                        <span className="text-blue-700 font-mono ml-2">{event.organizerId}</span>
+                      </div>
+                    </div>
                   </div>
                   <div className="ml-4">
                     <Button
