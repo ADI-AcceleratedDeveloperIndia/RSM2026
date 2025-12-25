@@ -249,6 +249,11 @@ function CertificateGenerateContent() {
       }
     }
 
+    // Extract Event Reference ID from referenceId field (if it's an event ID)
+    const eventRefId = data.referenceId && data.referenceId.includes("EVT-") ? data.referenceId : undefined;
+    // If eventName is provided, use it; otherwise it will be fetched by API from eventReferenceId
+    const eventName = data.eventName || undefined;
+
     // Create certificate via API to get proper certificate number
     try {
       const response = await fetch("/api/certificates/create", {
@@ -261,6 +266,7 @@ function CertificateGenerateContent() {
           score: score,
           total: total,
           activityType: activityData.activityType || "online",
+          organizerReferenceId: eventRefId, // Pass event reference ID to fetch event details
           userEmail: data.email || undefined,
         }),
       });
@@ -357,17 +363,26 @@ function CertificateGenerateContent() {
                     onChange={(event) => setValue("certificateType", event.target.value as GenerateForm["certificateType"])}
                     className="h-11 rounded-lg border border-emerald-200 px-3 text-sm focus:border-emerald-500 focus:outline-none"
                   >
-                    {/* Only show PAR, MERIT, TOPPER for online activities */}
-                    {/* ORG, VOL, SCH, COL are only available in offline certificate generation */}
-                    {CERTIFICATE_OPTIONS.filter(opt => ["PAR", "MERIT", "TOPPER"].includes(opt.value)).map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
+                    <optgroup label="Participant Certificates">
+                      {CERTIFICATE_OPTIONS.filter(opt => ["PAR", "MERIT", "TOPPER"].includes(opt.value)).map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Other Certificates">
+                      {CERTIFICATE_OPTIONS.filter(opt => ["ORG", "VOL", "SCH", "COL"].includes(opt.value)).map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </optgroup>
                   </select>
-                  <p className="text-xs text-slate-500 mt-1">
-                    For Organizer, Volunteer, School Contributor, or College Coordinator certificates, please use the Offline Certificate Generation section.
-                  </p>
+                  {isFromActivity && (
+                    <p className="text-xs text-amber-600 mt-1">
+                      Certificate type auto-selected based on your score. You can change it if needed.
+                    </p>
+                  )}
                   {errors.certificateType && <p className="text-xs text-red-600">{errors.certificateType.message}</p>}
                 </>
               )}
