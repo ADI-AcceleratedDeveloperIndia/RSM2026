@@ -68,7 +68,7 @@ const generateSchema = z.object({
   score: z.string().optional(),
   details: z.string().optional(),
   eventName: z.string().optional(),
-  referenceId: z.string().min(1, "Reference ID is required"),
+  referenceId: z.string().optional(), // Event Reference ID (optional)
 });
 
 type GenerateForm = z.infer<typeof generateSchema>;
@@ -401,27 +401,16 @@ function CertificateGenerateContent() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="referenceId" className="text-sm font-semibold text-emerald-900">Reference ID *</Label>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Input
-                id="referenceId"
-                placeholder="Auto-generated reference ID"
-                className="h-11 rounded-lg border border-emerald-200"
-                {...register("referenceId")}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setValue("referenceId", generateReferenceId(selectedType || "CERT"))}
-                className="sm:w-auto"
-              >
-                Regenerate
-              </Button>
-            </div>
+            <Label htmlFor="eventReferenceId" className="text-sm font-semibold text-emerald-900">Event Reference ID (Optional)</Label>
+            <Input
+              id="eventReferenceId"
+              placeholder="KRMR-RSM-2026-PDL-RHL-EVT-00001"
+              className="h-11 rounded-lg border border-emerald-200 font-mono text-xs"
+              {...register("referenceId")}
+            />
             <p className="text-xs text-slate-500">
-              Share this reference ID with recipients. They can reuse it to download or verify certificates.
+              Enter Event Reference ID to link this certificate to an event. The event name will appear on the certificate.
             </p>
-            {errors.referenceId && <p className="text-xs text-red-600">{errors.referenceId.message}</p>}
           </div>
 
           <div className="grid md:grid-cols-2 gap-5">
