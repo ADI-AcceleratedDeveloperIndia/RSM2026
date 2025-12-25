@@ -148,16 +148,32 @@ export default function OrganizerPage() {
                   </p>
                 </div>
                 <Button 
-                  onClick={() => {
-                    // Ensure checkId is set before calling handleCheckStatus
-                    if (temporaryId && !checkId) {
-                      setCheckId(temporaryId);
+                  onClick={async () => {
+                    // Use temporaryId directly since it's guaranteed to be set in this view
+                    const idToCheck = temporaryId || checkId;
+                    if (!idToCheck) {
+                      alert(i18n.language === "te" ? "దయచేసి తాత్కాలిక ఆర్గనైజర్ ID నమోదు చేయండి" : "Please enter your Temporary Organizer ID");
+                      return;
                     }
-                    // Use temporaryId directly if checkId is not set
-                    const idToCheck = checkId || temporaryId;
-                    if (idToCheck) {
+                    // Ensure checkId is set for the handler
+                    if (idToCheck !== checkId) {
                       setCheckId(idToCheck);
-                      handleCheckStatus();
+                    }
+                    // Call the status check directly with the ID
+                    setLoading(true);
+                    try {
+                      const response = await fetch(`/api/organizer/status?temporaryId=${encodeURIComponent(idToCheck)}`);
+                      const data = await response.json();
+                      if (response.ok) {
+                        setStatus(data.status);
+                        setFinalId(data.finalId || null);
+                      } else {
+                        alert(data.error || (i18n.language === "te" ? "స్టేటస్ తనిఖీ విఫలమైంది" : "Failed to check status"));
+                      }
+                    } catch (error) {
+                      alert(i18n.language === "te" ? "స్టేటస్ తనిఖీ విఫలమైంది. దయచేసి మళ్లీ ప్రయత్నించండి." : "Failed to check status. Please try again.");
+                    } finally {
+                      setLoading(false);
                     }
                   }} 
                   className="w-full"
