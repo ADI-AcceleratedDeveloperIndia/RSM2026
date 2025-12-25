@@ -33,6 +33,14 @@ export default function Home() {
     if (wasPlaying) {
       // Show "Stop Anthem" button (audio stopped when navigating away, but button state persists)
       setIsPlaying(true);
+      // Initialize audio ref so we can stop it if needed
+      if (!audioRef.current) {
+        audioRef.current = new Audio("/assets/ROADSAFETY3.wav");
+        audioRef.current.addEventListener("ended", () => {
+          setIsPlaying(false);
+          sessionStorage.removeItem("anthemPlaying");
+        });
+      }
     }
   }, []);
 

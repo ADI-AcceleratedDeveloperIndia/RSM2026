@@ -20,14 +20,9 @@ export default function QuizPage() {
   const { t: tc } = useTranslation("content");
   const router = useRouter();
   
-  // Get current language for speech synthesis
+  // Get current language for speech synthesis - Always use English for Virtual Quiz Master
   const getCurrentLang = () => {
-    const lang = i18n.language || "en";
-    // Handle language codes like "te-IN" or "te"
-    if (lang.startsWith("te")) {
-      return "te";
-    }
-    return "en";
+    return "en"; // Always use English for Virtual Quiz Master
   };
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
@@ -763,7 +758,7 @@ export default function QuizPage() {
             </Button>
             {getCurrentLang() === "te" && (
               <p className="text-xs text-amber-600 text-center bg-amber-50 p-2 rounded">
-                {tc("teluguTTSNote") || "Note: Telugu voice may require OS language pack. English works without setup."}
+                {tc("englishTTSNote") || "Note: Virtual Quiz Master uses English text-to-speech."}
               </p>
             )}
             <Button
