@@ -537,9 +537,9 @@ export default function QuizPage() {
       // Show celebration animation
       setShowCelebration(true);
       // Always use English for Virtual Quiz Master
-      const congratsText = false 
-        ? "అభినందనలు! మీరు క్విజ్ పూర్తి చేశారు!" 
-        : "Congratulations! You have completed the quiz!";
+      // Always use English for Virtual Quiz Master
+      const congratsText = "Congratulations! You have completed the quiz!";
+      const lang = "en"; // Always use English
       
       if (virtualQuizMaster && synthRef.current) {
         setTimeout(() => {
