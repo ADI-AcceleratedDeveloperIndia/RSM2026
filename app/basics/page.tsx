@@ -389,13 +389,13 @@ export default function BasicsPage() {
             </CardHeader>
             <CardContent>
               <div className="mb-6 flex justify-center">
-                <div className="relative w-full max-w-xs sm:max-w-sm md:w-64 md:h-64 aspect-square bg-slate-100 rounded-lg overflow-hidden">
+                <div className="relative w-full max-w-[200px] sm:max-w-[240px] md:w-48 md:h-48 aspect-square bg-slate-100 rounded-lg overflow-hidden">
                   <Image
                     src={`/${currentQuestion.sign.image}`}
                     alt="Road sign"
                     fill
-                    className="object-contain p-4"
-                    sizes="(max-width: 640px) 100vw, 256px"
+                    className="object-contain p-3"
+                    sizes="(max-width: 640px) 200px, (max-width: 1024px) 240px, 192px"
                   />
                 </div>
               </div>
