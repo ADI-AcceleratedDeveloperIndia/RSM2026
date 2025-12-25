@@ -88,9 +88,11 @@ export default function CertificatesPage() {
       totalValue = parseInt(total.trim()) || 100;
     }
     
-    // Auto-determine certificate type from score if not explicitly set
+    // Auto-determine certificate type from score only for PAR/MERIT/TOPPER
+    // Don't auto-determine for ORG, VOL, SCH, COL (user-selected)
     let finalCertificateType = certificateType;
-    if (score.trim() && total.trim() && totalValue > 0) {
+    const nonScoreTypes = ["ORG", "VOL", "SCH", "COL"];
+    if (!nonScoreTypes.includes(certificateType) && score.trim() && total.trim() && totalValue > 0) {
       const percentage = (scoreValue / totalValue) * 100;
       if (percentage >= 80) {
         finalCertificateType = "TOPPER";
@@ -103,8 +105,12 @@ export default function CertificatesPage() {
     
     // Determine API type from certificate type
     let apiType: "ORGANIZER" | "PARTICIPANT" | "MERIT" = "PARTICIPANT";
-    if (finalCertificateType === "MERIT" || finalCertificateType === "TOPPER") {
+    if (finalCertificateType === "ORG") {
+      apiType = "ORGANIZER";
+    } else if (finalCertificateType === "MERIT" || finalCertificateType === "TOPPER") {
       apiType = "MERIT";
+    } else {
+      apiType = "PARTICIPANT";
     }
     
     setLoading(true);
