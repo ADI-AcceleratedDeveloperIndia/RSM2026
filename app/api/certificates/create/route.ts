@@ -85,6 +85,7 @@ export async function POST(request: NextRequest) {
 
     // Try to create certificate with retry on duplicate key error
     let certificate;
+    let certificateId: string | null = null;
     let attempts = 0;
     const maxAttempts = 10; // Increased attempts
     
@@ -108,7 +109,7 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        const certificateId = generateCertificateNumber(validated.type, nextCertNumber);
+        certificateId = generateCertificateNumber(validated.type, nextCertNumber);
         
         certificate = new Certificate({
           certificateId,
@@ -156,7 +157,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    if (!certificate) {
+    if (!certificate || !certificateId) {
       return NextResponse.json(
         { error: "Failed to create certificate. Please try again." },
         { status: 500 }
