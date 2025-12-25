@@ -577,7 +577,7 @@ export default function OrganizerPage() {
               </div>
             </CardContent>
           </Card>
-        )}
+        ) : null}
       </div>
     </div>
   );
