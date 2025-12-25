@@ -179,7 +179,7 @@ export default function SiteFooter() {
               href="https://presentationslink.vercel.app/"
               target="_blank"
               rel="noopener noreferrer"
-              className="rs-btn-secondary text-sm gap-2 inline-flex items-center hover:bg-emerald-700 transition-colors"
+              className="rs-btn-secondary text-sm gap-2 inline-flex items-center hover:bg-emerald-700 transition-colors text-black"
             >
               <Presentation className="h-4 w-4" />
               {t("presentation") || "Presentation"}
@@ -199,13 +199,20 @@ export default function SiteFooter() {
         </div>
         <div className="mt-8 pt-6 border-t border-emerald-800 flex items-center justify-center gap-2 text-xs text-slate-400">
           <span>Built by</span>
-          <Image
-            src="/assets/A-logo-transparent.png"
-            alt="AI Developer India"
-            width={20}
-            height={20}
-            className="h-5 w-5 object-contain"
-          />
+          <a
+            href="https://aideveloperindia.store"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center"
+          >
+            <Image
+              src="/assets/A-logo-transparent.png"
+              alt="AI Developer India"
+              width={20}
+              height={20}
+              className="h-5 w-5 object-contain"
+            />
+          </a>
           <span className="font-medium">AI Developer India</span>
         </div>
       </div>

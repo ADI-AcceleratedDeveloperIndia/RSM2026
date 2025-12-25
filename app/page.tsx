@@ -133,7 +133,7 @@ export default function Home() {
                   <ShieldCheck className="h-5 w-5" />
                   {tc("takeQuizChallenge")}
                 </Link>
-                <Link href="/simulation" className="rs-btn-primary">
+                <Link href="/simulation" className="rs-btn-secondary">
                   <BrainCircuit className="h-5 w-5" />
                   {tc("launchSimulationLab")}
                 </Link>
