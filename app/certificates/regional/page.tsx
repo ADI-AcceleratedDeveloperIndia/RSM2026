@@ -15,7 +15,7 @@ export default function RegionalCertificatesPage() {
   const { t, i18n } = useTranslation("common");
   const { t: tc } = useTranslation("content");
   const router = useRouter();
-  const regionalAuthority = getRegionalAuthority();
+  const regionalAuthority = getRegionalAuthority("karimnagar");
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
@@ -23,6 +23,15 @@ export default function RegionalCertificatesPage() {
     organizerReferenceId: "",
     userEmail: "",
   });
+
+  if (!regionalAuthority) {
+    return (
+      <div className="rs-container py-20 flex flex-col items-center gap-4 text-center">
+        <p className="text-slate-600">Regional authority not found</p>
+        <Button onClick={() => router.push("/")}>Go to Home</Button>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -238,4 +247,5 @@ export default function RegionalCertificatesPage() {
     </div>
   );
 }
+
 

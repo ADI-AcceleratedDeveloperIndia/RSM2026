@@ -23,3 +23,4 @@
 - ✅ Admin credentials use default login (no env vars needed)
 - ⚠️ Keep `MONGODB_URI` and `NEXTAUTH_SECRET` secure
 
+

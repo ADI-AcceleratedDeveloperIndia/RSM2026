@@ -93,3 +93,4 @@ export async function exportCertificateToPdf(element: HTMLElement, fileName: str
   pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
   pdf.save(fileName);
 }
+

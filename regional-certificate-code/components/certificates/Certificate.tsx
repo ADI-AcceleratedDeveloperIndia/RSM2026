@@ -281,3 +281,4 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data }, ref)
 Certificate.displayName = "Certificate";
 
 export default Certificate;
+
