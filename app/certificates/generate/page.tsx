@@ -180,7 +180,7 @@ function CertificateGenerateContent() {
       score: "",
       details: "",
       eventName: "",
-      referenceId: referenceFromQuery || generateReferenceId(defaultType || "CERT"),
+      referenceId: referenceFromQuery || "",
     },
   });
 
@@ -251,8 +251,6 @@ function CertificateGenerateContent() {
 
     // Extract Event Reference ID from referenceId field (if it's an event ID)
     const eventRefId = data.referenceId && data.referenceId.includes("EVT-") ? data.referenceId : undefined;
-    // If eventName is provided, use it; otherwise it will be fetched by API from eventReferenceId
-    const eventName = data.eventName || undefined;
 
     // Create certificate via API to get proper certificate number
     try {
