@@ -363,6 +363,36 @@ function CertificateGenerateContent() {
         )}
 
         <form onSubmit={handleSubmit(submit)} className="space-y-6">
+          {/* Event Participation Question - FIRST THING TO ASK (only when coming from activity) */}
+          {isFromActivity && hasEventId === null && (
+            <div className="rs-card p-6 bg-gradient-to-br from-emerald-50 to-white border-2 border-emerald-200 space-y-4">
+              <div className="space-y-2">
+                <Label className="text-base font-semibold text-emerald-900">
+                  Are you participating through an event?
+                </Label>
+                <p className="text-sm text-slate-600">
+                  Did you receive an Event ID from an organizer, or are you participating directly online?
+                </p>
+              </div>
+              <div className="flex gap-4">
+                <Button
+                  type="button"
+                  onClick={() => setHasEventId(true)}
+                  className="rs-btn-primary flex-1"
+                >
+                  Yes, I have an Event ID
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => setHasEventId(false)}
+                  className="rs-btn-secondary flex-1"
+                >
+                  No, I'm participating directly online
+                </Button>
+              </div>
+            </div>
+          )}
+
           <div className="grid md:grid-cols-2 gap-5">
             <div className="space-y-2">
               <Label htmlFor="certificateType" className="text-sm font-semibold text-emerald-900">Certificate Type *</Label>
@@ -418,25 +448,33 @@ function CertificateGenerateContent() {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="eventReferenceId" className="text-sm font-semibold text-emerald-900">
-              Event Reference ID {isFromActivity ? "*" : "(Optional)"}
-            </Label>
-            <Input
-              id="eventReferenceId"
-              placeholder="KRMR-RSM-2026-PDL-RHL-EVT-00001"
-              className="h-11 rounded-lg border border-emerald-200 font-mono text-xs"
-              {...register("referenceId", { 
-                required: isFromActivity ? "Event Reference ID is required when coming from an activity" : false 
-              })}
-            />
-            <p className="text-xs text-slate-500">
-              {isFromActivity 
-                ? "Event Reference ID is required. Enter the Event ID you received from the organizer."
-                : "Enter Event Reference ID to link this certificate to an event. The event name will appear on the certificate."}
-            </p>
-            {errors.referenceId && <p className="text-xs text-red-600">{errors.referenceId.message}</p>}
-          </div>
+          {/* Event Reference ID field - Only show if user has Event ID or hasn't answered yet (for non-activity users) */}
+          {(hasEventId !== false || !isFromActivity) && (
+            <div className="space-y-2">
+              <Label htmlFor="eventReferenceId" className="text-sm font-semibold text-emerald-900">
+                Event Reference ID {hasEventId === true ? "*" : isFromActivity ? "" : "(Optional)"}
+              </Label>
+              <Input
+                id="eventReferenceId"
+                placeholder="KRMR-RSM-2026-PDL-RHL-EVT-00001"
+                className="h-11 rounded-lg border border-emerald-200 font-mono text-xs"
+                disabled={hasEventId === null && isFromActivity ? true : false}
+                {...register("referenceId", { 
+                  required: hasEventId === true ? "Event Reference ID is required" : false 
+                })}
+              />
+              <p className="text-xs text-slate-500">
+                {hasEventId === true
+                  ? "Enter the Event ID you received from the organizer. The event name will appear on your certificate."
+                  : hasEventId === false
+                  ? "You're participating directly online. No Event ID needed."
+                  : isFromActivity
+                  ? "Please answer the question above first."
+                  : "Enter Event Reference ID to link this certificate to an event. The event name will appear on the certificate."}
+              </p>
+              {errors.referenceId && <p className="text-xs text-red-600">{errors.referenceId.message}</p>}
+            </div>
+          )}
 
           {/* Organizer ID field for Scenario 5 (Online Organizer/Volunteer) */}
           {!isFromActivity && (
