@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Certificate, { CertificateCode, CertificateData } from "@/components/certificates/Certificate";
@@ -40,44 +40,112 @@ function CertificatePreviewContent() {
   const certificateRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
+  const [certificateData, setCertificateData] = useState<CertificateData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Always show Padala Rahul photo (karimnagar)
+  const regionalAuthority = getRegionalAuthority("karimnagar");
 
   useEffect(() => {
-    const missingParam = REQUIRED_PARAMS.find((param) => !searchParams.get(param));
-    if (missingParam) {
-      router.replace("/certificates/generate");
-    }
-  }, [router, searchParams]);
-
-  const data = useMemo<CertificateData>(() => {
-    const type = (searchParams.get("type") || "ORG") as CertificateCode;
-    const regionalAuthority = getRegionalAuthority(searchParams.get("rta"));
-    return {
-      certificateType: type,
-      fullName: safeDecode(searchParams.get("name")),
-      district: safeDecode(searchParams.get("district")),
-      issueDate: searchParams.get("date") || new Date().toISOString(),
-      email: safeDecode(searchParams.get("email")) || undefined,
-      score: safeDecode(searchParams.get("score")) || undefined,
-      details: safeDecode(searchParams.get("details")) || undefined,
-      eventName: safeDecode(searchParams.get("event")) || undefined,
-      referenceId: safeDecode(searchParams.get("ref")) || undefined,
-      regionalAuthority: regionalAuthority
-        ? {
-            officerName: regionalAuthority.officerName,
-            officerTitle: regionalAuthority.officerTitle,
-            photo: regionalAuthority.photo,
+    const certId = searchParams.get("certId");
+    
+    // If certId is provided, fetch certificate from API to get proper certificate number
+    if (certId) {
+      fetch(`/api/certificates/get?certId=${certId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.certificate) {
+            const cert = data.certificate;
+            const certType: CertificateCode = cert.type === "MERIT" ? "QUIZ" : cert.type === "ORGANIZER" ? "ORG" : "PAR";
+            
+            setCertificateData({
+              certificateType: certType,
+              fullName: cert.fullName,
+              district: "Karimnagar", // Default district
+              issueDate: new Date(cert.createdAt).toISOString(),
+              email: cert.userEmail,
+              score: cert.score?.toString(),
+              details: undefined,
+              eventName: cert.eventTitle,
+              referenceId: cert.certificateId, // Use proper certificate number format (KRMR-RSM-2026-PDL-RHL-TYPE-00001)
+              regionalAuthority: regionalAuthority
+                ? {
+                    officerName: regionalAuthority.officerName,
+                    officerTitle: regionalAuthority.officerTitle,
+                    photo: regionalAuthority.photo,
+                  }
+                : undefined,
+            });
+          } else {
+            // Fallback to URL params
+            const missingParam = REQUIRED_PARAMS.find((param) => !searchParams.get(param));
+            if (missingParam) {
+              router.replace("/certificates/generate");
+              return;
+            }
+            const type = (searchParams.get("type") || "ORG") as CertificateCode;
+            setCertificateData({
+              certificateType: type,
+              fullName: safeDecode(searchParams.get("name")),
+              district: safeDecode(searchParams.get("district")),
+              issueDate: searchParams.get("date") || new Date().toISOString(),
+              email: safeDecode(searchParams.get("email")) || undefined,
+              score: safeDecode(searchParams.get("score")) || undefined,
+              details: safeDecode(searchParams.get("details")) || undefined,
+              eventName: safeDecode(searchParams.get("event")) || undefined,
+              referenceId: safeDecode(searchParams.get("ref")) || undefined,
+              regionalAuthority: regionalAuthority
+                ? {
+                    officerName: regionalAuthority.officerName,
+                    officerTitle: regionalAuthority.officerTitle,
+                    photo: regionalAuthority.photo,
+                  }
+                : undefined,
+            });
           }
-        : undefined,
-    };
-  }, [searchParams]);
+          setLoading(false);
+        })
+        .catch(() => {
+          setLoading(false);
+          router.replace("/certificates/generate");
+        });
+    } else {
+      // No certId, use URL params
+      const missingParam = REQUIRED_PARAMS.find((param) => !searchParams.get(param));
+      if (missingParam) {
+        router.replace("/certificates/generate");
+        return;
+      }
+      const type = (searchParams.get("type") || "ORG") as CertificateCode;
+      setCertificateData({
+        certificateType: type,
+        fullName: safeDecode(searchParams.get("name")),
+        district: safeDecode(searchParams.get("district")),
+        issueDate: searchParams.get("date") || new Date().toISOString(),
+        email: safeDecode(searchParams.get("email")) || undefined,
+        score: safeDecode(searchParams.get("score")) || undefined,
+        details: safeDecode(searchParams.get("details")) || undefined,
+        eventName: safeDecode(searchParams.get("event")) || undefined,
+        referenceId: safeDecode(searchParams.get("ref")) || undefined,
+        regionalAuthority: regionalAuthority
+          ? {
+              officerName: regionalAuthority.officerName,
+              officerTitle: regionalAuthority.officerTitle,
+              photo: regionalAuthority.photo,
+            }
+          : undefined,
+      });
+      setLoading(false);
+    }
+  }, [router, searchParams, regionalAuthority]);
 
   const handleDownload = async () => {
-    if (!certificateRef.current || isDownloading) return;
+    if (!certificateRef.current || isDownloading || !certificateData) return;
     setIsDownloading(true);
     setDownloadError(null);
 
     try {
-      await exportCertificateToPdf(certificateRef.current, `${data.fullName.replace(/\s+/g, "_")}_certificate.pdf`);
+      await exportCertificateToPdf(certificateRef.current, `${certificateData.fullName.replace(/\s+/g, "_")}_certificate.pdf`);
     } catch (error) {
       console.error("Certificate download failed:", error);
       setDownloadError("Could not generate the PDF. Please retry after a few seconds.");
@@ -85,6 +153,15 @@ function CertificatePreviewContent() {
       setIsDownloading(false);
     }
   };
+
+  if (loading || !certificateData) {
+    return (
+      <div className="rs-container py-20 flex flex-col items-center gap-4 text-center">
+        <Award className="h-6 w-6 animate-spin text-emerald-600" />
+        <p className="text-slate-600">Loading certificate preview...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="rs-container py-14 space-y-8">
@@ -123,7 +200,7 @@ function CertificatePreviewContent() {
       )}
 
       <div className="rounded-3xl border border-emerald-100 bg-slate-100/80 p-4 md:p-8 shadow-inner">
-        <Certificate ref={certificateRef} data={data} />
+        <Certificate ref={certificateRef} data={certificateData} />
       </div>
     </div>
   );

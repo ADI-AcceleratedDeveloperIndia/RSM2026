@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -101,14 +101,59 @@ export default function CertificateGeneratePage() {
 function CertificateGenerateContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const rtaCode = searchParams.get("rta");
-  const regionalAuthority = getRegionalAuthority(rtaCode);
+  // Always use karimnagar for Padala Rahul photo
+  const regionalAuthority = getRegionalAuthority("karimnagar");
+
+  // Read from sessionStorage (from activity completion)
+  const [activityData, setActivityData] = useState<{
+    score: number | null;
+    total: number | null;
+    activityType: string | null;
+  }>({ score: null, total: null, activityType: null });
+
+  useEffect(() => {
+    // Check sessionStorage for activity data
+    const savedScore = sessionStorage.getItem("basicsScore") || 
+                      sessionStorage.getItem("simulationScore") ||
+                      sessionStorage.getItem("quizScore") ||
+                      sessionStorage.getItem("guidesScore") ||
+                      sessionStorage.getItem("preventionScore");
+    const savedTotal = sessionStorage.getItem("basicsTotal") ||
+                      sessionStorage.getItem("simulationTotal") ||
+                      sessionStorage.getItem("quizTotal") ||
+                      sessionStorage.getItem("guidesTotal") ||
+                      sessionStorage.getItem("preventionTotal");
+    const savedActivity = sessionStorage.getItem("activityType");
+
+    if (savedScore && savedTotal) {
+      setActivityData({
+        score: parseInt(savedScore),
+        total: parseInt(savedTotal),
+        activityType: savedActivity || "online",
+      });
+    }
+  }, []);
 
   const defaultType = useMemo(() => {
+    // Determine certificate type from activity score
+    if (activityData.score !== null && activityData.total !== null) {
+      const percentage = (activityData.score / activityData.total) * 100;
+      if (activityData.activityType === "quiz") {
+        return percentage >= 60 ? "QUIZ" : "PAR";
+      } else if (activityData.activityType === "simulation") {
+        return "SIM";
+      } else if (activityData.activityType === "basics") {
+        return "PAR";
+      } else if (activityData.activityType === "guides") {
+        return "PAR";
+      } else if (activityData.activityType === "prevention") {
+        return "PAR";
+      }
+    }
     const fromQuery = searchParams.get("type");
     const allowed = CERTIFICATE_OPTIONS.map((opt) => opt.value);
     return fromQuery && allowed.includes(fromQuery) ? fromQuery : "ORG";
-  }, [searchParams]);
+  }, [searchParams, activityData]);
 
   const referenceFromQuery = searchParams.get("ref");
 
@@ -123,7 +168,7 @@ function CertificateGenerateContent() {
     defaultValues: {
       certificateType: defaultType as GenerateForm["certificateType"],
       fullName: "",
-      district: "",
+      district: regionalAuthority?.district || "",
       issueDate: new Date().toISOString().slice(0, 10),
       email: "",
       score: "",
@@ -137,6 +182,12 @@ function CertificateGenerateContent() {
   const districtValue = watch("district");
 
   useEffect(() => {
+    // Pre-fill score from activity data
+    if (activityData.score !== null && activityData.total !== null) {
+      const percentage = Math.round((activityData.score / activityData.total) * 100);
+      setValue("score", `Scored ${activityData.score}/${activityData.total} (${percentage}%)`);
+    }
+
     const paramsToUpdate = [
       { key: "type", setter: (val: string) => setValue("certificateType", val as GenerateForm["certificateType"]) },
       { key: "name", setter: (val: string) => setValue("fullName", safeDecode(val)) },
@@ -155,7 +206,7 @@ function CertificateGenerateContent() {
         setter(value);
       }
     });
-  }, [searchParams, setValue]);
+  }, [searchParams, setValue, activityData]);
 
   useEffect(() => {
     if (regionalAuthority) {
@@ -163,22 +214,88 @@ function CertificateGenerateContent() {
     }
   }, [regionalAuthority, setValue]);
 
-  const submit = (data: GenerateForm) => {
-    const params = new URLSearchParams();
-    params.set("type", data.certificateType);
-    params.set("name", data.fullName);
-    params.set("district", data.district);
-    params.set("date", data.issueDate);
-    if (data.email) params.set("email", data.email);
-    if (data.score) params.set("score", data.score);
-    if (data.details) params.set("details", data.details);
-    if (data.eventName) params.set("event", data.eventName);
-    params.set("ref", data.referenceId);
-    if (regionalAuthority) {
-      params.set("rta", regionalAuthority.code);
+  const submit = async (data: GenerateForm) => {
+    // Determine certificate type for API
+    let apiType: "ORGANIZER" | "PARTICIPANT" | "MERIT" = "PARTICIPANT";
+    if (data.certificateType === "ORG") {
+      apiType = "ORGANIZER";
+    } else if (data.certificateType === "QUIZ") {
+      apiType = "MERIT";
+    } else {
+      apiType = "PARTICIPANT";
     }
 
-    router.push(`/certificates/preview?${params.toString()}`);
+    // Extract score from activity data or score field
+    let score = 0;
+    let total = 100;
+    if (activityData.score !== null && activityData.total !== null) {
+      score = activityData.score;
+      total = activityData.total;
+    } else if (data.score) {
+      // Try to parse score from string like "Scored 8/10 (80%)"
+      const scoreMatch = data.score.match(/(\d+)\/(\d+)/);
+      if (scoreMatch) {
+        score = parseInt(scoreMatch[1]);
+        total = parseInt(scoreMatch[2]);
+      }
+    }
+
+    // Create certificate via API to get proper certificate number
+    try {
+      const response = await fetch("/api/certificates/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: apiType,
+          fullName: data.fullName,
+          institution: "",
+          score: score,
+          total: total,
+          activityType: activityData.activityType || "online",
+          userEmail: data.email || undefined,
+        }),
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        alert(result.error || "Failed to create certificate");
+        return;
+      }
+
+      // Clear sessionStorage after successful creation
+      sessionStorage.removeItem("basicsScore");
+      sessionStorage.removeItem("basicsTotal");
+      sessionStorage.removeItem("simulationScore");
+      sessionStorage.removeItem("simulationTotal");
+      sessionStorage.removeItem("quizScore");
+      sessionStorage.removeItem("quizTotal");
+      sessionStorage.removeItem("guidesScore");
+      sessionStorage.removeItem("guidesTotal");
+      sessionStorage.removeItem("preventionScore");
+      sessionStorage.removeItem("preventionTotal");
+      sessionStorage.removeItem("activityType");
+
+      // Redirect to preview with certificate ID (proper format)
+      const params = new URLSearchParams();
+      params.set("certId", result.certificateId);
+      params.set("type", data.certificateType);
+      params.set("name", data.fullName);
+      params.set("district", data.district);
+      params.set("date", data.issueDate);
+      if (data.email) params.set("email", data.email);
+      if (data.score) params.set("score", data.score);
+      if (data.details) params.set("details", data.details);
+      if (data.eventName) params.set("event", data.eventName);
+      // Always include regional authority (Padala Rahul)
+      if (regionalAuthority) {
+        params.set("rta", regionalAuthority.code);
+      }
+
+      router.push(`/certificates/preview?${params.toString()}`);
+    } catch (error) {
+      console.error("Certificate creation error:", error);
+      alert("Failed to create certificate. Please try again.");
+    }
   };
 
   return (
@@ -195,6 +312,17 @@ function CertificateGenerateContent() {
       </div>
 
       <div className="rs-card p-8 space-y-6">
+        {activityData.score !== null && activityData.total !== null && (
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4 flex items-start gap-3">
+            <Award className="h-5 w-5 text-emerald-700 flex-shrink-0 mt-1" />
+            <div>
+              <p className="text-sm font-semibold text-emerald-800">Activity Completed</p>
+              <p className="text-sm text-emerald-700">
+                Your score: {activityData.score}/{activityData.total} ({Math.round((activityData.score / activityData.total) * 100)}%)
+              </p>
+            </div>
+          </div>
+        )}
         {regionalAuthority && (
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4 flex items-start gap-3">
             <MapPin className="h-5 w-5 text-emerald-700 flex-shrink-0 mt-1" />
