@@ -19,7 +19,7 @@ import {
   Music,
   BookOpen,
 } from "lucide-react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export default function Home() {
   const { t } = useTranslation("common");
