@@ -24,8 +24,8 @@ export default function SiteFooter() {
 
   const handleDownloadStudyMaterial = () => {
     const link = document.createElement("a");
-    link.href = "/assets/Road_Safety_Study_Material.pdf";
-    link.download = "Road_Safety_Study_Material.pdf";
+    link.href = "/assets/ROADSAFETY BOOK.pdf";
+    link.download = "ROADSAFETY BOOK.pdf";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
