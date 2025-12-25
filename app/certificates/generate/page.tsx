@@ -146,10 +146,16 @@ function CertificateGenerateContent() {
         return "PAR";
       }
     }
-    // If coming from direct access (not activity), allow selection
+    // If coming from direct access (not activity), default to PAR (not ORG)
+    // ORG, VOL, SCH, COL should only be available in offline certificate generation
     const fromQuery = searchParams.get("type");
     const allowed = CERTIFICATE_OPTIONS.map((opt) => opt.value);
-    return fromQuery && allowed.includes(fromQuery) ? fromQuery : "ORG";
+    // Only allow PAR, MERIT, TOPPER for online activities
+    const onlineAllowed = ["PAR", "MERIT", "TOPPER"];
+    if (fromQuery && allowed.includes(fromQuery) && onlineAllowed.includes(fromQuery)) {
+      return fromQuery;
+    }
+    return "PAR"; // Default to Participant for online activities
   }, [searchParams, activityData]);
   
   // Check if coming from activity (auto-determine type)
@@ -326,18 +332,6 @@ function CertificateGenerateContent() {
             </div>
           </div>
         )}
-        {regionalAuthority && (
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4 flex items-start gap-3">
-            <MapPin className="h-5 w-5 text-emerald-700 flex-shrink-0 mt-1" />
-            <div>
-              <p className="text-sm font-semibold text-emerald-800">Regional Event Certificate</p>
-              <p className="text-sm text-emerald-700">
-                This certificate will include {regionalAuthority.officerName} ({regionalAuthority.officerTitle}) alongside state
-                leadership.
-              </p>
-            </div>
-          </div>
-        )}
 
         <form onSubmit={handleSubmit(submit)} className="space-y-6">
           <div className="grid md:grid-cols-2 gap-5">
@@ -363,12 +357,17 @@ function CertificateGenerateContent() {
                     onChange={(event) => setValue("certificateType", event.target.value as GenerateForm["certificateType"])}
                     className="h-11 rounded-lg border border-emerald-200 px-3 text-sm focus:border-emerald-500 focus:outline-none"
                   >
-                    {CERTIFICATE_OPTIONS.map((option) => (
+                    {/* Only show PAR, MERIT, TOPPER for online activities */}
+                    {/* ORG, VOL, SCH, COL are only available in offline certificate generation */}
+                    {CERTIFICATE_OPTIONS.filter(opt => ["PAR", "MERIT", "TOPPER"].includes(opt.value)).map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label}
                       </option>
                     ))}
                   </select>
+                  <p className="text-xs text-slate-500 mt-1">
+                    For Organizer, Volunteer, School Contributor, or College Coordinator certificates, please use the Offline Certificate Generation section.
+                  </p>
                   {errors.certificateType && <p className="text-xs text-red-600">{errors.certificateType.message}</p>}
                 </>
               )}
