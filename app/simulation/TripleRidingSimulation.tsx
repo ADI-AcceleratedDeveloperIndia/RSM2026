@@ -23,7 +23,6 @@ export default function TripleRidingSimulation({ onComplete }: TripleRidingSimul
   const [showSuccess, setShowSuccess] = useState(false);
   const [showCorrectVideo, setShowCorrectVideo] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
-  const [referenceId, setReferenceId] = useState<string | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -143,9 +142,6 @@ export default function TripleRidingSimulation({ onComplete }: TripleRidingSimul
             }),
           });
           const payload = await response.json();
-          if (payload?.referenceId) {
-            setReferenceId(payload.referenceId);
-          }
         } catch {
           // Non-blocking if logging fails
         }
@@ -269,13 +265,8 @@ export default function TripleRidingSimulation({ onComplete }: TripleRidingSimul
 
       {/* Success Message */}
       {showSuccess && (
-        <div className="mt-6 p-4 bg-green-100 border-2 border-green-400 text-green-800 rounded-lg text-center animate-fade-in space-y-2">
+        <div className="mt-6 p-4 bg-green-100 border-2 border-green-400 text-green-800 rounded-lg text-center animate-fade-in">
           <p className="text-lg font-bold">✅ Two is Company, Three's a Crowd! Ride Safely with a Pillion Only.</p>
-          {referenceId && (
-            <p className="text-sm text-green-900">
-              Reference ID: <span className="font-semibold">{referenceId}</span>
-            </p>
-          )}
         </div>
       )}
     </div>

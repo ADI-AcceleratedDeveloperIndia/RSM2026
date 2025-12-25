@@ -23,7 +23,6 @@ export default function DrunkDriveSimulation({ onComplete }: DrunkDriveSimulatio
   const [showSuccess, setShowSuccess] = useState(false);
   const [showSoberVideo, setShowSoberVideo] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
-  const [referenceId, setReferenceId] = useState<string | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -121,9 +120,6 @@ export default function DrunkDriveSimulation({ onComplete }: DrunkDriveSimulatio
           }),
         });
         const payload = await response.json();
-        if (payload?.referenceId) {
-          setReferenceId(payload.referenceId);
-        }
       } catch {
         // non-blocking logging failure
       }
@@ -222,13 +218,8 @@ export default function DrunkDriveSimulation({ onComplete }: DrunkDriveSimulatio
       </div>
 
       {showSuccess && (
-        <div className="mt-6 p-4 bg-green-100 border-2 border-green-400 text-green-800 rounded-lg text-center space-y-2 animate-fade-in">
+        <div className="mt-6 p-4 bg-green-100 border-2 border-green-400 text-green-800 rounded-lg text-center animate-fade-in">
           <p className="text-lg font-bold">✅ Choose Sober Drives. Friends don&apos;t let friends drive drunk.</p>
-          {referenceId && (
-            <p className="text-sm text-green-900">
-              Reference ID: <span className="font-semibold">{referenceId}</span>
-            </p>
-          )}
         </div>
       )}
     </div>

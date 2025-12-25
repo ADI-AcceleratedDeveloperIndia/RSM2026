@@ -27,12 +27,20 @@ export function generateEventReferenceId(eventNumber: number): string {
 
 export function generateCertificateNumber(
   type: "MERIT" | "PARTICIPANT" | "ORGANIZER",
-  certificateNumber: number
+  certificateNumber?: number
 ): string {
-  if (certificateNumber < 1 || certificateNumber > 100000) {
-    throw new Error("Certificate number must be between 1 and 100000");
+  // If certificateNumber is provided, use it (for backward compatibility)
+  // Otherwise, generate a random 5-digit number
+  let certNum: string;
+  if (certificateNumber !== undefined) {
+    if (certificateNumber < 1 || certificateNumber > 100000) {
+      throw new Error("Certificate number must be between 1 and 100000");
+    }
+    certNum = certificateNumber.toString().padStart(5, "0");
+  } else {
+    // Generate random 5-digit number (10000 to 99999)
+    certNum = (10000 + Math.floor(Math.random() * 90000)).toString();
   }
-  const certNum = certificateNumber.toString().padStart(5, "0");
   return `${DISTRICT_CODE}-${PROGRAM_CODE}-${YEAR}-${OFFICER_CODE_1}-${OFFICER_CODE_2}-${type}-${certNum}`;
 }
 

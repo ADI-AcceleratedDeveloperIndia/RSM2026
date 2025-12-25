@@ -83,37 +83,25 @@ export async function POST(request: NextRequest) {
     const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
     const userIpHash = hashIp(ip);
 
-    // Try to create certificate with retry on duplicate key error
+    // Generate certificate with random number (avoids race conditions)
+    // Format: KRMR-RSM-2026-PDL-RHL-TYPE-XXXXX (where XXXXX is random 5-digit number)
     let certificate;
     let certificateId: string | null = null;
     let attempts = 0;
-    const maxAttempts = 10; // Increased attempts
+    const maxAttempts = 5; // Retry if random number collides (very rare)
     
     while (attempts < maxAttempts) {
       try {
-        // Get fresh certificate number on each attempt to avoid race conditions
-        const lastCert = await Certificate.findOne({ type: validated.type })
-          .sort({ certificateNumber: -1 })
-          .select('certificateNumber')
-          .lean() as { certificateNumber?: number } | null;
+        // Generate certificate ID with random number (no need to query database)
+        certificateId = generateCertificateNumber(validated.type); // No number = random
         
-        let nextCertNumber = 1;
-        if (lastCert && typeof lastCert.certificateNumber === 'number') {
-          nextCertNumber = lastCert.certificateNumber + 1;
-        }
-
-        if (nextCertNumber > 100000) {
-          return NextResponse.json(
-            { error: "Maximum certificate limit reached for this type" },
-            { status: 400 }
-          );
-        }
-
-        certificateId = generateCertificateNumber(validated.type, nextCertNumber);
+        // Extract the random number from the certificateId for storage
+        const certNumMatch = certificateId.match(/-(\d{5})$/);
+        const certificateNumber = certNumMatch ? parseInt(certNumMatch[1]) : Math.floor(Math.random() * 90000) + 10000;
         
         certificate = new Certificate({
           certificateId,
-          certificateNumber: nextCertNumber,
+          certificateNumber: certificateNumber,
           type: validated.type,
           fullName: validated.fullName,
           institution: validated.institution,
@@ -130,7 +118,7 @@ export async function POST(request: NextRequest) {
         await certificate.save();
         break; // Success
       } catch (saveError: any) {
-        // Check if it's a duplicate key error (E11000)
+        // Check if it's a duplicate key error (E11000) - very rare with random numbers
         const isDuplicateKeyError = 
           saveError.code === 11000 || 
           saveError.message?.includes('duplicate key') ||
@@ -138,9 +126,8 @@ export async function POST(request: NextRequest) {
         
         if (isDuplicateKeyError && attempts < maxAttempts - 1) {
           attempts++;
-          // Exponential backoff with jitter
-          const delay = Math.min(100 * Math.pow(2, attempts) + Math.random() * 100, 1000);
-          await new Promise(resolve => setTimeout(resolve, delay));
+          // Small random delay before retry with new random number
+          await new Promise(resolve => setTimeout(resolve, 50 + Math.random() * 50));
           continue;
         }
         

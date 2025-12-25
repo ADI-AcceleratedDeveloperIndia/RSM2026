@@ -23,7 +23,6 @@ export default function OverspeedSimulation({ onComplete }: OverspeedSimulationP
   const [showSuccess, setShowSuccess] = useState(false);
   const [imageSrc, setImageSrc] = useState("/media/simulation%20media/overspeed/overspeed.png");
   const [isCompleted, setIsCompleted] = useState(false);
-  const [referenceId, setReferenceId] = useState<string | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -123,9 +122,6 @@ export default function OverspeedSimulation({ onComplete }: OverspeedSimulationP
             }),
           });
           const payload = await response.json();
-          if (payload?.referenceId) {
-            setReferenceId(payload.referenceId);
-          }
         } catch {
           // Ignore logging errors
         }
@@ -212,13 +208,8 @@ export default function OverspeedSimulation({ onComplete }: OverspeedSimulationP
       </div>
 
       {showSuccess && (
-        <div className="mt-6 p-4 bg-green-100 border-2 border-green-400 text-green-800 rounded-lg text-center animate-fade-in space-y-2">
+        <div className="mt-6 p-4 bg-green-100 border-2 border-green-400 text-green-800 rounded-lg text-center animate-fade-in">
           <p className="text-lg font-bold">✅ Speed Kills! Always maintain safe speed limits.</p>
-          {referenceId && (
-            <p className="text-sm text-green-900">
-              Reference ID: <span className="font-semibold">{referenceId}</span>
-            </p>
-          )}
         </div>
       )}
     </div>

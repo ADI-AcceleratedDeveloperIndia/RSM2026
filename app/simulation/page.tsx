@@ -66,16 +66,23 @@ export default function SimulationPage() {
           </span>
           <h1 className="text-3xl font-semibold text-emerald-900">{tc("spotTheViolationFixIt") || "Spot the Violation → Fix It!"}</h1>
           <p className="text-slate-600 max-w-2xl">
-            {tc("dragAndDropLearning") || "Drag-and-drop micro learning challenges that help you identify and correct common road safety violations. Earn completion reference IDs for every simulation you master."}
+            {tc("dragAndDropLearning") || "Drag-and-drop micro learning challenges that help you identify and correct common road safety violations. Complete all 4 simulations to generate your certificate."}
           </p>
         </div>
         <div className="rounded-2xl bg-white border border-emerald-100 p-5 shadow-sm text-sm text-emerald-700 space-y-3">
-          <p className="font-semibold flex items-center gap-2"><Sparkles className="h-4 w-4" /> {tc("completionRewards") || "Completion Rewards"}</p>
-          <ul className="space-y-2 list-disc list-inside">
-            <li>{tc("referenceIdForEachSimulation") || "Reference ID for each simulation completion"}</li>
-            <li>{tc("instantFeedbackOnSafeDecisions") || "Instant feedback on safe decisions"}</li>
-            <li>{tc("supportsQuizCertificateProgress") || "Supports quiz & certificate progress"}</li>
-          </ul>
+          <p className="font-semibold flex items-center gap-2"><Sparkles className="h-4 w-4" /> {tc("progress") || "Progress"}</p>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span>{i18n.language === "te" ? "పూర్తి చేసిన సిమ్యులేషన్‌లు" : "Completed Simulations"}</span>
+              <span className="font-bold text-emerald-900">{completedSims.size} / 4</span>
+            </div>
+            <div className="w-full bg-emerald-100 rounded-full h-2">
+              <div 
+                className="bg-emerald-600 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${(completedSims.size / 4) * 100}%` }}
+              />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -157,9 +164,10 @@ export default function SimulationPage() {
                 ? "మీరు 4 సిమ్యులేషన్‌లలో విజయవంతమయ్యారు (4/4)"
                 : "You've successfully completed all 4 simulations (4/4)"}
             </p>
-            <Button onClick={handleContinueToCertificate} className="rs-btn-primary gap-2">
-              {i18n.language === "te" ? "సర్టిఫికేట్‌కు కొనసాగండి" : "Continue to Certificate"}
-              <ArrowRight className="h-4 w-4" />
+            <Button onClick={handleContinueToCertificate} className="rs-btn-primary gap-2 text-base px-8 py-6">
+              <Trophy className="h-5 w-5" />
+              {i18n.language === "te" ? "సర్టిఫికేట్ సృష్టించండి" : "Generate Certificate"}
+              <ArrowRight className="h-5 w-5" />
             </Button>
           </CardContent>
         </Card>
