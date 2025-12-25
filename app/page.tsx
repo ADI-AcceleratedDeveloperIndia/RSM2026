@@ -21,6 +21,7 @@ import {
   Download,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import AudioGuide from "@/components/AudioGuide";
 
 export default function Home() {
   const { t } = useTranslation("common");

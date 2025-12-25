@@ -2,6 +2,7 @@
 
 import { ShieldCheck, TrafficCone, AlertTriangle, Footprints } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import AudioGuide from "@/components/AudioGuide";
 
 export default function RulesPage() {
   const { t } = useTranslation("common");
@@ -30,8 +31,23 @@ export default function RulesPage() {
     },
   ];
 
+  // Generate full page content for Audio Guide
+  const getRulesPageContent = () => {
+    let content = "Road Safety Rules for Every Citizen. ";
+    content += RULE_SECTIONS.map(rule => `${rule.title}. ${rule.description}. `).join("");
+    return content;
+  };
+
   return (
     <div className="rs-container py-12 md:py-16 space-y-10">
+      {/* Audio Guide Button */}
+      <div className="flex justify-end">
+        <AudioGuide 
+          content={getRulesPageContent}
+          label="Audio Guide"
+          className="rs-btn-secondary"
+        />
+      </div>
       <div className="space-y-3 text-center md:text-left">
         <span className="rs-chip">{tc("transportApprovedRegulations")}</span>
         <h1 className="text-3xl md:text-4xl font-semibold text-emerald-900">{tc("roadSafetyRulesForEveryCitizen")}</h1>

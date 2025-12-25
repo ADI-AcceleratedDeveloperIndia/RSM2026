@@ -156,6 +156,12 @@ export default function SiteFooter() {
                 >
                   Admin Panel (Internal Use Only)
                 </Link>
+                <Link 
+                  href="/organizer"
+                  className="text-xs text-slate-400 hover:text-yellow-300 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-offset-2 focus:ring-offset-emerald-900 rounded inline-block block"
+                >
+                  Organizer Registration
+                </Link>
               </div>
               <div className="mt-4 space-y-2 text-xs text-slate-400">
                 <p>{t("allRightsReserved")}</p>

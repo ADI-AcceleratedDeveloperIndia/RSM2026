@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { useState, useEffect } from "react";
 import type { ReactNode } from "react";
-import { Menu, X, Home, Scale, GraduationCap, ShieldCheck, FileText, Cpu, Award, CalendarDays, ShieldHalf, MapPin } from "lucide-react";
+import { Menu, X, Home, Scale, GraduationCap, ShieldCheck, FileText, Cpu, Award, CalendarDays, ShieldHalf, MapPin, Heart } from "lucide-react";
 
 const navIcons: Record<string, ReactNode> = {
   "/": <Home className="h-4 w-4" />,
@@ -17,7 +17,7 @@ const navIcons: Record<string, ReactNode> = {
   "/prevention": <ShieldHalf className="h-4 w-4" />,
   "/events": <CalendarDays className="h-4 w-4" />,
   "/certificates": <Award className="h-4 w-4" />,
-  "/organizer": <FileText className="h-4 w-4" />,
+  "/special": <Heart className="h-4 w-4" />,
 };
 
 export default function Nav() {
@@ -46,7 +46,7 @@ export default function Nav() {
     { href: "/prevention", label: i18n.language === "te" ? "ప్రివెన్షన్" : "Prevention", sublabel: i18n.language === "te" ? "గ్రాడ్యుయేట్స్" : "Graduates", key: "/prevention" },
     { href: "/events", label: t("events") || "Events", sublabel: null, key: "/events" },
     { href: "/certificates", label: t("certificates") || "Certificates", sublabel: null, key: "/certificates" },
-    { href: "/organizer", label: i18n.language === "te" ? "నిర్వాహకుడు" : "Organizer", sublabel: null, key: "/organizer" },
+    { href: "/special", label: i18n.language === "te" ? "స్పెషల్" : "Special", sublabel: null, key: "/special", isSpecial: true },
   ];
 
   if (!mounted) return null;
@@ -90,6 +90,7 @@ export default function Nav() {
           <nav className="hidden lg:flex items-center gap-1.5 rounded-full border border-emerald-100 bg-white/70 px-1.5 py-1 shadow-[0_12px_24px_rgba(24,90,64,0.1)]">
             {navLinks.map((link) => {
               const active = pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href));
+              const isSpecial = (link as any).isSpecial;
               return (
                 <Link
                   key={link.href}
@@ -97,7 +98,11 @@ export default function Nav() {
                   title={link.label + (link.sublabel ? ` (${link.sublabel})` : "")}
                   className={`relative flex flex-col items-center gap-0.5 rounded-full px-2 py-1 text-[11px] font-medium transition-all whitespace-nowrap group ${
                     active
-                      ? "bg-emerald-600 text-white shadow-[0_10px_20px_rgba(7,80,55,0.3)]"
+                      ? isSpecial
+                        ? "bg-red-600 text-white shadow-[0_10px_20px_rgba(220,38,38,0.3)] border-2 border-red-400"
+                        : "bg-emerald-600 text-white shadow-[0_10px_20px_rgba(7,80,55,0.3)]"
+                      : isSpecial
+                      ? "text-red-600 hover:bg-red-50 border-2 border-red-300"
                       : "text-slate-600 hover:bg-emerald-50"
                   }`}
                 >
@@ -106,7 +111,7 @@ export default function Nav() {
                     <span className="text-[11px]">{link.label}</span>
                   </span>
                   {link.sublabel && (
-                    <span className={`text-[9px] leading-tight ${active ? "text-emerald-100" : "text-slate-500"}`}>
+                    <span className={`text-[9px] leading-tight ${active ? isSpecial ? "text-red-100" : "text-emerald-100" : "text-slate-500"}`}>
                       ({link.sublabel})
                     </span>
                   )}
@@ -153,13 +158,20 @@ export default function Nav() {
             <div className="grid gap-2 rounded-2xl border border-emerald-100 bg-white/90 p-4 shadow-[0_12px_28px_rgba(7,80,55,0.15)]">
               {navLinks.map((link) => {
                 const active = pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href));
+                const isSpecial = (link as any).isSpecial;
                 return (
                   <Link
                     key={link.href}
                     href={link.href}
                     onClick={() => setIsOpen(false)}
-                    className={`flex flex-col gap-1 rounded-xl px-3 py-3 text-sm font-semibold transition ${
-                      active ? "bg-emerald-600 text-white" : "text-slate-700 hover:bg-emerald-50"
+                    className={`flex flex-col gap-1 rounded-xl px-3 py-3 text-sm font-semibold transition border-2 ${
+                      active 
+                        ? isSpecial
+                          ? "bg-red-600 text-white border-red-400"
+                          : "bg-emerald-600 text-white border-emerald-400"
+                        : isSpecial
+                        ? "text-red-700 hover:bg-red-50 border-red-300"
+                        : "text-slate-700 hover:bg-emerald-50 border-transparent"
                     }`}
                   >
                     <span className="flex items-center gap-3">
@@ -167,7 +179,7 @@ export default function Nav() {
                       {link.label}
                     </span>
                     {link.sublabel && (
-                      <span className={`text-xs ml-7 ${active ? "text-emerald-100" : "text-slate-500"}`}>
+                      <span className={`text-xs ml-7 ${active ? isSpecial ? "text-red-100" : "text-emerald-100" : "text-slate-500"}`}>
                         ({link.sublabel})
                       </span>
                     )}

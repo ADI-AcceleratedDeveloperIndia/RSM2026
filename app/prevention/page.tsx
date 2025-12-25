@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
 import { generateReferenceId } from "@/lib/reference";
 import { Trophy, ArrowRight, CheckCircle2, XCircle } from "lucide-react";
+import AudioGuide from "@/components/AudioGuide";
 
 type PreventionSection = {
   id: string;
@@ -220,8 +221,29 @@ export default function PreventionPage() {
     router.push("/certificates/generate");
   };
 
+  // Generate full page content for Audio Guide
+  const getPreventionPageContent = () => {
+    let content = "Prevention is greater than cure. Road Safety Prevention. ";
+    content += PREVENTION_SECTIONS.map(section => {
+      let sectionContent = `${section.title}. ${section.description}. `;
+      section.steps.forEach((step, idx) => {
+        sectionContent += `Step ${idx + 1}. ${step.prompt}. ${step.reinforcement}. `;
+      });
+      return sectionContent;
+    }).join("");
+    return content;
+  };
+
   return (
     <div className="container mx-auto px-4 py-12 max-w-5xl">
+      {/* Audio Guide Button */}
+      <div className="flex justify-end mb-4">
+        <AudioGuide 
+          content={getPreventionPageContent}
+          label="Audio Guide"
+          className="rs-btn-secondary"
+        />
+      </div>
       <div className="text-center mb-10">
         <h1 className="text-4xl font-bold text-green-800 mb-3">{tc("preventionGreaterThanCure") || "Prevention > Cure"}</h1>
         <p className="text-gray-600 max-w-3xl mx-auto">

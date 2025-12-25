@@ -137,6 +137,9 @@ function CertificateGenerateContent() {
   // Check if coming from activity (auto-determine type)
   const isFromActivity = activityData.score !== null && activityData.total !== null && activityData.activityType;
 
+  // State for event participation question
+  const [hasEventId, setHasEventId] = useState<boolean | null>(null);
+
   const defaultType = useMemo(() => {
     // Auto-determine certificate type from activity score
     if (isFromActivity) {
@@ -233,6 +236,11 @@ function CertificateGenerateContent() {
   }, [regionalAuthority, setValue]);
 
   const submit = async (data: GenerateForm) => {
+    // If coming from activity and user hasn't answered the event question, don't submit
+    if (isFromActivity && hasEventId === null) {
+      alert("Please answer whether you have an Event ID or not.");
+      return;
+    }
     // Determine certificate type for API based on selected type
     let apiType: "ORGANIZER" | "PARTICIPANT" | "MERIT" = "PARTICIPANT";
     if (data.certificateType === "ORG") {
@@ -262,7 +270,11 @@ function CertificateGenerateContent() {
     }
 
     // Extract Event Reference ID from referenceId field (if it's an event ID)
-    const eventRefId = data.referenceId && data.referenceId.includes("EVT-") ? data.referenceId : undefined;
+    // Only include if user said they have an Event ID (hasEventId === true)
+    // If hasEventId === false, user is participating directly online, no Event ID needed
+    const eventRefId = (hasEventId === true && data.referenceId && data.referenceId.includes("EVT-")) 
+      ? data.referenceId 
+      : undefined;
 
     // Create certificate via API to get proper certificate number
     try {

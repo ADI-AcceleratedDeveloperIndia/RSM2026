@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
 import { Loader2, Trophy, Copy, Sparkles, Target, Award, Volume2, VolumeX } from "lucide-react";
+import { initializeTTS, speakText as ttsSpeakText, stopSpeaking as ttsStopSpeaking, isSpeaking as ttsIsSpeaking } from "@/utils/tts";
+import AudioGuide from "@/components/AudioGuide";
 
 interface Question {
   id: number;
@@ -41,13 +43,16 @@ export default function QuizPage() {
   const [questionResults, setQuestionResults] = useState<Map<number, boolean>>(new Map()); // questionId -> isCorrect
   const [virtualQuizMaster, setVirtualQuizMaster] = useState<boolean>(false);
   const [showCelebration, setShowCelebration] = useState(false);
-  const synthRef = useRef<SpeechSynthesis | null>(null);
-  const voicesLoadedRef = useRef<boolean>(false);
-  const audioContextRef = useRef<AudioContext | null>(null);
+  const ttsInitializedRef = useRef<boolean>(false);
   
-  // Appreciation words in both languages - arranged from low to high degree of appreciation (15 words for 15 questions)
+  // Appreciation words in both languages - arranged from low to high degree of appreciation
+  // Telugu: 11 words (removed: కేక, రచ్చ, చింపేశావు, తోపు)
   const appreciationWords = {
-    en: ["Good", "Well done", "Great", "Super", "Fantastic", "Excellent", "Perfect", "Brilliant", "Outstanding", "Amazing", "Wonderful", "Extraordinary", "Incredible", "Phenomenal", "Legendary"],
+    en: [
+      "Good", "Well done", "Great", "Super", "Fantastic", 
+      "Excellent", "Perfect", "Brilliant", "Outstanding", "Amazing", 
+      "Wonderful", "Extraordinary", "Incredible", "Phenomenal", "Legendary"
+    ],
     te: [
       "సరియైనది",      // Level 1: That is correct
       "భలే",            // Level 2: Good/Nice
@@ -55,15 +60,11 @@ export default function QuizPage() {
       "శభాష్",          // Level 3: Well done
       "వహ్వా",           // Level 3: Wow
       "అదిరింది",        // Level 4: Fantastic
-      "కేక",             // Level 4: Awesome
-      "రచ్చ",             // Level 4: Sensation
       "అద్భుతం",         // Level 5: Wonderful
       "అమోఘం",           // Level 5: Excellent
       "అసాధారణం",        // Level 5: Extraordinary
-      "చింపేశావు",       // Level 6: You nailed it
       "పరిపూర్ణం",       // Level 6: Perfect
-      "తిరుగులేదు",      // Level 6: Unbeatable
-      "తోపు"              // Level 7: Legend/Expert
+      "తిరుగులేదు"       // Level 6: Unbeatable
     ]
   };
 
@@ -100,195 +101,31 @@ export default function QuizPage() {
     }
   }, [i18n.language]);
 
-  // Initialize speech synthesis
+  // Initialize TTS on mount
   useEffect(() => {
-    if (typeof window !== "undefined" && "speechSynthesis" in window) {
-      synthRef.current = window.speechSynthesis;
-      
-      // Cancel any existing speech
-      synthRef.current.cancel();
-      
-      // Load voices
-      const loadVoices = () => {
-        if (synthRef.current) {
-          const voices = synthRef.current.getVoices();
-          console.log("🔊 Voices loaded:", voices.length);
-          if (voices.length > 0) {
-            voicesLoadedRef.current = true;
-            console.log("📢 Sample voices:", voices.slice(0, 5).map(v => `${v.name} (${v.lang})`));
-            
-            // Log English voices
-            const englishVoices = voices.filter(v => v.lang.startsWith("en"));
-            if (englishVoices.length > 0) {
-              console.log("✅ English voices found:", englishVoices.map(v => `${v.name} (${v.lang})`).slice(0, 5));
-            } else {
-              console.warn("⚠️ No English voices found. Available languages:", 
-                [...new Set(voices.map(v => v.lang))].slice(0, 10)
-              );
-            }
-          }
-        }
-      };
-      
-      // Try to load voices immediately
-      loadVoices();
-      
-      // Also listen for voice changes (important for Chrome)
-      if (synthRef.current.onvoiceschanged !== undefined) {
-        synthRef.current.onvoiceschanged = loadVoices;
-      }
-      
-      // Force load voices after delays (Chrome needs this)
-      setTimeout(() => {
-        loadVoices();
-      }, 500);
-      
-      setTimeout(() => {
-        loadVoices();
-      }, 1000);
-      
-      return () => {
-        if (synthRef.current) {
-          synthRef.current.cancel();
-        }
-      };
-    } else {
-      console.error("❌ Speech synthesis not supported in this browser");
+    if (!ttsInitializedRef.current) {
+      ttsInitializedRef.current = true;
+      initializeTTS();
     }
   }, []);
 
   const stopSpeaking = () => {
-    if (synthRef.current && synthRef.current.speaking) {
-      // Cancel gracefully - "interrupted" error is expected and normal
-      synthRef.current.cancel();
-    }
+    ttsStopSpeaking();
   };
 
-  const speakText = (text: string, lang: string = "en") => {
+  const speakText = (text: string, lang: "en" | "te" = "en") => {
     // Only speak if Virtual Quiz Master is ON
     if (!virtualQuizMaster) {
-      console.log("Virtual Quiz Master is OFF, not speaking");
       return;
     }
     
-    if (!synthRef.current) {
-      console.error("Speech synthesis not available");
-      return;
-    }
-    
-    console.log("Speaking text:", text.substring(0, 50) + "...");
-    console.log("Language:", lang);
-    
-    // Cancel any ongoing speech
-    stopSpeaking();
-    
-    // Wait a bit for cancellation to complete
-    setTimeout(() => {
-      if (!synthRef.current) {
-        console.log("Speech synthesis not available after timeout");
-        return;
-      }
-      
-      // Check state again (might have changed)
-      if (!virtualQuizMaster) {
-        console.log("Virtual Quiz Master turned OFF, cancelling speech");
-        return;
-      }
-      
-      const utterance = new SpeechSynthesisUtterance(text);
-      // Always use English for Virtual Quiz Master
-      utterance.lang = "en-US"; // English US
-      console.log("🎤 Setting utterance language to en-US for English");
-      utterance.rate = 0.9; // Slightly slower for clarity
-      utterance.pitch = 1;
-      utterance.volume = 1;
-      
-      console.log("📢 Utterance properties:", {
-        lang: utterance.lang,
-        rate: utterance.rate,
-        textLength: text.length,
-        textPreview: text.substring(0, 80) + "..."
-      });
-      
-      // Add event listeners for debugging
-      utterance.onstart = () => {
-        console.log("✅ Speech started successfully");
-      };
-      
-      utterance.onend = () => {
-        console.log("✅ Speech ended");
-      };
-      
-      utterance.onerror = (event) => {
-        // "interrupted" and "canceled" are expected when stopping speech, not real errors
-        if (event.error === "interrupted" || event.error === "canceled") {
-          console.log("ℹ️ Speech interrupted (expected when stopping)");
-          return;
-        }
-        
-        // Handle language-not-supported error (check error as string since TypeScript types may not include all browser-specific errors)
-        if ((event.error as string) === "language-not-supported" && lang === "te") {
-          console.warn("⚠️ Telugu TTS not supported in this browser.");
-          console.warn("💡 English TTS works without setup. Telugu may require OS language pack.");
-          // Try falling back to English if Telugu fails
-          if (text.includes("ప్రశ్న") || text.includes("ఎంపిక")) {
-            console.log("🔄 Telugu TTS failed - this browser may not support Telugu voices");
-          }
-        }
-        
-        // Only log actual errors
-        console.error("❌ Speech error:", event.error, event.type);
-      };
-      
-      // Try to get English voice
-      const voices = synthRef.current.getVoices();
-      console.log("Available voices:", voices.length);
-      
-      if (voices.length > 0) {
-        // Always use English for Virtual Quiz Master
-        // Look for US English voice first, fallback to any English
-        let selectedVoice = voices.find(voice => 
-          voice.lang === "en-US" || 
-          voice.lang.startsWith("en-US")
-        ) || voices.find(voice => voice.lang.startsWith("en"));
-        
-        if (selectedVoice) {
-          utterance.voice = selectedVoice;
-          console.log("✅ Using English voice:", selectedVoice.name, "(" + selectedVoice.lang + ")");
-        } else {
-          console.log("⚠️ No English voice found, using default voice");
-          if (voices.length > 0) {
-            utterance.voice = voices[0];
-            console.log("🔄 Using default voice:", voices[0].name);
-          }
-        }
-      } else {
-        console.log("⚠️ No voices available");
-      }
-      
-      try {
-        // Check if already speaking and cancel first
-        if (synthRef.current.speaking) {
-          synthRef.current.cancel();
-          // Wait a moment before starting new speech
-          setTimeout(() => {
-            if (synthRef.current && virtualQuizMaster) {
-              synthRef.current.speak(utterance);
-              console.log("✅ Speech synthesis triggered - check your speakers/volume");
-            }
-          }, 100);
-        } else {
-          synthRef.current.speak(utterance);
-          console.log("✅ Speech synthesis triggered - check your speakers/volume");
-        }
-      } catch (error) {
-        console.error("❌ Error speaking:", error);
-        // Don't show alert for expected interruptions
-        if (error instanceof Error && !error.message.includes("interrupted")) {
-          console.warn("Speech synthesis warning:", error);
-        }
-      }
-    }, 200);
+    ttsSpeakText(
+      text,
+      lang,
+      () => console.log("✅ Speech started"),
+      () => console.log("✅ Speech ended"),
+      (error) => console.error("❌ Speech error:", error)
+    );
   };
 
   // Stop speaking when Virtual Quiz Master is turned OFF
@@ -320,10 +157,7 @@ export default function QuizPage() {
       return;
     }
     
-    if (!synthRef.current) {
-      console.error("Speech synthesis not initialized");
-      return;
-    }
+    // TTS is initialized via useEffect
     
     const question = questions[questionIndex];
     
@@ -349,7 +183,8 @@ export default function QuizPage() {
     console.log("Language code for speech synthesis: en-US");
     console.log("Full text length:", fullText.length);
     
-    speakText(fullText, "en");
+    const lang = getCurrentLang();
+    speakText(fullText, lang as "en" | "te");
   };
 
   // Handle Virtual Quiz Master toggle
@@ -387,11 +222,11 @@ export default function QuizPage() {
       // Start reading IMMEDIATELY - use newState to avoid stale closure
       setTimeout(() => {
         // Check if still ON (use newState from closure, not state)
-        if (newState && synthRef.current) {
+        if (newState) {
           console.log("🎤 Starting to read question", firstUnanswered + 1);
           readQuestion(firstUnanswered);
         } else {
-          console.error("❌ Speech synthesis not available or Quiz Master turned OFF");
+          console.error("❌ Quiz Master turned OFF");
         }
       }, 200); // Minimal delay for immediate start
     } else if (firstUnanswered === -1 && questions.length > 0) {
@@ -404,11 +239,7 @@ export default function QuizPage() {
   // Play sound effect
   const playSound = (type: "correct" | "wrong") => {
     try {
-      if (!audioContextRef.current) {
-        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-      }
-      
-      const audioContext = audioContextRef.current;
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       
       if (type === "correct") {
         // Success sound - two-tone chime (pleasant)
@@ -479,15 +310,15 @@ export default function QuizPage() {
     newAnswers[questionIdx] = optionIdx;
     setAnswers(newAnswers);
     
-    // If correct, say appreciation word
+    // If correct, say appreciation word in selected language
     if (isCorrect && virtualQuizMaster) {
       const lang = getCurrentLang();
       const words = appreciationWords[lang as "en" | "te"] || appreciationWords.en;
       const randomWord = words[Math.floor(Math.random() * words.length)];
       
       setTimeout(() => {
-        if (virtualQuizMaster && synthRef.current) {
-          speakText(randomWord + "!", lang);
+        if (virtualQuizMaster) {
+          speakText(randomWord + "!", lang as "en" | "te");
         }
       }, 500);
     }
@@ -538,12 +369,14 @@ export default function QuizPage() {
       setShowCelebration(true);
       // Always use English for Virtual Quiz Master
       // Always use English for Virtual Quiz Master
-      const congratsText = "Congratulations! You have completed the quiz!";
-      const lang = "en"; // Always use English
+      const lang = getCurrentLang();
+      const congratsText = lang === "te" 
+        ? "అభినందనలు! మీరు క్విజ్‌ను పూర్తి చేశారు!"
+        : "Congratulations! You have completed the quiz!";
       
-      if (virtualQuizMaster && synthRef.current) {
+      if (virtualQuizMaster) {
         setTimeout(() => {
-          speakText(congratsText, lang);
+          speakText(congratsText, lang as "en" | "te");
         }, 500);
       }
       
@@ -675,22 +508,8 @@ export default function QuizPage() {
             <Button
               type="button"
               onClick={() => {
-                if (synthRef.current) {
-                  // Always use English for Virtual Quiz Master
-                  const testText = "Testing speech synthesis. Can you hear this?";
-                  const testUtterance = new SpeechSynthesisUtterance(testText);
-                  testUtterance.lang = "en-US";
-                  testUtterance.onstart = () => console.log("✅ Test speech started");
-                  testUtterance.onerror = (e) => {
-                    console.error("❌ Test speech error:", e);
-                    if ((e.error as string) === "language-not-supported" || e.error === "synthesis-failed") {
-                      alert("English TTS not available in this browser. Please use Chrome or Edge browser.");
-                    }
-                  };
-                  synthRef.current.speak(testUtterance);
-                } else {
-                  alert("Speech synthesis not available. Please use Chrome or Edge browser.");
-                }
+                const testText = "Testing speech synthesis. Can you hear this?";
+                speakText(testText, "en");
               }}
               variant="outline"
               size="sm"
