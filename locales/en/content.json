@@ -136,7 +136,11 @@
   "certificateParTitle": "Participant Certificate",
   "certificateParSubtitle": "Acknowledging active participation in Telangana Road Safety Month 2026",
   "certificateParBody": "Awarded for enthusiastic involvement in awareness drives, workshops, and activities that championed safer roads for all citizens of Telangana.",
-  "certificateParPurpose": "For citizens who participated in Road Safety Month activities or awareness programmes.",
+  "certificateParPurpose": "For participants scoring < 60% in any Road Safety Month activity (Quiz, Essay, Simulation, Guides, Prevention, or custom activities).",
+  "certificateMeritTitle": "Merit Certificate",
+  "certificateMeritSubtitle": "Celebrating excellence in Telangana Road Safety Month activities",
+  "certificateMeritBody": "Presented for outstanding performance, demonstrating deep understanding of traffic regulations, safe driving behaviours, and citizen responsibilities.",
+  "certificateMeritPurpose": "For participants scoring 60-79% in any Road Safety Month activity (Quiz, Essay, Simulation, Guides, Prevention, or custom activities).",
   "certificateQuizTitle": "Quiz Merit Certificate",
   "certificateQuizSubtitle": "Celebrating excellence in the Telangana Road Safety Knowledge Quiz",
   "certificateQuizBody": "Presented for outstanding performance in the Road Safety Quiz, demonstrating deep understanding of traffic regulations, safe driving behaviours, and citizen responsibilities.",
@@ -252,5 +256,6 @@
   "certificateVolTitle": "Volunteer",
   "certificateSchTitle": "School Contributor",
   "certificateColTitle": "College Coordinator",
-  "certificateTopperTitle": "Simulation Topper"
+  "certificateTopperTitle": "Topper Certificate",
+  "certificateTopperPurpose": "For participants scoring ≥ 80% in any Road Safety Month activity (Quiz, Essay, Simulation, Guides, Prevention, or custom activities)."
 }

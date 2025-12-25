@@ -18,12 +18,12 @@ interface CertificateInfo {
 const getCertificateList = (tc: (key: string) => string): CertificateInfo[] => [
   { code: "ORG", title: tc("certificateOrgTitle"), purpose: tc("certificateOrgPurpose") },
   { code: "PAR", title: tc("certificateParTitle"), purpose: tc("certificateParPurpose") },
-  { code: "QUIZ", title: tc("certificateQuizTitle"), purpose: tc("certificateQuizPurpose") },
+  { code: "MERIT", title: tc("certificateMeritTitle"), purpose: tc("certificateMeritPurpose") },
+  { code: "TOPPER", title: tc("certificateTopperTitle"), purpose: tc("certificateTopperPurpose") },
   { code: "SIM", title: tc("certificateSimTitle"), purpose: tc("certificateSimPurpose") },
   { code: "VOL", title: tc("certificateVolTitle"), purpose: tc("certificateVolPurpose") },
   { code: "SCH", title: tc("certificateSchTitle"), purpose: tc("certificateSchPurpose") },
   { code: "COL", title: tc("certificateColTitle"), purpose: tc("certificateColPurpose") },
-  { code: "TOPPER", title: tc("certificateTopperTitle"), purpose: tc("certificateTopperPurpose") },
 ];
 
 export default function CertificatesPage() {
