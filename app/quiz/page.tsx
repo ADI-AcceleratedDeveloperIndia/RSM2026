@@ -199,16 +199,10 @@ export default function QuizPage() {
       }
       
       const utterance = new SpeechSynthesisUtterance(text);
-      // Use proper language codes
-      if (lang === "te") {
-        // Try te-IN first, fallback to te if not available
-        utterance.lang = "te-IN"; // Telugu India
-        console.log("🎤 Setting utterance language to te-IN for Telugu");
-      } else {
-        utterance.lang = "en-US"; // English US (works better than en-IN)
-        console.log("🎤 Setting utterance language to en-US for English");
-      }
-      utterance.rate = 0.8; // Slightly slower for Telugu
+      // Always use English for Virtual Quiz Master
+      utterance.lang = "en-US"; // English US
+      console.log("🎤 Setting utterance language to en-US for English");
+      utterance.rate = 0.9; // Slightly slower for clarity
       utterance.pitch = 1;
       utterance.volume = 1;
       
@@ -394,51 +388,30 @@ export default function QuizPage() {
     }
     
     const question = questions[questionIndex];
-    const lang = getCurrentLang();
     
     console.log("📖 Reading question", questionIndex + 1);
-    console.log("🌐 Current i18n language:", i18n.language);
-    console.log("🔤 Detected language for speech:", lang);
     console.log("❓ Question text preview:", question.question.substring(0, 50));
     
-    // Check if question is actually in Telugu
-    const isQuestionInTelugu = /[\u0C00-\u0C7F]/.test(question.question);
-    console.log("Is question in Telugu script?", isQuestionInTelugu);
-    console.log("Question text:", question.question);
+    // Always use English labels for Virtual Quiz Master
+    const questionLabel = "Question";
+    const optionLabel = "Option";
     
-    // Use Telugu labels only if language is Telugu AND question is in Telugu
-    const useTeluguLabels = lang === "te" && isQuestionInTelugu;
-    
-    const questionLabel = useTeluguLabels ? "ప్రశ్న" : "Question";
-    const optionLabel = useTeluguLabels ? "ఎంపిక" : "Option";
-    
-    // Construct question text - use Telugu number words if in Telugu
-    let questionNumberText = "";
-    if (useTeluguLabels) {
-      // Use Telugu number words
-      const teluguNumbers = ["", "ఒకటి", "రెండు", "మూడు", "నాలుగు", "అయిదు", "ఆరు", "ఏడు", "ఎనిమిది", "తొమ్మిది", "పది", "పదకొండు", "పన్నెండు", "పదమూడు", "పద్నాలుగు", "పదిహేను"];
-      const num = questionIndex + 1;
-      questionNumberText = num <= 15 ? teluguNumbers[num] : num.toString();
-    } else {
-      questionNumberText = (questionIndex + 1).toString();
-    }
+    // Construct question text - always use English numbers
+    const questionNumberText = (questionIndex + 1).toString();
     
     const questionText = `${questionLabel} ${questionNumberText}. ${question.question}`;
     const optionsText = question.options
       .map((opt, idx) => {
-        const optNum = useTeluguLabels && idx < 4 
-          ? ["ఒకటి", "రెండు", "మూడు", "నాలుగు"][idx]
-          : (idx + 1).toString();
-        return `${optionLabel} ${optNum}. ${opt}`;
+        return `${optionLabel} ${idx + 1}. ${opt}`;
       })
       .join(". ");
     
     const fullText = `${questionText}. ${optionsText}`;
     console.log("Full text to speak (first 150 chars):", fullText.substring(0, 150) + "...");
-    console.log("Language code for speech synthesis:", lang);
+    console.log("Language code for speech synthesis: en-US");
     console.log("Full text length:", fullText.length);
     
-    speakText(fullText, lang);
+    speakText(fullText, "en");
   };
 
   // Handle Virtual Quiz Master toggle
@@ -625,8 +598,8 @@ export default function QuizPage() {
       
       // Show celebration animation
       setShowCelebration(true);
-      const lang = getCurrentLang();
-      const congratsText = lang === "te" 
+      // Always use English for Virtual Quiz Master
+      const congratsText = false 
         ? "అభినందనలు! మీరు క్విజ్ పూర్తి చేశారు!" 
         : "Congratulations! You have completed the quiz!";
       
@@ -765,17 +738,15 @@ export default function QuizPage() {
               type="button"
               onClick={() => {
                 if (synthRef.current) {
-                  const lang = getCurrentLang();
-                  const testText = lang === "te" 
-                    ? "టెస్ట్ స్పీచ్ సింథసిస్. మీరు దీన్ని వినగలరా?" 
-                    : "Testing speech synthesis. Can you hear this?";
+                  // Always use English for Virtual Quiz Master
+                  const testText = "Testing speech synthesis. Can you hear this?";
                   const testUtterance = new SpeechSynthesisUtterance(testText);
-                  testUtterance.lang = lang === "te" ? "te-IN" : "en-US";
+                  testUtterance.lang = "en-US";
                   testUtterance.onstart = () => console.log("✅ Test speech started");
                   testUtterance.onerror = (e) => {
                     console.error("❌ Test speech error:", e);
-                    if (lang === "te" && ((e.error as string) === "language-not-supported" || e.error === "synthesis-failed")) {
-                      alert("Telugu TTS not available in this browser. Please:\n1. Install Telugu language pack in Windows Settings\n2. Or use English language for Quiz Master");
+                    if ((e.error as string) === "language-not-supported" || e.error === "synthesis-failed") {
+                      alert("English TTS not available in this browser. Please use Chrome or Edge browser.");
                     }
                   };
                   synthRef.current.speak(testUtterance);
