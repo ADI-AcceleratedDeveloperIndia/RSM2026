@@ -34,11 +34,18 @@ function normalizeYouTubeUrl(url: string): string {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { eventReferenceId, youtubeVideos } = body;
+    const { eventReferenceId, youtubeVideos, organizerId } = body;
 
     if (!eventReferenceId) {
       return NextResponse.json(
         { error: "Event Reference ID is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!organizerId) {
+      return NextResponse.json(
+        { error: "Organizer ID is required" },
         { status: 400 }
       );
     }
@@ -83,6 +90,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Event not found" },
         { status: 404 }
+      );
+    }
+
+    // Verify organizer ID matches
+    if (event.organizerId !== organizerId) {
+      return NextResponse.json(
+        { error: "Unauthorized: Organizer ID does not match" },
+        { status: 403 }
       );
     }
 

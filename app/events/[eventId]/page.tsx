@@ -3,12 +3,11 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, Calendar, CheckCircle2, Clock, Upload, X, Plus, Loader2 } from "lucide-react";
+import { MapPin, Calendar, CheckCircle2, Clock, Upload, X, Plus, Loader2, Trash2 } from "lucide-react";
 
 type Event = {
   referenceId: string;
@@ -37,6 +36,7 @@ export default function EventDetailsPage() {
   const [youtubeUrls, setYoutubeUrls] = useState<string[]>([]);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [deletingPhoto, setDeletingPhoto] = useState(false);
 
   useEffect(() => {
     // Fetch event details
@@ -128,6 +128,65 @@ export default function EventDetailsPage() {
     }
   };
 
+  const handlePhotoDelete = async () => {
+    if (!event || !event.groupPhoto) return;
+
+    // Confirm deletion
+    const confirmMessage = i18n.language === "te" 
+      ? "మీరు ఈ ఫోటోను తొలగించాలని ఖచ్చితంగా ఉన్నారా?"
+      : "Are you sure you want to delete this photo?";
+    
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
+    // Use stored organizerId if organizer is verified, otherwise use entered organizerId
+    const currentOrganizerId = isOrganizer && event.organizerId 
+      ? event.organizerId 
+      : organizerId.trim();
+
+    // Verify organizer ID is available
+    if (!currentOrganizerId) {
+      alert(i18n.language === "te" 
+        ? "దయచేసి మీ ఆర్గనైజర్ ID నమోదు చేయండి మరియు ధృవీకరించండి" 
+        : "Please enter and verify your Organizer ID");
+      return;
+    }
+
+    // Verify organizer matches (if not already verified)
+    if (!isOrganizer && event.organizerId && currentOrganizerId !== event.organizerId) {
+      alert(i18n.language === "te" 
+        ? "ఈ ఈవెంట్‌కు మీరు ఆర్గనైజర్ కాదు" 
+        : "You are not the organizer of this event");
+      return;
+    }
+
+    setDeletingPhoto(true);
+    try {
+      const res = await fetch("/api/events/delete-photo", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eventReferenceId: event.referenceId,
+          organizerId: currentOrganizerId,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        alert(i18n.language === "te" ? "ఫోటో విజయవంతంగా తొలగించబడింది" : "Photo deleted successfully");
+        setPhotoPreview(null);
+        setEvent({ ...event, groupPhoto: undefined });
+      } else {
+        alert(data.error || (i18n.language === "te" ? "తొలగింపు విఫలమైంది" : "Delete failed"));
+      }
+    } catch (error) {
+      alert(i18n.language === "te" ? "తొలగింపు విఫలమైంది" : "Delete failed");
+    } finally {
+      setDeletingPhoto(false);
+    }
+  };
+
   const handleVideoUrlChange = (index: number, value: string) => {
     const newUrls = [...youtubeUrls];
     newUrls[index] = value;
@@ -146,8 +205,93 @@ export default function EventDetailsPage() {
     setYoutubeUrls(youtubeUrls.filter((_, i) => i !== index));
   };
 
+  const handleDeleteVideo = async (index: number) => {
+    if (!event || !event.youtubeVideos) return;
+
+    // Confirm deletion
+    const confirmMessage = i18n.language === "te" 
+      ? "మీరు ఈ వీడియోను తొలగించాలని ఖచ్చితంగా ఉన్నారా?"
+      : "Are you sure you want to delete this video?";
+    
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
+    // Use stored organizerId if organizer is verified, otherwise use entered organizerId
+    const currentOrganizerId = isOrganizer && event.organizerId 
+      ? event.organizerId 
+      : organizerId.trim();
+
+    // Verify organizer ID is available
+    if (!currentOrganizerId) {
+      alert(i18n.language === "te" 
+        ? "దయచేసి మీ ఆర్గనైజర్ ID నమోదు చేయండి మరియు ధృవీకరించండి" 
+        : "Please enter and verify your Organizer ID");
+      return;
+    }
+
+    // Verify organizer matches (if not already verified)
+    if (!isOrganizer && event.organizerId && currentOrganizerId !== event.organizerId) {
+      alert(i18n.language === "te" 
+        ? "ఈ ఈవెంట్‌కు మీరు ఆర్గనైజర్ కాదు" 
+        : "You are not the organizer of this event");
+      return;
+    }
+
+    // Remove video from event's youtubeVideos array
+    const updatedVideos = event.youtubeVideos.filter((_, i) => i !== index);
+
+    // Save updated list
+    setUpdatingVideos(true);
+    try {
+      const res = await fetch("/api/events/update-videos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eventReferenceId: event.referenceId,
+          youtubeVideos: updatedVideos,
+          organizerId: currentOrganizerId,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        alert(i18n.language === "te" ? "వీడియో విజయవంతంగా తొలగించబడింది" : "Video deleted successfully");
+        setEvent({ ...event, youtubeVideos: data.youtubeVideos });
+        setYoutubeUrls(data.youtubeVideos);
+      } else {
+        alert(data.error || (i18n.language === "te" ? "తొలగింపు విఫలమైంది" : "Delete failed"));
+      }
+    } catch (error) {
+      alert(i18n.language === "te" ? "తొలగింపు విఫలమైంది" : "Delete failed");
+    } finally {
+      setUpdatingVideos(false);
+    }
+  };
+
   const handleSaveVideos = async () => {
     if (!event) return;
+
+    // Use stored organizerId if organizer is verified, otherwise use entered organizerId
+    const currentOrganizerId = isOrganizer && event.organizerId 
+      ? event.organizerId 
+      : organizerId.trim();
+
+    // Verify organizer ID is available
+    if (!currentOrganizerId) {
+      alert(i18n.language === "te" 
+        ? "దయచేసి మీ ఆర్గనైజర్ ID నమోదు చేయండి మరియు ధృవీకరించండి" 
+        : "Please enter and verify your Organizer ID");
+      return;
+    }
+
+    // Verify organizer matches (if not already verified)
+    if (!isOrganizer && event.organizerId && currentOrganizerId !== event.organizerId) {
+      alert(i18n.language === "te" 
+        ? "ఈ ఈవెంట్‌కు మీరు ఆర్గనైజర్ కాదు" 
+        : "You are not the organizer of this event");
+      return;
+    }
 
     setUpdatingVideos(true);
     try {
@@ -157,6 +301,7 @@ export default function EventDetailsPage() {
         body: JSON.stringify({
           eventReferenceId: event.referenceId,
           youtubeVideos: youtubeUrls.filter((url) => url.trim()),
+          organizerId: currentOrganizerId,
         }),
       });
 
@@ -252,13 +397,35 @@ export default function EventDetailsPage() {
               {i18n.language === "te" ? "గ్రూప్ ఫోటో" : "Group Photo"}
             </h3>
             {photoPreview ? (
-              <div className="relative w-full max-w-2xl aspect-video bg-slate-100 rounded-lg overflow-hidden">
-                <Image
-                  src={photoPreview}
-                  alt="Group Photo"
-                  fill
-                  className="object-contain"
-                />
+              <div className="space-y-2">
+                <div className="relative w-full max-w-2xl aspect-video bg-slate-100 rounded-lg overflow-hidden">
+                  {/* Use regular img tag for API routes with query parameters */}
+                  <img
+                    src={photoPreview}
+                    alt="Group Photo"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                {isOrganizer && (
+                  <Button
+                    onClick={handlePhotoDelete}
+                    disabled={deletingPhoto}
+                    variant="destructive"
+                    className="w-full md:w-auto"
+                  >
+                    {deletingPhoto ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        {i18n.language === "te" ? "తొలగిస్తోంది..." : "Deleting..."}
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        {i18n.language === "te" ? "ఫోటో తొలగించండి" : "Delete Photo"}
+                      </>
+                    )}
+                  </Button>
+                )}
               </div>
             ) : (
               <p className="text-sm text-slate-500">
@@ -307,14 +474,37 @@ export default function EventDetailsPage() {
             {event.youtubeVideos && event.youtubeVideos.length > 0 ? (
               <div className="grid gap-4 md:grid-cols-2">
                 {event.youtubeVideos.map((videoUrl, index) => (
-                  <div key={index} className="aspect-video bg-slate-100 rounded-lg overflow-hidden">
-                    <iframe
-                      src={videoUrl}
-                      title={`Video ${index + 1}`}
-                      className="w-full h-full"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
+                  <div key={index} className="space-y-2">
+                    <div className="relative aspect-video bg-slate-100 rounded-lg overflow-hidden">
+                      <iframe
+                        src={videoUrl}
+                        title={`Video ${index + 1}`}
+                        className="w-full h-full"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                    {isOrganizer && (
+                      <Button
+                        onClick={() => handleDeleteVideo(index)}
+                        disabled={updatingVideos}
+                        variant="destructive"
+                        size="sm"
+                        className="w-full"
+                      >
+                        {updatingVideos ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            {i18n.language === "te" ? "తొలగిస్తోంది..." : "Deleting..."}
+                          </>
+                        ) : (
+                          <>
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            {i18n.language === "te" ? "వీడియో తొలగించండి" : "Delete Video"}
+                          </>
+                        )}
+                      </Button>
+                    )}
                   </div>
                 ))}
               </div>
