@@ -29,26 +29,62 @@ export async function GET(request: NextRequest) {
 
     await connectDB();
 
-    const [totalCertificates, totalAppreciations, totalEvents, totalQuizPasses, totalQuizAttempts, totalSimulationPlays, simulationCompletions] = await Promise.all([
+    // Get quiz-related certificates (activityType includes "quiz")
+    const quizCertificates = await Certificate.find({ 
+      activityType: { $regex: /quiz/i } 
+    }).lean();
+    
+    const totalQuizCertificates = quizCertificates.length;
+    const quizParticipant = quizCertificates.filter(c => {
+      if (c.type === "PARTICIPANT") return true;
+      if (c.type === "MERIT" && c.score && c.total) {
+        const percentage = (c.score / c.total) * 100;
+        return percentage < 60;
+      }
+      return false;
+    }).length;
+    const quizMerit = quizCertificates.filter(c => {
+      if (c.type === "MERIT" && c.score && c.total) {
+        const percentage = (c.score / c.total) * 100;
+        return percentage >= 60 && percentage < 80;
+      }
+      return false;
+    }).length;
+    const quizTopper = quizCertificates.filter(c => {
+      if (c.type === "MERIT" && c.score && c.total) {
+        const percentage = (c.score / c.total) * 100;
+        return percentage >= 80;
+      }
+      return false;
+    }).length;
+
+    const [totalCertificates, totalAppreciations, totalEvents, totalQuizAttempts, totalSimulationPlays, simulationCompletions] = await Promise.all([
       Certificate.countDocuments(),
       Certificate.countDocuments({ appreciationOptIn: true, appreciationText: { $exists: true, $ne: "" } }),
       Event.countDocuments(),
-      QuizAttempt.countDocuments({ passed: true }),
-      QuizAttempt.countDocuments(),
+      QuizAttempt.countDocuments(), // Keep for reference but don't use for pass rate
       SimStat.countDocuments(),
       SimStat.countDocuments({ success: true }),
     ]);
 
-    const passRate = totalQuizAttempts > 0 ? Math.round((totalQuizPasses / totalQuizAttempts) * 100) : 0;
+    // Calculate percentages based on certificate types
+    const quizParticipantRate = totalQuizCertificates > 0 ? Math.round((quizParticipant / totalQuizCertificates) * 100) : 0;
+    const quizMeritRate = totalQuizCertificates > 0 ? Math.round((quizMerit / totalQuizCertificates) * 100) : 0;
+    const quizTopperRate = totalQuizCertificates > 0 ? Math.round((quizTopper / totalQuizCertificates) * 100) : 0;
     const successRate = totalSimulationPlays > 0 ? Math.round((simulationCompletions / totalSimulationPlays) * 100) : 0;
 
     const result = {
       totalCertificates,
       totalAppreciations,
       totalEvents,
-      totalQuizPasses,
-      totalQuizAttempts,
-      passRate,
+      totalQuizCertificates,
+      quizParticipant,
+      quizMerit,
+      quizTopper,
+      quizParticipantRate,
+      quizMeritRate,
+      quizTopperRate,
+      totalQuizAttempts, // Keep for reference
       totalSimulationPlays,
       successRate,
     };

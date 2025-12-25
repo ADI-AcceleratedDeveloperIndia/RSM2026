@@ -78,9 +78,14 @@ export default function AdminDashboard() {
     totalCertificates: 0,
     totalAppreciations: 0,
     totalEvents: 0,
-    totalQuizPasses: 0,
+    totalQuizCertificates: 0,
+    quizParticipant: 0,
+    quizMerit: 0,
+    quizTopper: 0,
+    quizParticipantRate: 0,
+    quizMeritRate: 0,
+    quizTopperRate: 0,
     totalQuizAttempts: 0,
-    passRate: 0,
     totalSimulationPlays: 0,
     successRate: 0,
     avgTimeSeconds: 0,
@@ -133,9 +138,14 @@ export default function AdminDashboard() {
         totalCertificates: overviewData.totalCertificates || 0,
         totalAppreciations: overviewData.totalAppreciations || 0,
         totalEvents: overviewData.totalEvents || 0,
-        totalQuizPasses,
-        totalQuizAttempts,
-        passRate,
+        totalQuizCertificates: overviewData.totalQuizCertificates || 0,
+        quizParticipant: overviewData.quizParticipant || 0,
+        quizMerit: overviewData.quizMerit || 0,
+        quizTopper: overviewData.quizTopper || 0,
+        quizParticipantRate: overviewData.quizParticipantRate || 0,
+        quizMeritRate: overviewData.quizMeritRate || 0,
+        quizTopperRate: overviewData.quizTopperRate || 0,
+        totalQuizAttempts: overviewData.totalQuizAttempts || 0,
         totalSimulationPlays,
         successRate,
         avgTimeSeconds: 0, // Will be calculated from daily reports if needed
@@ -384,10 +394,25 @@ export default function AdminDashboard() {
       {/* Performance Metrics */}
       <div className="grid md:grid-cols-3 gap-5">
         <div className="rs-card p-6">
-          <p className="text-sm text-slate-600 font-medium">Quiz Pass Rate</p>
-          <p className="text-xs text-slate-500 mb-1">Users scoring ≥60% in Quiz</p>
-          <p className="text-4xl font-semibold text-emerald-900">{stats.passRate}%</p>
-          <p className="text-xs text-slate-500 mt-2">{stats.totalQuizPasses} passed / {stats.totalQuizAttempts} total attempts</p>
+          <p className="text-sm text-slate-600 font-medium">Quiz Certificate Distribution</p>
+          <p className="text-xs text-slate-500 mb-2">Based on quiz certificates generated</p>
+          <div className="space-y-2 mt-3">
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-slate-600">Participant (&lt;60%):</span>
+              <span className="text-sm font-semibold text-emerald-900">{stats.quizParticipantRate}%</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-slate-600">Merit (60-79%):</span>
+              <span className="text-sm font-semibold text-blue-900">{stats.quizMeritRate}%</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-slate-600">Topper (≥80%):</span>
+              <span className="text-sm font-semibold text-yellow-900">{stats.quizTopperRate}%</span>
+            </div>
+          </div>
+          <p className="text-xs text-slate-500 mt-3 pt-3 border-t">
+            Total: {stats.totalQuizCertificates} quiz certificates
+          </p>
         </div>
         <div className="rs-card p-6">
           <p className="text-sm text-slate-600 font-medium">Simulation Success Rate</p>
