@@ -435,7 +435,7 @@ export default function OrganizerPage() {
               </form>
             </CardContent>
           </Card>
-        ) : (
+        ) : mode === "check" ? (
           <Card>
             <CardHeader>
               <CardTitle>
