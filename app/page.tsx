@@ -31,21 +31,8 @@ export default function Home() {
   useEffect(() => {
     const wasPlaying = sessionStorage.getItem("anthemPlaying") === "true";
     if (wasPlaying) {
+      // Show "Stop Anthem" button (audio stopped when navigating away, but button state persists)
       setIsPlaying(true);
-      // Restore audio state
-      if (!audioRef.current) {
-        audioRef.current = new Audio("/assets/ROADSAFETY3.wav");
-        audioRef.current.addEventListener("ended", () => {
-          setIsPlaying(false);
-          sessionStorage.removeItem("anthemPlaying");
-        });
-        // Try to resume playback
-        audioRef.current.play().catch((err) => {
-          console.error("Error resuming anthem:", err);
-          setIsPlaying(false);
-          sessionStorage.removeItem("anthemPlaying");
-        });
-      }
     }
   }, []);
 
