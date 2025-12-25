@@ -57,21 +57,21 @@ export default function OrganizerPage() {
 
   const handleCheckStatus = async () => {
     if (!checkId.trim()) {
-      alert("Please enter your Temporary Organizer ID");
+      alert(i18n.language === "te" ? "దయచేసి తాత్కాలిక ఆర్గనైజర్ ID నమోదు చేయండి" : "Please enter your Temporary Organizer ID");
       return;
     }
     setLoading(true);
     try {
-      const response = await fetch(`/api/organizer/status?temporaryId=${checkId}`);
+      const response = await fetch(`/api/organizer/status?temporaryId=${encodeURIComponent(checkId.trim())}`);
       const data = await response.json();
       if (response.ok) {
         setStatus(data.status);
         setFinalId(data.finalId || null);
       } else {
-        alert(data.error || "Failed to check status");
+        alert(data.error || (i18n.language === "te" ? "స్టేటస్ తనిఖీ విఫలమైంది" : "Failed to check status"));
       }
     } catch (error) {
-      alert("Failed to check status. Please try again.");
+      alert(i18n.language === "te" ? "స్టేటస్ తనిఖీ విఫలమైంది. దయచేసి మళ్లీ ప్రయత్నించండి." : "Failed to check status. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -147,8 +147,26 @@ export default function OrganizerPage() {
                       : "Please save this ID. Use it to check your approval status."}
                   </p>
                 </div>
-                <Button onClick={handleCheckStatus} className="w-full">
-                  {i18n.language === "te" ? "స్టేటస్ తనిఖీ చేయండి" : "Check Status Now"}
+                <Button 
+                  onClick={() => {
+                    // Ensure checkId is set before calling handleCheckStatus
+                    if (temporaryId && !checkId) {
+                      setCheckId(temporaryId);
+                    }
+                    // Use temporaryId directly if checkId is not set
+                    const idToCheck = checkId || temporaryId;
+                    if (idToCheck) {
+                      setCheckId(idToCheck);
+                      handleCheckStatus();
+                    }
+                  }} 
+                  className="w-full"
+                  disabled={loading}
+                >
+                  {loading 
+                    ? (i18n.language === "te" ? "తనిఖీ చేస్తోంది..." : "Checking...")
+                    : (i18n.language === "te" ? "స్టేటస్ తనిఖీ చేయండి" : "Check Status Now")
+                  }
                 </Button>
               </div>
             </CardContent>
