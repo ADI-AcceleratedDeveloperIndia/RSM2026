@@ -12,7 +12,7 @@ type OrganizerStatus = "pending" | "approved" | "rejected" | null;
 
 export default function OrganizerPage() {
   const { t, i18n } = useTranslation("common");
-  const [mode, setMode] = useState<"register" | "check">("register");
+  const [mode, setMode] = useState<"register" | "check" | "events">("register");
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -29,6 +29,7 @@ export default function OrganizerPage() {
   const [showEventIds, setShowEventIds] = useState(false);
   const [events, setEvents] = useState<any[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(false);
+  const [eventCheckId, setEventCheckId] = useState("");
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,12 +93,22 @@ export default function OrganizerPage() {
         setShowEventIds(true);
       } else {
         alert(data.error || "Failed to fetch events");
+        setEvents([]);
       }
     } catch (error) {
       alert("Failed to fetch events. Please try again.");
+      setEvents([]);
     } finally {
       setLoadingEvents(false);
     }
+  };
+
+  const handleCheckEvents = async () => {
+    if (!eventCheckId.trim()) {
+      alert(i18n.language === "te" ? "దయచేసి ఆర్గనైజర్ ID నమోదు చేయండి" : "Please enter your Organizer ID");
+      return;
+    }
+    await fetchEventIds(eventCheckId.trim());
   };
 
   if (temporaryId && mode === "check") {
@@ -321,6 +332,17 @@ export default function OrganizerPage() {
           >
             {i18n.language === "te" ? "స్టేటస్ తనిఖీ" : "Check Status"}
           </Button>
+          <Button
+            variant={mode === "events" ? "default" : "outline"}
+            onClick={() => {
+              setMode("events");
+              setEvents([]);
+              setShowEventIds(false);
+            }}
+          >
+            <List className="h-4 w-4 mr-2" />
+            {i18n.language === "te" ? "ఈవెంట్ ID లు" : "View Event IDs"}
+          </Button>
         </div>
 
         {mode === "register" ? (
@@ -446,6 +468,112 @@ export default function OrganizerPage() {
                     ? "తనిఖీ చేయండి"
                     : "Check Status"}
                 </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ) : mode === "events" ? (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <List className="h-5 w-5" />
+                {i18n.language === "te"
+                  ? "మీ ఈవెంట్ ID లను చూడండి"
+                  : "View Your Event IDs"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <Label>
+                    {i18n.language === "te"
+                      ? "ఫైనల్ ఆర్గనైజర్ ID"
+                      : "Final Organizer ID"} *
+                  </Label>
+                  <Input
+                    value={eventCheckId}
+                    onChange={(e) => setEventCheckId(e.target.value)}
+                    placeholder="ORG-2026-..."
+                    className="mt-2"
+                  />
+                  <p className="text-xs text-slate-500 mt-1">
+                    {i18n.language === "te"
+                      ? "మీ ఆమోదించబడిన ఆర్గనైజర్ ID ను నమోదు చేయండి"
+                      : "Enter your approved Organizer ID to view all your event IDs"}
+                  </p>
+                </div>
+                <Button onClick={handleCheckEvents} className="w-full" disabled={loadingEvents}>
+                  {loadingEvents
+                    ? i18n.language === "te"
+                      ? "లోడ్ అవుతోంది..."
+                      : "Loading..."
+                    : i18n.language === "te"
+                    ? "ఈవెంట్ ID లను చూడండి"
+                    : "View Event IDs"}
+                </Button>
+                
+                {showEventIds && (
+                  <div className="mt-6 space-y-3">
+                    <h3 className="font-semibold text-emerald-900">
+                      {i18n.language === "te"
+                        ? `మీ ఈవెంట్‌లు (${events.length})`
+                        : `Your Events (${events.length})`}
+                    </h3>
+                    {events.length === 0 ? (
+                      <p className="text-sm text-slate-600 text-center py-4">
+                        {i18n.language === "te"
+                          ? "ఇంకా ఈవెంట్‌లు సృష్టించబడలేదు"
+                          : "No events created yet"}
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        {events.map((event) => (
+                          <div
+                            key={event.referenceId}
+                            className="flex items-center justify-between p-4 bg-emerald-50 rounded-lg border border-emerald-200 hover:bg-emerald-100 transition-colors"
+                          >
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-emerald-900">{event.title}</p>
+                              <div className="flex items-center gap-4 mt-2 text-xs text-slate-600">
+                                <span>
+                                  {new Date(event.date).toLocaleDateString('en-IN', { 
+                                    day: 'numeric', 
+                                    month: 'short', 
+                                    year: 'numeric' 
+                                  })}
+                                </span>
+                                <span>{event.location}</span>
+                                {event.approved ? (
+                                  <span className="text-emerald-600 flex items-center gap-1">
+                                    <CheckCircle2 className="h-3 w-3" />
+                                    Approved
+                                  </span>
+                                ) : (
+                                  <span className="text-yellow-600 flex items-center gap-1">
+                                    <Clock className="h-3 w-3" />
+                                    Pending
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs font-mono text-emerald-700 mt-2 bg-white px-2 py-1 rounded border border-emerald-200">
+                                {event.referenceId}
+                              </p>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                copyToClipboard(event.referenceId);
+                              }}
+                              className="ml-2 flex-shrink-0"
+                            >
+                              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
