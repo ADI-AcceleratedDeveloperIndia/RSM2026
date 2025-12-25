@@ -250,7 +250,7 @@
   "teluguTTSNote": "Note: Telugu voice may require OS language pack. English works without setup.",
   "certificateLanguage": "Certificate Language",
   "certificateOrgTitle": "Organiser Appreciation",
-  "certificateParTitle": "Participant (Quiz score < 60%)",
+  "certificateParTitle": "Participant Certificate",
   "certificateQuizTitle": "Quiz Merit (Score ≥ 60%)",
   "certificateSimTitle": "Simulation Completion",
   "certificateVolTitle": "Volunteer",

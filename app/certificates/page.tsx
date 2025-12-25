@@ -20,7 +20,6 @@ const getCertificateList = (tc: (key: string) => string): CertificateInfo[] => [
   { code: "PAR", title: tc("certificateParTitle"), purpose: tc("certificateParPurpose") },
   { code: "MERIT", title: tc("certificateMeritTitle"), purpose: tc("certificateMeritPurpose") },
   { code: "TOPPER", title: tc("certificateTopperTitle"), purpose: tc("certificateTopperPurpose") },
-  { code: "SIM", title: tc("certificateSimTitle"), purpose: tc("certificateSimPurpose") },
   { code: "VOL", title: tc("certificateVolTitle"), purpose: tc("certificateVolPurpose") },
   { code: "SCH", title: tc("certificateSchTitle"), purpose: tc("certificateSchPurpose") },
   { code: "COL", title: tc("certificateColTitle"), purpose: tc("certificateColPurpose") },

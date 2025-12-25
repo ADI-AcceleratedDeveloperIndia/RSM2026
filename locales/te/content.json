@@ -246,7 +246,7 @@
   "teluguTTSNote": "గమనిక: తెలుగు వాయిస్ OS భాషా ప్యాక్ అవసరం కావచ్చు. ఇంగ్లీష్ సెటప్ లేకుండా పని చేస్తుంది.",
   "certificateLanguage": "పత్రం భాష",
   "certificateOrgTitle": "సంస్థాపక అభినందన",
-  "certificateParTitle": "పాల్గొనేవారు (క్విజ్ స్కోరు < 60%)",
+  "certificateParTitle": "పాల్గొనేవారి పత్రం",
   "certificateQuizTitle": "క్విజ్ మెరిట్ (స్కోరు ≥ 60%)",
   "certificateSimTitle": "అభ్యాస పూర్తి",
   "certificateVolTitle": "స్వచ్ఛంద సేవకుడు",
