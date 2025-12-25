@@ -486,19 +486,19 @@ export default function OrganizerPage() {
                 <div>
                   <Label>
                     {i18n.language === "te"
-                      ? "ఫైనల్ ఆర్గనైజర్ ID"
-                      : "Final Organizer ID"} *
+                      ? "ఆర్గనైజర్ ID లేదా ఈవెంట్ ID"
+                      : "Organizer ID or Event ID"} *
                   </Label>
                   <Input
                     value={eventCheckId}
                     onChange={(e) => setEventCheckId(e.target.value)}
-                    placeholder="ORG-2026-..."
+                    placeholder="KRMR-RSM-2026-PDL-RHL-ORGANIZER-00001 or KRMR-RSM-2026-PDL-RHL-EVT-00002"
                     className="mt-2"
                   />
                   <p className="text-xs text-slate-500 mt-1">
                     {i18n.language === "te"
-                      ? "మీ ఆమోదించబడిన ఆర్గనైజర్ ID ను నమోదు చేయండి"
-                      : "Enter your approved Organizer ID to view all your event IDs"}
+                      ? "మీ ఆమోదించబడిన ఆర్గనైజర్ ID లేదా ఏదైనా ఈవెంట్ ID ను నమోదు చేయండి"
+                      : "Enter your approved Organizer ID (ORGANIZER-...) or any Event ID (EVT-...) to view all your event IDs"}
                   </p>
                 </div>
                 <Button onClick={handleCheckEvents} className="w-full" disabled={loadingEvents}>
