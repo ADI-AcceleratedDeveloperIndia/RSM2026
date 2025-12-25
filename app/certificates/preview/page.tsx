@@ -43,7 +43,6 @@ function CertificatePreviewContent() {
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const [certificateData, setCertificateData] = useState<CertificateData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
 
   // Always show Padala Rahul photo (karimnagar)
   const regionalAuthority = getRegionalAuthority("karimnagar");
@@ -160,7 +159,14 @@ function CertificatePreviewContent() {
   }, [router, searchParams, regionalAuthority]);
 
   const handleDownload = async () => {
-    if (!certificateRef.current || isDownloading || !certificateData) return;
+    if (!certificateRef.current || isDownloading || !certificateData) {
+      console.warn("Download blocked:", { 
+        hasRef: !!certificateRef.current, 
+        isDownloading, 
+        hasData: !!certificateData 
+      });
+      return;
+    }
     
     setIsDownloading(true);
     setDownloadError(null);
@@ -172,13 +178,19 @@ function CertificatePreviewContent() {
     }, 30000); // 30 second timeout
 
     try {
+      console.log("Starting client-side PDF generation...");
       await exportCertificateToPdf(certificateRef.current, `${certificateData.fullName.replace(/\s+/g, "_")}_certificate.pdf`);
       clearTimeout(timeoutId);
       setIsDownloading(false);
-    } catch (error) {
+      console.log("PDF generated successfully");
+    } catch (error: any) {
       clearTimeout(timeoutId);
       console.error("Certificate download failed:", error);
-      setDownloadError("Could not generate the PDF. Please retry after a few seconds.");
+      setDownloadError(
+        error?.message?.includes("timeout") 
+          ? "PDF generation timed out. Please try again."
+          : "Could not generate the PDF. Please retry after a few seconds."
+      );
       setIsDownloading(false);
     }
   };
