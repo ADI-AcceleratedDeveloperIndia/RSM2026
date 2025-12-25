@@ -91,7 +91,11 @@ export default function BasicsPage() {
   }, [signsData, selectedCategory, allSigns]);
 
   const generateQuizOptions = (correctSign: RoadSign, allSignsInCategory: RoadSign[]): string[] => {
-    const wrongSigns = allSignsInCategory.filter((s) => s.id !== correctSign.id);
+    // Filter out signs that have the same ID OR the same name as the correct sign
+    // This ensures no duplicate correct answers appear in the options
+    const wrongSigns = allSignsInCategory.filter(
+      (s) => s.id !== correctSign.id && s.name !== correctSign.name
+    );
     const wrongOptions = wrongSigns
       .sort(() => Math.random() - 0.5)
       .slice(0, 3)
