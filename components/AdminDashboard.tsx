@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Award, FileText, Users, Download, Calendar, CheckCircle2, XCircle, Clock, Eye, ChevronDown, ChevronRight } from "lucide-react";
+import { Award, FileText, Users, Download, Calendar, CheckCircle2, XCircle, Clock, Eye, ChevronDown, ChevronRight, Check, X } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 type Event = {
@@ -254,6 +254,71 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleApproveOrganizer = async (temporaryId: string, action: "approve" | "reject") => {
+    if (!confirm(`Are you sure you want to ${action} this organizer?`)) {
+      return;
+    }
+    try {
+      const res = await fetch("/api/admin/organizers/approve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ temporaryId, action }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        await loadOrganizers(); // Refresh the list
+        alert(`Organizer ${action === "approve" ? "approved" : "rejected"} successfully`);
+      } else {
+        alert(data.error || "Failed to process request");
+      }
+    } catch (error) {
+      console.error("Error approving/rejecting organizer:", error);
+      alert("Failed to process request");
+    }
+  };
+
+  const handleDownloadTodayData = async () => {
+    try {
+      // Get today's date in YYYY-MM-DD format
+      const today = new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/admin/daily-report/download?date=${today}`);
+      if (res.status === 404) {
+        // If no report exists for today, generate it on-the-fly
+        const collectRes = await fetch("/api/admin/daily-report/collect", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ date: today }),
+        });
+        if (!collectRes.ok) {
+          throw new Error("Failed to collect today's data");
+        }
+        // Now download it
+        const downloadRes = await fetch(`/api/admin/daily-report/download?date=${today}`);
+        if (!downloadRes.ok) {
+          throw new Error("Failed to download report");
+        }
+        const blob = await downloadRes.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `today-data-${today}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      } else {
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `today-data-${today}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      }
+    } catch (error) {
+      console.error("Error downloading today's data:", error);
+      alert("Failed to download today's data");
+    }
+  };
+
   const statCards = [
     {
       label: "Total Organizers",
@@ -382,6 +447,26 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                   </div>
+                  {org.status === "pending" && (
+                    <div className="flex gap-2 mt-3">
+                      <Button
+                        size="sm"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                        onClick={() => handleApproveOrganizer(org.temporaryId, "approve")}
+                      >
+                        <Check className="h-4 w-4 mr-1" />
+                        Approve
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleApproveOrganizer(org.temporaryId, "reject")}
+                      >
+                        <X className="h-4 w-4 mr-1" />
+                        Reject
+                      </Button>
+                    </div>
+                  )}
                 </div>
                 {org.eventCount > 0 && (
                   <div className="mt-3 pt-3 border-t border-emerald-200">
@@ -453,9 +538,15 @@ export default function AdminDashboard() {
             <h2 className="text-lg font-semibold text-emerald-900">Daily Reports</h2>
             <p className="text-sm text-slate-600">Download 24-hour data (12 AM to 11:59 PM) for any date</p>
           </div>
-          <Button onClick={loadDailyReports} variant="outline" size="sm" disabled={loadingReports}>
-            Refresh
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={handleDownloadTodayData} className="rs-btn-secondary text-sm">
+              <Download className="h-4 w-4 mr-1" />
+              Download Today's Data (Last 24h)
+            </Button>
+            <Button onClick={loadDailyReports} variant="outline" size="sm" disabled={loadingReports}>
+              Refresh
+            </Button>
+          </div>
         </div>
         {loadingReports ? (
           <div className="text-center py-8 text-slate-600">Loading reports...</div>

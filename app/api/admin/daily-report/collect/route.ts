@@ -12,24 +12,26 @@ export async function POST(request: NextRequest) {
     // Verify admin authentication (add your auth check here)
     await connectDB();
 
-    // Get today's date in YYYY-MM-DD format
-    const today = new Date();
-    const dateStr = today.toISOString().split("T")[0]; // YYYY-MM-DD
+    // Get date from request body, or use today's date
+    const body = await request.json().catch(() => ({}));
+    const dateStr = body.date || new Date().toISOString().split("T")[0]; // YYYY-MM-DD
 
-    // Check if report already exists for today
+    // Check if report already exists for this date
     const existingReport = await DailyReport.findOne({ date: dateStr });
     if (existingReport) {
       return NextResponse.json({
         success: true,
-        message: "Report already exists for today",
+        message: "Report already exists for this date",
         reportId: existingReport._id,
+        date: dateStr,
       });
     }
 
-    // Calculate start and end of day (12 AM to 11:59 PM)
-    const startOfDay = new Date(today);
+    // Calculate start and end of day (12 AM to 11:59 PM) for the specified date
+    const targetDate = new Date(dateStr);
+    const startOfDay = new Date(targetDate);
     startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(today);
+    const endOfDay = new Date(targetDate);
     endOfDay.setHours(23, 59, 59, 999);
 
     // Collect all data for today
