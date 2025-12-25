@@ -80,39 +80,39 @@ export async function POST(request: NextRequest) {
       eventTitle = activityEventTitles[validated.activityType] || "Online Road Safety Event";
     }
 
-    // Get next certificate number for this type - simplified approach
-    const lastCert = await Certificate.findOne({ type: validated.type })
-      .sort({ certificateNumber: -1 })
-      .select('certificateNumber')
-      .lean() as { certificateNumber?: number } | null;
-    
-    let nextCertNumber = 1;
-    if (lastCert && typeof lastCert.certificateNumber === 'number') {
-      nextCertNumber = lastCert.certificateNumber + 1;
-    }
-
-    if (nextCertNumber > 100000) {
-      return NextResponse.json(
-        { error: "Maximum certificate limit reached for this type" },
-        { status: 400 }
-      );
-    }
-
     const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
     const userIpHash = hashIp(ip);
 
-    // Try to create certificate with simple retry on duplicate key error
+    // Try to create certificate with retry on duplicate key error
     let certificate;
     let attempts = 0;
-    const maxAttempts = 5;
-    let currentCertNumber = nextCertNumber;
-    let certificateId = generateCertificateNumber(validated.type, currentCertNumber);
+    const maxAttempts = 10; // Increased attempts
     
     while (attempts < maxAttempts) {
       try {
+        // Get fresh certificate number on each attempt to avoid race conditions
+        const lastCert = await Certificate.findOne({ type: validated.type })
+          .sort({ certificateNumber: -1 })
+          .select('certificateNumber')
+          .lean() as { certificateNumber?: number } | null;
+        
+        let nextCertNumber = 1;
+        if (lastCert && typeof lastCert.certificateNumber === 'number') {
+          nextCertNumber = lastCert.certificateNumber + 1;
+        }
+
+        if (nextCertNumber > 100000) {
+          return NextResponse.json(
+            { error: "Maximum certificate limit reached for this type" },
+            { status: 400 }
+          );
+        }
+
+        const certificateId = generateCertificateNumber(validated.type, nextCertNumber);
+        
         certificate = new Certificate({
           certificateId,
-          certificateNumber: currentCertNumber,
+          certificateNumber: nextCertNumber,
           type: validated.type,
           fullName: validated.fullName,
           institution: validated.institution,
@@ -137,21 +137,9 @@ export async function POST(request: NextRequest) {
         
         if (isDuplicateKeyError && attempts < maxAttempts - 1) {
           attempts++;
-          // Get fresh certificate number
-          const freshLastCert = await Certificate.findOne({ type: validated.type })
-            .sort({ certificateNumber: -1 })
-            .select('certificateNumber')
-            .lean() as { certificateNumber?: number } | null;
-          
-          currentCertNumber = (freshLastCert && typeof freshLastCert.certificateNumber === 'number') 
-            ? freshLastCert.certificateNumber + 1 
-            : 1;
-          
-          // Regenerate certificate ID with new number
-          certificateId = generateCertificateNumber(validated.type, currentCertNumber);
-          
-          // Small delay before retry
-          await new Promise(resolve => setTimeout(resolve, 50 + Math.random() * 50));
+          // Exponential backoff with jitter
+          const delay = Math.min(100 * Math.pow(2, attempts) + Math.random() * 100, 1000);
+          await new Promise(resolve => setTimeout(resolve, delay));
           continue;
         }
         
@@ -161,7 +149,8 @@ export async function POST(request: NextRequest) {
           code: saveError.code,
           name: saveError.name,
           attempts,
-          type: validated.type
+          type: validated.type,
+          stack: saveError.stack
         });
         throw saveError;
       }
