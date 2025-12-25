@@ -49,37 +49,49 @@ export async function POST(request: NextRequest) {
     await connectDB();
 
     // If organizer reference ID (Event ID) is provided, validate it and get event details
+    // FALLBACK: If validation fails for ANY reason, silently ignore event ID and proceed without it
     let eventReferenceId: string | undefined;
     let eventTitle: string | undefined;
+    let eventIdUsed = false; // Track if event ID was successfully used
     
     if (validated.organizerReferenceId) {
-      // Validate event reference ID
-      const event = await Event.findOne({ 
-        referenceId: validated.organizerReferenceId,
-        approved: true 
-      });
-      
-      if (!event) {
-        return NextResponse.json(
-          { error: "Invalid or unapproved Event Reference ID" },
-          { status: 400 }
-        );
-      }
-
-      // If Organizer ID is provided (scenarios 3, 4, 5), verify Event belongs to Organizer
-      if (validated.organizerId) {
-        if (event.organizerId !== validated.organizerId) {
-          return NextResponse.json(
-            { error: "Event Reference ID does not belong to this Organizer ID" },
-            { status: 403 }
-          );
+      try {
+        // Validate event reference ID
+        const event = await Event.findOne({ 
+          referenceId: validated.organizerReferenceId,
+          approved: true 
+        });
+        
+        if (!event) {
+          // Event not found or not approved - fallback to no event ID
+          console.warn(`Event Reference ID validation failed: Event not found or not approved - ${validated.organizerReferenceId}. Proceeding without event ID.`);
+        } else {
+          // Event found and approved - check organizer ID if provided
+          if (validated.organizerId) {
+            if (event.organizerId !== validated.organizerId) {
+              // Organizer ID mismatch - fallback to no event ID
+              console.warn(`Event Reference ID validation failed: Organizer ID mismatch for event ${validated.organizerReferenceId}. Proceeding without event ID.`);
+            } else {
+              // All validations passed - use event data
+              eventReferenceId = event.referenceId;
+              eventTitle = event.title;
+              eventIdUsed = true;
+            }
+          } else {
+            // No organizer ID provided, event is valid - use event data
+            eventReferenceId = event.referenceId;
+            eventTitle = event.title;
+            eventIdUsed = true;
+          }
         }
+      } catch (eventError: any) {
+        // Any database error or exception - fallback to no event ID
+        console.warn(`Event Reference ID validation error: ${eventError?.message || 'Unknown error'} for ${validated.organizerReferenceId}. Proceeding without event ID.`);
       }
-
-      eventReferenceId = event.referenceId;
-      eventTitle = event.title;
-    } else {
-      // No event reference ID - set default online event title based on activity type (Scenario 2)
+    }
+    
+    // If event ID validation failed or wasn't provided, set default online event title
+    if (!eventIdUsed) {
       const activityEventTitles: Record<string, string> = {
         quiz: "Online Quiz",
         simulation: "Online Simulation",
@@ -90,6 +102,8 @@ export async function POST(request: NextRequest) {
       };
       const activityTypeLower = validated.activityType.toLowerCase();
       eventTitle = activityEventTitles[activityTypeLower] || `Online ${validated.activityType.charAt(0).toUpperCase() + validated.activityType.slice(1)}`;
+      // Clear event reference ID if validation failed
+      eventReferenceId = undefined;
     }
 
     const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";

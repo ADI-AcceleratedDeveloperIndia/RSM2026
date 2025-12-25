@@ -178,19 +178,41 @@ function CertificatePreviewContent() {
     }, 30000); // 30 second timeout
 
     try {
-      console.log("Starting client-side PDF generation...");
+      console.log("Starting client-side PDF generation...", {
+        element: certificateRef.current ? {
+          width: certificateRef.current.offsetWidth,
+          height: certificateRef.current.offsetHeight,
+          hasImages: certificateRef.current.querySelectorAll("img").length
+        } : null
+      });
       await exportCertificateToPdf(certificateRef.current, `${certificateData.fullName.replace(/\s+/g, "_")}_certificate.pdf`);
       clearTimeout(timeoutId);
       setIsDownloading(false);
       console.log("PDF generated successfully");
     } catch (error: any) {
       clearTimeout(timeoutId);
-      console.error("Certificate download failed:", error);
-      setDownloadError(
-        error?.message?.includes("timeout") 
-          ? "PDF generation timed out. Please try again."
-          : "Could not generate the PDF. Please retry after a few seconds."
-      );
+      console.error("Certificate download failed:", {
+        error,
+        message: error?.message,
+        stack: error?.stack,
+        name: error?.name
+      });
+      
+      // Provide more specific error messages
+      let errorMessage = "Could not generate the PDF. Please retry after a few seconds.";
+      if (error?.message) {
+        if (error.message.includes("timeout")) {
+          errorMessage = "PDF generation timed out. The certificate may be too complex. Please try again.";
+        } else if (error.message.includes("jsPDF") || error.message.includes("module")) {
+          errorMessage = "PDF library error. Please refresh the page and try again.";
+        } else if (error.message.includes("Canvas") || error.message.includes("canvas")) {
+          errorMessage = "Image conversion failed. Please check your browser console for details.";
+        } else {
+          errorMessage = `PDF generation failed: ${error.message}`;
+        }
+      }
+      
+      setDownloadError(errorMessage);
       setIsDownloading(false);
     }
   };
