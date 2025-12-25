@@ -240,86 +240,27 @@ export default function QuizPage() {
         console.error("❌ Speech error:", event.error, event.type);
       };
       
-      // Try to get Indian voice
+      // Try to get English voice
       const voices = synthRef.current.getVoices();
       console.log("Available voices:", voices.length);
       
       if (voices.length > 0) {
-        let selectedVoice = null;
-        
-        if (lang === "te") {
-          console.log("🔍 Searching for Telugu voice...");
-          console.log("📋 All available voices:", voices.map(v => `${v.name} (${v.lang})`));
-          
-          // Look for Telugu voice - try multiple patterns (most specific first)
-          selectedVoice = voices.find(voice => 
-            voice.lang === "te-IN" ||
-            voice.lang.startsWith("te-IN") ||
-            voice.lang === "te"
-          );
-          
-          if (!selectedVoice) {
-            selectedVoice = voices.find(voice => 
-              voice.lang.startsWith("te") || 
-              voice.name.toLowerCase().includes("telugu")
-            );
-          }
-          
-          // If no Telugu voice found, try any Indian voice
-          if (!selectedVoice) {
-            console.log("⚠️ No Telugu voice found, trying Indian voices...");
-            selectedVoice = voices.find(voice => 
-              voice.lang.includes("IN") || 
-              voice.name.includes("India")
-            );
-          }
-          
-          // Last resort: use any available voice (better than nothing)
-          if (!selectedVoice && voices.length > 0) {
-            console.log("⚠️ No Telugu/Indian voice found, using default voice:", voices[0].name);
-            selectedVoice = voices[0];
-            // Still set language to Telugu so browser tries to pronounce Telugu text
-            utterance.lang = "te-IN";
-          }
-          
-          if (selectedVoice) {
-            console.log("✅ Using voice:", selectedVoice.name, "(" + selectedVoice.lang + ")");
-            utterance.voice = selectedVoice;
-            // Force Telugu language even if voice language is different
-            utterance.lang = "te-IN";
-          } else {
-            console.warn("⚠️ No Telugu voice found! Browser will try to use default voice with Telugu language setting.");
-            console.warn("💡 Note: Telugu TTS may not be available in all browsers. English voices work without any setup.");
-            // Still try to speak with Telugu language setting - browser will attempt pronunciation
-            utterance.lang = "te-IN";
-            // Try to use any available voice that might handle Telugu
-            if (voices.length > 0) {
-              utterance.voice = voices[0];
-              console.log("🔄 Using default voice:", voices[0].name, "- may not pronounce Telugu correctly");
-            }
-          }
-        } else {
-          // Look for Indian English voice, fallback to any English
-          selectedVoice = voices.find(voice => 
-            voice.lang.includes("IN") || 
-            voice.name.includes("India") || 
-            voice.name.includes("Indian") ||
-            voice.name.includes("Ravi")
-          );
-          
-          // Fallback to any English voice if Indian not found
-          if (!selectedVoice) {
-            selectedVoice = voices.find(voice => voice.lang.startsWith("en"));
-          }
-          
-          console.log("Looking for English voice");
-        }
+        // Always use English for Virtual Quiz Master
+        // Look for US English voice first, fallback to any English
+        let selectedVoice = voices.find(voice => 
+          voice.lang === "en-US" || 
+          voice.lang.startsWith("en-US")
+        ) || voices.find(voice => voice.lang.startsWith("en"));
         
         if (selectedVoice) {
           utterance.voice = selectedVoice;
-          console.log("✅ Using voice:", selectedVoice.name, selectedVoice.lang);
+          console.log("✅ Using English voice:", selectedVoice.name, "(" + selectedVoice.lang + ")");
         } else {
-          console.log("⚠️ No matching voice found, using default");
+          console.log("⚠️ No English voice found, using default voice");
+          if (voices.length > 0) {
+            utterance.voice = voices[0];
+            console.log("🔄 Using default voice:", voices[0].name);
+          }
         }
       } else {
         console.log("⚠️ No voices available");
