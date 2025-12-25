@@ -14,7 +14,7 @@ const createCertSchema = z.object({
   institution: z.string().optional(),
   score: z.number().min(0),
   total: z.number().min(1),
-  activityType: z.enum(["basics", "simulation", "quiz", "guides", "prevention", "online"]),
+  activityType: z.string().min(1), // Allow any activity type (quiz, basics, simulation, guides, prevention, essay, custom, etc.)
   organizerReferenceId: z.string().optional(), // Optional organizer reference ID
   userEmail: z.string().email().optional(),
 });

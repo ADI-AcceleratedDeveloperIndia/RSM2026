@@ -197,6 +197,17 @@ export default function SiteFooter() {
             <p>{t("transportDepartmentFooter")}</p>
           </div>
         </div>
+        <div className="mt-8 pt-6 border-t border-emerald-800 flex items-center justify-center gap-2 text-xs text-slate-400">
+          <span>Built by</span>
+          <Image
+            src="/assets/A-logo-transparent.png"
+            alt="AI Developer India"
+            width={20}
+            height={20}
+            className="h-5 w-5 object-contain"
+          />
+          <span className="font-medium">AI Developer India</span>
+        </div>
       </div>
     </footer>
   );

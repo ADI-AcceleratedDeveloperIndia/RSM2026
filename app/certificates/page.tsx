@@ -34,6 +34,11 @@ export default function CertificatesPage() {
   const [institution, setInstitution] = useState("");
   const [eventRef, setEventRef] = useState("");
   const [userEmail, setUserEmail] = useState("");
+  const [activityType, setActivityType] = useState("quiz"); // Default to quiz
+  const [customActivity, setCustomActivity] = useState("");
+  const [certificateType, setCertificateType] = useState("PAR"); // PAR, MERIT, or TOPPER
+  const [score, setScore] = useState("");
+  const [total, setTotal] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,18 +49,52 @@ export default function CertificatesPage() {
       setError(i18n.language === "te" ? "పేరు మరియు ఈవెంట్ ID అవసరం" : "Name and Event Reference ID are required");
       return;
     }
+    
+    // Determine activity type (use custom if provided, otherwise use selected)
+    const finalActivityType = activityType === "custom" ? customActivity.trim().toLowerCase() : activityType;
+    if (activityType === "custom" && !customActivity.trim()) {
+      setError(i18n.language === "te" ? "కస్టమ్ యాక్టివిటీ పేరు అవసరం" : "Custom activity name is required");
+      return;
+    }
+    
+    // Determine API type from certificate type
+    let apiType: "ORGANIZER" | "PARTICIPANT" | "MERIT" = "PARTICIPANT";
+    if (certificateType === "MERIT" || certificateType === "TOPPER") {
+      apiType = "MERIT";
+    }
+    
+    // Parse score and total
+    let scoreValue = 0;
+    let totalValue = 100;
+    if (score.trim() && total.trim()) {
+      scoreValue = parseInt(score.trim()) || 0;
+      totalValue = parseInt(total.trim()) || 100;
+    } else {
+      // Default scores based on certificate type
+      if (certificateType === "TOPPER") {
+        scoreValue = 100;
+        totalValue = 100;
+      } else if (certificateType === "MERIT") {
+        scoreValue = 70;
+        totalValue = 100;
+      } else {
+        scoreValue = 50;
+        totalValue = 100;
+      }
+    }
+    
     setLoading(true);
     try {
       const res = await fetch("/api/certificates/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          type: "PARTICIPANT",
+          type: apiType,
           fullName: fullName.trim(),
           institution: institution.trim() || undefined,
-          score: 100,
-          total: 100,
-          activityType: "online",
+          score: scoreValue,
+          total: totalValue,
+          activityType: finalActivityType,
           organizerReferenceId: eventRef.trim(),
           userEmail: userEmail.trim() || undefined,
         }),
@@ -177,6 +216,81 @@ export default function CertificatesPage() {
               placeholder="KRMR-RSM-2026-PDL-RHL-EVT-00001"
               required
               className="font-mono text-xs"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="activityType" className="text-sm font-semibold text-emerald-900">
+              {i18n.language === "te" ? "యాక్టివిటీ రకం *" : "Activity Type *"}
+            </Label>
+            <select
+              id="activityType"
+              value={activityType}
+              onChange={(e) => setActivityType(e.target.value)}
+              className="h-11 rounded-lg border border-emerald-200 px-3 text-sm focus:border-emerald-500 focus:outline-none w-full"
+              required
+            >
+              <option value="quiz">Quiz</option>
+              <option value="essay">Essay</option>
+              <option value="custom">Custom Activity</option>
+            </select>
+          </div>
+
+          {activityType === "custom" && (
+            <div className="space-y-1">
+              <Label htmlFor="customActivity" className="text-sm font-semibold text-emerald-900">
+                {i18n.language === "te" ? "కస్టమ్ యాక్టివిటీ పేరు *" : "Custom Activity Name *"}
+              </Label>
+              <Input
+                id="customActivity"
+                value={customActivity}
+                onChange={(e) => setCustomActivity(e.target.value)}
+                placeholder={i18n.language === "te" ? "ఉదా: Elocution, Singing, etc." : "e.g., Elocution, Singing, etc."}
+                required={activityType === "custom"}
+              />
+            </div>
+          )}
+
+          <div className="space-y-1">
+            <Label htmlFor="certificateType" className="text-sm font-semibold text-emerald-900">
+              {i18n.language === "te" ? "సర్టిఫికేట్ రకం *" : "Certificate Type *"}
+            </Label>
+            <select
+              id="certificateType"
+              value={certificateType}
+              onChange={(e) => setCertificateType(e.target.value)}
+              className="h-11 rounded-lg border border-emerald-200 px-3 text-sm focus:border-emerald-500 focus:outline-none w-full"
+              required
+            >
+              <option value="PAR">PAR – Participant</option>
+              <option value="MERIT">MERIT – Merit</option>
+              <option value="TOPPER">TOPPER – Topper</option>
+            </select>
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="score" className="text-sm font-semibold text-emerald-900">
+              {i18n.language === "te" ? "స్కోరు (ఐచ్చికం)" : "Score (optional)"}
+            </Label>
+            <Input
+              id="score"
+              type="number"
+              value={score}
+              onChange={(e) => setScore(e.target.value)}
+              placeholder="e.g., 85"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="total" className="text-sm font-semibold text-emerald-900">
+              {i18n.language === "te" ? "మొత్తం (ఐచ్చికం)" : "Total (optional)"}
+            </Label>
+            <Input
+              id="total"
+              type="number"
+              value={total}
+              onChange={(e) => setTotal(e.target.value)}
+              placeholder="e.g., 100"
             />
           </div>
 

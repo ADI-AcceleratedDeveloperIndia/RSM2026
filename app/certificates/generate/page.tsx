@@ -51,17 +51,16 @@ const DISTRICTS = [
 
 const CERTIFICATE_OPTIONS = [
   { value: "ORG", label: "ORG – Organiser Appreciation" },
-  { value: "PAR", label: "PAR – Participant (Quiz score < 60%)" },
-  { value: "QUIZ", label: "QUIZ – Quiz Merit (Score ≥ 60%)" },
-  { value: "SIM", label: "SIM – Simulation Completion" },
+  { value: "PAR", label: "PAR – Participant (Score < 60%)" },
+  { value: "MERIT", label: "MERIT – Merit Certificate (Score ≥ 60% but < 80%)" },
+  { value: "TOPPER", label: "TOPPER – Topper Certificate (Score ≥ 80%)" },
   { value: "VOL", label: "VOL – Volunteer" },
   { value: "SCH", label: "SCH – School Contributor" },
   { value: "COL", label: "COL – College Coordinator" },
-  { value: "TOPPER", label: "TOPPER – Simulation Topper" },
 ];
 
 const generateSchema = z.object({
-  certificateType: z.enum(["ORG", "PAR", "QUIZ", "SIM", "VOL", "SCH", "COL", "TOPPER"]),
+  certificateType: z.enum(["ORG", "PAR", "MERIT", "TOPPER", "VOL", "SCH", "COL"]),
   fullName: z.string().min(1, "Name is required"),
   district: z.string().min(1, "District is required"),
   issueDate: z.string().min(1, "Issue date is required"),
@@ -135,25 +134,26 @@ function CertificateGenerateContent() {
   }, []);
 
   const defaultType = useMemo(() => {
-    // Determine certificate type from activity score
-    if (activityData.score !== null && activityData.total !== null) {
+    // Auto-determine certificate type from activity score
+    if (activityData.score !== null && activityData.total !== null && activityData.activityType) {
       const percentage = (activityData.score / activityData.total) * 100;
-      if (activityData.activityType === "quiz") {
-        return percentage >= 60 ? "QUIZ" : "PAR";
-      } else if (activityData.activityType === "simulation") {
-        return "SIM";
-      } else if (activityData.activityType === "basics") {
-        return "PAR";
-      } else if (activityData.activityType === "guides") {
-        return "PAR";
-      } else if (activityData.activityType === "prevention") {
+      // Certificate type based on score: < 60% = PAR, >= 60% but < 80% = MERIT, >= 80% = TOPPER
+      if (percentage >= 80) {
+        return "TOPPER";
+      } else if (percentage >= 60) {
+        return "MERIT";
+      } else {
         return "PAR";
       }
     }
+    // If coming from direct access (not activity), allow selection
     const fromQuery = searchParams.get("type");
     const allowed = CERTIFICATE_OPTIONS.map((opt) => opt.value);
     return fromQuery && allowed.includes(fromQuery) ? fromQuery : "ORG";
   }, [searchParams, activityData]);
+  
+  // Check if coming from activity (auto-determine type)
+  const isFromActivity = activityData.score !== null && activityData.total !== null && activityData.activityType;
 
   const referenceFromQuery = searchParams.get("ref");
 
@@ -215,15 +215,18 @@ function CertificateGenerateContent() {
   }, [regionalAuthority, setValue]);
 
   const submit = async (data: GenerateForm) => {
-    // Determine certificate type for API
+    // Determine certificate type for API based on selected type
     let apiType: "ORGANIZER" | "PARTICIPANT" | "MERIT" = "PARTICIPANT";
     if (data.certificateType === "ORG") {
       apiType = "ORGANIZER";
-    } else if (data.certificateType === "QUIZ") {
+    } else if (data.certificateType === "MERIT" || data.certificateType === "TOPPER") {
       apiType = "MERIT";
     } else {
       apiType = "PARTICIPANT";
     }
+    
+    // Get activity type (from sessionStorage or default to "online")
+    const activityType = activityData.activityType || "online";
 
     // Extract score from activity data or score field
     let score = 0;
@@ -340,19 +343,35 @@ function CertificateGenerateContent() {
           <div className="grid md:grid-cols-2 gap-5">
             <div className="space-y-2">
               <Label htmlFor="certificateType" className="text-sm font-semibold text-emerald-900">Certificate Type *</Label>
-              <select
-                id="certificateType"
-                value={selectedType}
-                onChange={(event) => setValue("certificateType", event.target.value as GenerateForm["certificateType"])}
-                className="h-11 rounded-lg border border-emerald-200 px-3 text-sm focus:border-emerald-500 focus:outline-none"
-              >
-                {CERTIFICATE_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              {errors.certificateType && <p className="text-xs text-red-600">{errors.certificateType.message}</p>}
+              {isFromActivity ? (
+                <>
+                  <Input
+                    id="certificateType"
+                    value={CERTIFICATE_OPTIONS.find(opt => opt.value === defaultType)?.label || defaultType}
+                    disabled
+                    className="h-11 rounded-lg border border-emerald-200 bg-slate-100"
+                  />
+                  <p className="text-xs text-slate-500 mt-1">
+                    Certificate type automatically determined based on your score.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <select
+                    id="certificateType"
+                    value={selectedType}
+                    onChange={(event) => setValue("certificateType", event.target.value as GenerateForm["certificateType"])}
+                    className="h-11 rounded-lg border border-emerald-200 px-3 text-sm focus:border-emerald-500 focus:outline-none"
+                  >
+                    {CERTIFICATE_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.certificateType && <p className="text-xs text-red-600">{errors.certificateType.message}</p>}
+                </>
+              )}
             </div>
 
             <div className="space-y-2">

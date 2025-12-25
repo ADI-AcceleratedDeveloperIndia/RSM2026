@@ -44,7 +44,6 @@ export default function QuizPage() {
   const [answers, setAnswers] = useState<number[]>([]);
   const [answeredQuestions, setAnsweredQuestions] = useState<Set<number>>(new Set());
   const [questionResults, setQuestionResults] = useState<Map<number, boolean>>(new Map()); // questionId -> isCorrect
-  const [copiedRefId, setCopiedRefId] = useState(false);
   const [virtualQuizMaster, setVirtualQuizMaster] = useState<boolean>(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const synthRef = useRef<SpeechSynthesis | null>(null);
@@ -661,16 +660,6 @@ export default function QuizPage() {
     }
   };
 
-  const handleCopyReference = async () => {
-    if (!result?.referenceId) return;
-    try {
-      await navigator.clipboard.writeText(result.referenceId);
-      setCopiedRefId(true);
-      setTimeout(() => setCopiedRefId(false), 2000);
-    } catch {
-      alert(tc("copyFailed"));
-    }
-  };
 
 
   if (loading) {
@@ -716,18 +705,6 @@ export default function QuizPage() {
             </div>
           </div>
 
-          {result.referenceId && (
-            <div className="rounded-2xl border border-emerald-100 bg-white/90 p-5">
-              <p className="text-xs uppercase tracking-wide text-emerald-600 mb-2">{tc("referenceId")}</p>
-              <div className="flex flex-wrap items-center justify-center gap-3">
-                <span className="font-semibold text-emerald-900 font-mono">{result.referenceId}</span>
-                <Button variant="outline" size="sm" onClick={handleCopyReference} type="button" className="gap-2">
-                  <Copy className="h-4 w-4" /> {tc("copy")}
-                </Button>
-              </div>
-              {copiedRefId && <p className="mt-2 text-xs text-emerald-600">{tc("referenceIdCopiedToClipboard")}</p>}
-            </div>
-          )}
 
           <div className="flex flex-col items-center gap-4">
             <p className="text-base text-slate-700">
@@ -853,16 +830,6 @@ export default function QuizPage() {
                   ? "మీరు క్విజ్ పూర్తి చేశారు!" 
                   : "You have completed the quiz!"}
               </p>
-              {(() => {
-                const currentResult = result as { referenceId?: string | null } | null;
-                if (!currentResult || !currentResult.referenceId) return null;
-                return (
-                  <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 mb-4">
-                    <p className="text-xs text-emerald-600 mb-1">{tc("referenceId")}</p>
-                    <p className="font-mono font-semibold text-emerald-900">{currentResult.referenceId}</p>
-                  </div>
-                );
-              })()}
               <Button
                 onClick={() => setShowCelebration(false)}
                 className="rs-btn-primary"
