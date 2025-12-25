@@ -43,6 +43,7 @@ function CertificatePreviewContent() {
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const [certificateData, setCertificateData] = useState<CertificateData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
 
   // Always show Padala Rahul photo (karimnagar)
   const regionalAuthority = getRegionalAuthority("karimnagar");
@@ -55,8 +56,12 @@ function CertificatePreviewContent() {
       fetch(`/api/certificates/get?certId=${certId}`)
         .then((res) => res.json())
         .then((data) => {
-          if (data.certificate) {
+          if (data.certificate && data.signature) {
             const cert = data.certificate;
+            
+            // Build server-side download URL
+            const downloadUrlWithSig = `/api/certificates/download?cid=${encodeURIComponent(cert.certificateId)}&sig=${encodeURIComponent(data.signature)}`;
+            setDownloadUrl(downloadUrlWithSig);
             
             // Determine certificate type based on database type and score
             let certType: CertificateCode = "PAR";
@@ -159,17 +164,54 @@ function CertificatePreviewContent() {
   }, [router, searchParams, regionalAuthority]);
 
   const handleDownload = async () => {
-    if (!certificateRef.current || isDownloading || !certificateData) return;
-    setIsDownloading(true);
-    setDownloadError(null);
+    if (isDownloading || !certificateData) return;
+    
+    // Use server-side download URL if available (preferred method)
+    if (downloadUrl) {
+      setIsDownloading(true);
+      setDownloadError(null);
+      
+      try {
+        // Fetch the PDF from server-side endpoint
+        const response = await fetch(downloadUrl);
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: "Failed to download PDF" }));
+          throw new Error(errorData.error || "Failed to download PDF");
+        }
+        
+        // Get the PDF blob
+        const blob = await response.blob();
+        
+        // Create a download link and trigger download
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${certificateData.fullName.replace(/\s+/g, "_")}_certificate.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        setIsDownloading(false);
+      } catch (error: any) {
+        console.error("Certificate download failed:", error);
+        setDownloadError(error?.message || "Could not download the PDF. Please retry after a few seconds.");
+        setIsDownloading(false);
+      }
+    } else if (certificateRef.current) {
+      // Fallback to client-side generation if no download URL
+      setIsDownloading(true);
+      setDownloadError(null);
 
-    try {
-      await exportCertificateToPdf(certificateRef.current, `${certificateData.fullName.replace(/\s+/g, "_")}_certificate.pdf`);
-    } catch (error) {
-      console.error("Certificate download failed:", error);
-      setDownloadError("Could not generate the PDF. Please retry after a few seconds.");
-    } finally {
-      setIsDownloading(false);
+      try {
+        await exportCertificateToPdf(certificateRef.current, `${certificateData.fullName.replace(/\s+/g, "_")}_certificate.pdf`);
+      } catch (error) {
+        console.error("Certificate download failed:", error);
+        setDownloadError("Could not generate the PDF. Please retry after a few seconds.");
+      } finally {
+        setIsDownloading(false);
+      }
     }
   };
 
