@@ -65,9 +65,9 @@ function CertificatePreviewContent() {
               // Check score to determine if TOPPER (>=80%) or MERIT (60-79%)
               if (cert.score !== undefined && cert.total !== undefined && cert.total > 0) {
                 const percentage = (cert.score / cert.total) * 100;
-                certType = percentage >= 80 ? "TOPPER" : "QUIZ"; // QUIZ = Merit certificate
+                certType = percentage >= 80 ? "TOPPER" : "MERIT";
               } else {
-                certType = "QUIZ"; // Default to Merit if score not available
+                certType = "MERIT"; // Default to Merit if score not available
               }
             } else {
               certType = "PAR";
@@ -194,7 +194,18 @@ function CertificatePreviewContent() {
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <Button variant="outline" onClick={() => router.push("/certificates/generate")} className="gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              const source = searchParams.get("source");
+              if (source === "offline") {
+                router.push("/certificates");
+              } else {
+                router.push("/certificates/generate");
+              }
+            }} 
+            className="gap-2"
+          >
             <ArrowLeft className="h-4 w-4" /> Back to Form
           </Button>
           <Button onClick={handleDownload} className="rs-btn-primary gap-2" disabled={isDownloading}>

@@ -294,7 +294,7 @@ function CertificateGenerateContent() {
         params.set("rta", regionalAuthority.code);
       }
 
-      router.push(`/certificates/preview?${params.toString()}`);
+      router.push(`/certificates/preview?${params.toString()}&source=online`);
     } catch (error) {
       console.error("Certificate creation error:", error);
       alert("Failed to create certificate. Please try again.");

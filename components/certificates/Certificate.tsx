@@ -25,6 +25,7 @@ const HIGHLIGHT_COLOR = "#047857";
 export type CertificateCode =
   | "ORG"
   | "PAR"
+  | "MERIT"
   | "QUIZ"
   | "SIM"
   | "VOL"
@@ -69,6 +70,11 @@ const CERTIFICATE_TYPES: Record<
     title: "Participant Certificate",
     subtitle: "Acknowledging active participation in Telangana Road Safety Month 2026",
     body: "Awarded for enthusiastic involvement in awareness drives, workshops, and activities that championed safer roads for all citizens of Telangana.",
+  },
+  MERIT: {
+    title: "Merit Certificate",
+    subtitle: "Celebrating excellence in Telangana Road Safety Month activities",
+    body: "Presented for outstanding performance, demonstrating deep understanding of traffic regulations, safe driving behaviours, and citizen responsibilities.",
   },
   QUIZ: {
     title: "Quiz Merit Certificate",

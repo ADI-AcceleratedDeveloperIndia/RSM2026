@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Award, Sparkles, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +39,24 @@ export default function CertificatesPage() {
   const [certificateType, setCertificateType] = useState("PAR"); // PAR, MERIT, or TOPPER
   const [score, setScore] = useState("");
   const [total, setTotal] = useState("");
+
+  // Auto-update certificate type when score/total changes
+  useEffect(() => {
+    if (score.trim() && total.trim()) {
+      const scoreValue = parseInt(score.trim()) || 0;
+      const totalValue = parseInt(total.trim()) || 100;
+      if (totalValue > 0) {
+        const percentage = (scoreValue / totalValue) * 100;
+        if (percentage >= 80) {
+          setCertificateType("TOPPER");
+        } else if (percentage >= 60) {
+          setCertificateType("MERIT");
+        } else {
+          setCertificateType("PAR");
+        }
+      }
+    }
+  }, [score, total]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,30 +75,31 @@ export default function CertificatesPage() {
       return;
     }
     
-    // Determine API type from certificate type
-    let apiType: "ORGANIZER" | "PARTICIPANT" | "MERIT" = "PARTICIPANT";
-    if (certificateType === "MERIT" || certificateType === "TOPPER") {
-      apiType = "MERIT";
-    }
-    
     // Parse score and total
     let scoreValue = 0;
     let totalValue = 100;
     if (score.trim() && total.trim()) {
       scoreValue = parseInt(score.trim()) || 0;
       totalValue = parseInt(total.trim()) || 100;
-    } else {
-      // Default scores based on certificate type
-      if (certificateType === "TOPPER") {
-        scoreValue = 100;
-        totalValue = 100;
-      } else if (certificateType === "MERIT") {
-        scoreValue = 70;
-        totalValue = 100;
+    }
+    
+    // Auto-determine certificate type from score if not explicitly set
+    let finalCertificateType = certificateType;
+    if (score.trim() && total.trim() && totalValue > 0) {
+      const percentage = (scoreValue / totalValue) * 100;
+      if (percentage >= 80) {
+        finalCertificateType = "TOPPER";
+      } else if (percentage >= 60) {
+        finalCertificateType = "MERIT";
       } else {
-        scoreValue = 50;
-        totalValue = 100;
+        finalCertificateType = "PAR";
       }
+    }
+    
+    // Determine API type from certificate type
+    let apiType: "ORGANIZER" | "PARTICIPANT" | "MERIT" = "PARTICIPANT";
+    if (finalCertificateType === "MERIT" || finalCertificateType === "TOPPER") {
+      apiType = "MERIT";
     }
     
     setLoading(true);
@@ -106,8 +125,8 @@ export default function CertificatesPage() {
       if (!data.certificateId) {
         throw new Error("Missing certificate ID");
       }
-      // Redirect to preview page for client-side PDF download
-      router.push(`/certificates/preview?certId=${data.certificateId}&regional=true`);
+      // Redirect to preview page with source tracking
+      router.push(`/certificates/preview?certId=${data.certificateId}&source=offline`);
     } catch (err: any) {
       setError(err?.message || "Failed to create certificate");
       setLoading(false);
@@ -126,11 +145,6 @@ export default function CertificatesPage() {
             <p className="text-slate-600 max-w-2xl">
               {tc("certificatesDescription") || "Telangana Road Safety Month issues official certificates in eight categories. Each template carries the Telangana emblem, minister signature, dynamic personalisation, and a verification-ready reference ID."}
             </p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Link href="/certificates/regional" className="rs-btn-primary">
-              <Sparkles className="h-4 w-4" /> {i18n.language === "te" ? "కరీంనగర్ ప్రాంతీయ సర్టిఫికేట్" : "Karimnagar Regional Certificate"}
-            </Link>
           </div>
         </div>
       </div>
