@@ -229,12 +229,12 @@ export default function BasicsPage() {
                 className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group"
                 title={sign.hover_text}
               >
-                <div className="relative h-32 sm:h-40 md:h-48 bg-slate-50 group-hover:bg-slate-100 transition-colors">
+                <div className="relative h-24 sm:h-28 md:h-32 bg-slate-50 group-hover:bg-slate-100 transition-colors">
                   <Image
                     src={`/${sign.image}`}
                     alt={sign.name}
                     fill
-                    className="object-contain p-3 sm:p-4"
+                    className="object-contain p-2"
                     sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
                   />
                 </div>
