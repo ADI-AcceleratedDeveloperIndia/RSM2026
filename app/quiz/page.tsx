@@ -117,15 +117,12 @@ export default function QuizPage() {
             voicesLoadedRef.current = true;
             console.log("📢 Sample voices:", voices.slice(0, 5).map(v => `${v.name} (${v.lang})`));
             
-            // Log Telugu voices specifically
-            const teluguVoices = voices.filter(v => 
-              v.lang.startsWith("te") || 
-              v.name.toLowerCase().includes("telugu")
-            );
-            if (teluguVoices.length > 0) {
-              console.log("✅ Telugu voices found:", teluguVoices.map(v => `${v.name} (${v.lang})`));
+            // Log English voices
+            const englishVoices = voices.filter(v => v.lang.startsWith("en"));
+            if (englishVoices.length > 0) {
+              console.log("✅ English voices found:", englishVoices.map(v => `${v.name} (${v.lang})`).slice(0, 5));
             } else {
-              console.warn("⚠️ No Telugu voices found. Available languages:", 
+              console.warn("⚠️ No English voices found. Available languages:", 
                 [...new Set(voices.map(v => v.lang))].slice(0, 10)
               );
             }
@@ -758,7 +755,7 @@ export default function QuizPage() {
               size="sm"
               className="text-xs"
             >
-              {getCurrentLang() === "te" ? "టెస్ట్ వాయిస్" : "Test Voice"}
+              Test Voice
             </Button>
             </div>
           </div>
