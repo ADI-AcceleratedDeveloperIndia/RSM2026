@@ -28,7 +28,12 @@ const CertificateSchema = new Schema({
 // Compound unique index: certificateNumber must be unique per type
 CertificateSchema.index({ type: 1, certificateNumber: 1 }, { unique: true });
 
-export default models.Certificate || model("Certificate", CertificateSchema);
+// Delete existing model to force recompilation with new schema
+if (models.Certificate) {
+  delete models.Certificate;
+}
+
+export default model("Certificate", CertificateSchema);
 
 
 
