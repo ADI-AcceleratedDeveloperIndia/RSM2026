@@ -37,22 +37,27 @@ export default function Home() {
   }, []);
 
   const handleAnthemClick = () => {
-    if (!audioRef.current) {
-      audioRef.current = new Audio("/assets/ROADSAFETY3.wav");
-      audioRef.current.addEventListener("ended", () => {
-        setIsPlaying(false);
-        sessionStorage.removeItem("anthemPlaying");
-      });
-    }
-
     if (isPlaying) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
+      // Stop playing
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
       setIsPlaying(false);
       sessionStorage.removeItem("anthemPlaying");
     } else {
+      // Start playing
+      if (!audioRef.current) {
+        audioRef.current = new Audio("/assets/ROADSAFETY3.wav");
+        audioRef.current.addEventListener("ended", () => {
+          setIsPlaying(false);
+          sessionStorage.removeItem("anthemPlaying");
+        });
+      }
       audioRef.current.play().catch((err) => {
         console.error("Error playing anthem:", err);
+        setIsPlaying(false);
+        sessionStorage.removeItem("anthemPlaying");
       });
       setIsPlaying(true);
       sessionStorage.setItem("anthemPlaying", "true");
