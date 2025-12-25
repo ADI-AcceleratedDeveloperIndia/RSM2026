@@ -26,7 +26,8 @@ export async function exportCertificateToPdf(element: HTMLElement, fileName: str
 
   const scale = 2.5;
 
-  const canvas = await html2canvas(element, {
+  // Add timeout wrapper for html2canvas
+  const canvasPromise = html2canvas(element, {
     scale,
     backgroundColor: "#ffffff",
     useCORS: true,
@@ -78,6 +79,12 @@ export async function exportCertificateToPdf(element: HTMLElement, fileName: str
     },
   });
 
+  // Add timeout to prevent hanging
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => reject(new Error("Canvas generation timeout")), 25000);
+  });
+
+  const canvas = await Promise.race([canvasPromise, timeoutPromise]) as HTMLCanvasElement;
   const imgData = canvas.toDataURL("image/png");
 
   const pxToPt = (px: number) => (px * 72) / 96;
