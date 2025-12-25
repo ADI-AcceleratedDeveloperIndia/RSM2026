@@ -16,9 +16,8 @@ const CertificateSchema = new Schema({
   organizerReferenceId: String, // Optional organizer reference
   activityType: { 
     type: String, 
-    enum: ["basics", "simulation", "quiz", "guides", "prevention", "online"],
     required: true 
-  },
+  }, // Allow any activity type (quiz, basics, simulation, guides, prevention, essay, custom activities, etc.)
   score: { type: Number, required: true },
   total: { type: Number, required: true },
   createdAt: { type: Date, default: Date.now },
