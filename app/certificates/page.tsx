@@ -35,12 +35,18 @@ export default function CertificatesPage() {
   const [userEmail, setUserEmail] = useState("");
   const [activityType, setActivityType] = useState("quiz"); // Default to quiz
   const [customActivity, setCustomActivity] = useState("");
-  const [certificateType, setCertificateType] = useState("PAR"); // PAR, MERIT, or TOPPER
+  const [certificateType, setCertificateType] = useState("PAR"); // PAR, MERIT, TOPPER, ORG, VOL, SCH, COL
   const [score, setScore] = useState("");
   const [total, setTotal] = useState("");
 
-  // Auto-update certificate type when score/total changes
+  // Auto-update certificate type when score/total changes (only for PAR/MERIT/TOPPER)
+  // Don't auto-update if user has selected ORG, VOL, SCH, or COL
   useEffect(() => {
+    const nonScoreTypes = ["ORG", "VOL", "SCH", "COL"];
+    if (nonScoreTypes.includes(certificateType)) {
+      return; // Don't auto-update for non-score-based certificates
+    }
+    
     if (score.trim() && total.trim()) {
       const scoreValue = parseInt(score.trim()) || 0;
       const totalValue = parseInt(total.trim()) || 100;
@@ -55,7 +61,7 @@ export default function CertificatesPage() {
         }
       }
     }
-  }, [score, total]);
+  }, [score, total, certificateType]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -274,9 +280,17 @@ export default function CertificatesPage() {
               onChange={(e) => setCertificateType(e.target.value)}
               className="h-11 rounded-lg border border-emerald-200 px-3 text-sm focus:border-emerald-500 focus:outline-none w-full"
             >
-              <option value="PAR">Participant (PAR) - &lt; 60%</option>
-              <option value="MERIT">Merit (MERIT) - 60-79%</option>
-              <option value="TOPPER">Topper (TOPPER) - ≥ 80%</option>
+              <optgroup label={i18n.language === "te" ? "పాల్గొనేవారి సర్టిఫికేట్‌లు" : "Participant Certificates"}>
+                <option value="PAR">Participant (PAR) - &lt; 60%</option>
+                <option value="MERIT">Merit (MERIT) - 60-79%</option>
+                <option value="TOPPER">Topper (TOPPER) - ≥ 80%</option>
+              </optgroup>
+              <optgroup label={i18n.language === "te" ? "ఇతర సర్టిఫికేట్‌లు" : "Other Certificates"}>
+                <option value="ORG">Organizer Appreciation (ORG)</option>
+                <option value="VOL">Volunteer (VOL)</option>
+                <option value="SCH">School Contributor (SCH)</option>
+                <option value="COL">College Coordinator (COL)</option>
+              </optgroup>
             </select>
             <p className="text-xs text-slate-500 mt-1">
               {i18n.language === "te"
