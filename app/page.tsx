@@ -27,21 +27,48 @@ export default function Home() {
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  // Check if anthem was playing when component mounts
+  useEffect(() => {
+    const wasPlaying = sessionStorage.getItem("anthemPlaying") === "true";
+    if (wasPlaying) {
+      setIsPlaying(true);
+      // Restore audio state
+      if (!audioRef.current) {
+        audioRef.current = new Audio("/assets/ROADSAFETY3.wav");
+        audioRef.current.addEventListener("ended", () => {
+          setIsPlaying(false);
+          sessionStorage.removeItem("anthemPlaying");
+        });
+        // Try to resume playback
+        audioRef.current.play().catch((err) => {
+          console.error("Error resuming anthem:", err);
+          setIsPlaying(false);
+          sessionStorage.removeItem("anthemPlaying");
+        });
+      }
+    }
+  }, []);
+
   const handleAnthemClick = () => {
     if (!audioRef.current) {
       audioRef.current = new Audio("/assets/ROADSAFETY3.wav");
-      audioRef.current.addEventListener("ended", () => setIsPlaying(false));
+      audioRef.current.addEventListener("ended", () => {
+        setIsPlaying(false);
+        sessionStorage.removeItem("anthemPlaying");
+      });
     }
 
     if (isPlaying) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
       setIsPlaying(false);
+      sessionStorage.removeItem("anthemPlaying");
     } else {
       audioRef.current.play().catch((err) => {
         console.error("Error playing anthem:", err);
       });
       setIsPlaying(true);
+      sessionStorage.setItem("anthemPlaying", "true");
     }
   };
   const leadershipProfiles = [
