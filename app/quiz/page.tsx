@@ -8,7 +8,6 @@ import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
 import { Loader2, Trophy, Copy, Sparkles, Target, Award, Volume2, VolumeX } from "lucide-react";
 import { initializeTTS, speakText as ttsSpeakText, stopSpeaking as ttsStopSpeaking, isSpeaking as ttsIsSpeaking } from "@/utils/tts";
-import AudioGuide from "@/components/AudioGuide";
 
 interface Question {
   id: number;

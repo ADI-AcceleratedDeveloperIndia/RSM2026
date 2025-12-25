@@ -175,34 +175,6 @@ export default function BasicsPage() {
     router.push("/certificates/generate");
   };
 
-  // Generate full page content for Audio Guide
-  const getBasicsPageContent = () => {
-    if (!signsData) return "Loading road signs...";
-    
-    if (mode === "learn") {
-      let content = "Road Signs Learning Mode. ";
-      const signs = selectedCategory === "all" 
-        ? allSigns 
-        : signsData.categories[selectedCategory as keyof typeof signsData.categories]?.signs || [];
-      content += `Total ${signs.length} road signs. `;
-      signs.forEach((sign, idx) => {
-        content += `Sign ${idx + 1}. ${sign.tooltip.title}. ${sign.tooltip.description}. `;
-      });
-      return content;
-    } else {
-      // Quiz mode
-      let content = `Road Signs Quiz. ${quizQuestions.length} questions. `;
-      if (currentQuestionIndex < quizQuestions.length) {
-        const q = quizQuestions[currentQuestionIndex];
-        content += `Question ${currentQuestionIndex + 1}. ${q.sign.tooltip.title}. Options: `;
-        q.options.forEach((opt, idx) => {
-          content += `${idx + 1}. ${opt}. `;
-        });
-      }
-      return content;
-    }
-  };
-
   if (!signsData) {
     return (
       <div className="rs-container py-20 flex flex-col items-center gap-4 text-center">
