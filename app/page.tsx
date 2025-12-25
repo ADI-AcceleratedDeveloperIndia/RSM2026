@@ -17,6 +17,7 @@ import {
   AlertTriangle,
   Footprints,
   Music,
+  BookOpen,
 } from "lucide-react";
 import { useState, useRef } from "react";
 
@@ -135,6 +136,10 @@ export default function Home() {
                 <Link href="/simulation" className="rs-btn-primary">
                   <BrainCircuit className="h-5 w-5" />
                   {tc("launchSimulationLab")}
+                </Link>
+                <Link href="/basics" className="rs-btn-secondary">
+                  <BookOpen className="h-5 w-5" />
+                  Learning Test Material
                 </Link>
                 <button
                   onClick={handleAnthemClick}
