@@ -346,10 +346,11 @@ function CertificateGenerateContent() {
                     id="certificateType"
                     value={CERTIFICATE_OPTIONS.find(opt => opt.value === defaultType)?.label || defaultType}
                     disabled
-                    className="h-11 rounded-lg border border-emerald-200 bg-slate-100"
+                    readOnly
+                    className="h-11 rounded-lg border border-emerald-200 bg-slate-100 cursor-not-allowed"
                   />
                   <p className="text-xs text-slate-500 mt-1">
-                    Certificate type automatically determined based on your score.
+                    Certificate type is automatically determined based on your score and cannot be changed.
                   </p>
                 </>
               ) : (
@@ -361,12 +362,9 @@ function CertificateGenerateContent() {
                     className="h-11 rounded-lg border border-emerald-200 px-3 text-sm focus:border-emerald-500 focus:outline-none"
                   >
                     {/* When NOT from activity: Only show ORG, VOL, SCH, COL */}
-                    {/* When from activity: Only show PAR, MERIT, TOPPER (handled by isFromActivity above) */}
                     <optgroup label="Certificate Types">
                       {CERTIFICATE_OPTIONS.filter(opt => 
-                        isFromActivity 
-                          ? ["PAR", "MERIT", "TOPPER"].includes(opt.value)
-                          : ["ORG", "VOL", "SCH", "COL"].includes(opt.value)
+                        ["ORG", "VOL", "SCH", "COL"].includes(opt.value)
                       ).map((option) => (
                         <option key={option.value} value={option.value}>
                           {option.label}
@@ -374,15 +372,9 @@ function CertificateGenerateContent() {
                       ))}
                     </optgroup>
                   </select>
-                  {isFromActivity ? (
-                    <p className="text-xs text-amber-600 mt-1">
-                      Certificate type auto-selected based on your score. You can change it if needed.
-                    </p>
-                  ) : (
-                    <p className="text-xs text-slate-500 mt-1">
-                      Participant, Merit, and Topper certificates are only available after completing an activity.
-                    </p>
-                  )}
+                  <p className="text-xs text-slate-500 mt-1">
+                    Participant, Merit, and Topper certificates are only available after completing an activity.
+                  </p>
                   {errors.certificateType && <p className="text-xs text-red-600">{errors.certificateType.message}</p>}
                 </>
               )}
