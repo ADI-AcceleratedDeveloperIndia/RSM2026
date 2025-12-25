@@ -189,7 +189,7 @@ export default function SiteFooter() {
               className="rs-btn-secondary text-sm gap-2 inline-flex items-center hover:bg-emerald-700 transition-colors"
             >
               <BookOpen className="h-4 w-4" />
-              {t("studyMaterial") || "Study Material"}
+              Study Material
             </button>
           </div>
           <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400">

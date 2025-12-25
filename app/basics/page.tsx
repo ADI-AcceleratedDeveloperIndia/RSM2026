@@ -251,11 +251,6 @@ export default function BasicsPage() {
               </Card>
             ))}
           </div>
-
-          {/* Source Attribution */}
-          <div className="mt-8 sm:mt-12 text-center text-xs sm:text-sm text-slate-500 border-t pt-6">
-            <p>{signsData.source.attribution}</p>
-          </div>
         </div>
       </div>
     );
