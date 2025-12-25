@@ -274,12 +274,16 @@ export default function CertificatesPage() {
               value={certificateType}
               onChange={(e) => setCertificateType(e.target.value)}
               className="h-11 rounded-lg border border-emerald-200 px-3 text-sm focus:border-emerald-500 focus:outline-none w-full"
-              required
             >
-              <option value="PAR">PAR – Participant</option>
-              <option value="MERIT">MERIT – Merit</option>
-              <option value="TOPPER">TOPPER – Topper</option>
+              <option value="PAR">Participant (PAR) - &lt; 60%</option>
+              <option value="MERIT">Merit (MERIT) - 60-79%</option>
+              <option value="TOPPER">Topper (TOPPER) - ≥ 80%</option>
             </select>
+            <p className="text-xs text-slate-500 mt-1">
+              {i18n.language === "te"
+                ? "స్కోర్ మరియు మొత్తం నమోదు చేసిన తర్వాత, సర్టిఫికేట్ రకం స్వయంచాలకంగా నిర్ణయించబడుతుంది"
+                : "Certificate type will be auto-determined after entering score and total"}
+            </p>
           </div>
 
           <div className="space-y-1">
