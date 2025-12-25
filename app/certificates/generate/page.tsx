@@ -146,16 +146,15 @@ function CertificateGenerateContent() {
         return "PAR";
       }
     }
-    // If coming from direct access (not activity), default to PAR (not ORG)
-    // ORG, VOL, SCH, COL should only be available in offline certificate generation
+    // If coming from direct access (not activity), default to ORG
+    // Only ORG, VOL, SCH, COL should be available (not PAR, MERIT, TOPPER)
     const fromQuery = searchParams.get("type");
     const allowed = CERTIFICATE_OPTIONS.map((opt) => opt.value);
-    // Only allow PAR, MERIT, TOPPER for online activities
-    const onlineAllowed = ["PAR", "MERIT", "TOPPER"];
-    if (fromQuery && allowed.includes(fromQuery) && onlineAllowed.includes(fromQuery)) {
+    const offlineOnlyTypes = ["ORG", "VOL", "SCH", "COL"];
+    if (fromQuery && allowed.includes(fromQuery) && offlineOnlyTypes.includes(fromQuery)) {
       return fromQuery;
     }
-    return "PAR"; // Default to Participant for online activities
+    return "ORG"; // Default to Organizer for direct access (not from activity)
   }, [searchParams, activityData]);
   
   // Check if coming from activity (auto-determine type)
@@ -361,24 +360,27 @@ function CertificateGenerateContent() {
                     onChange={(event) => setValue("certificateType", event.target.value as GenerateForm["certificateType"])}
                     className="h-11 rounded-lg border border-emerald-200 px-3 text-sm focus:border-emerald-500 focus:outline-none"
                   >
-                    <optgroup label="Participant Certificates">
-                      {CERTIFICATE_OPTIONS.filter(opt => ["PAR", "MERIT", "TOPPER"].includes(opt.value)).map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </optgroup>
-                    <optgroup label="Other Certificates">
-                      {CERTIFICATE_OPTIONS.filter(opt => ["ORG", "VOL", "SCH", "COL"].includes(opt.value)).map((option) => (
+                    {/* When NOT from activity: Only show ORG, VOL, SCH, COL */}
+                    {/* When from activity: Only show PAR, MERIT, TOPPER (handled by isFromActivity above) */}
+                    <optgroup label="Certificate Types">
+                      {CERTIFICATE_OPTIONS.filter(opt => 
+                        isFromActivity 
+                          ? ["PAR", "MERIT", "TOPPER"].includes(opt.value)
+                          : ["ORG", "VOL", "SCH", "COL"].includes(opt.value)
+                      ).map((option) => (
                         <option key={option.value} value={option.value}>
                           {option.label}
                         </option>
                       ))}
                     </optgroup>
                   </select>
-                  {isFromActivity && (
+                  {isFromActivity ? (
                     <p className="text-xs text-amber-600 mt-1">
                       Certificate type auto-selected based on your score. You can change it if needed.
+                    </p>
+                  ) : (
+                    <p className="text-xs text-slate-500 mt-1">
+                      Participant, Merit, and Topper certificates are only available after completing an activity.
                     </p>
                   )}
                   {errors.certificateType && <p className="text-xs text-red-600">{errors.certificateType.message}</p>}
@@ -457,15 +459,22 @@ function CertificateGenerateContent() {
               {errors.email && <p className="text-xs text-red-600">{errors.email.message}</p>}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="score" className="text-sm font-semibold text-emerald-900">Score / Achievement</Label>
-              <Input
-                id="score"
-                placeholder="e.g. Scored 92%, Simulation Topper"
-                className="h-11 rounded-lg border border-emerald-200"
-                {...register("score")}
-              />
-            </div>
+            {isFromActivity && (
+              <div className="space-y-2">
+                <Label htmlFor="score" className="text-sm font-semibold text-emerald-900">Score / Achievement</Label>
+                <Input
+                  id="score"
+                  placeholder="e.g. Scored 92%, Simulation Topper"
+                  className="h-11 rounded-lg border border-emerald-200 bg-slate-100"
+                  {...register("score")}
+                  readOnly
+                  disabled
+                />
+                <p className="text-xs text-slate-500">
+                  Score is auto-filled from your activity completion.
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
