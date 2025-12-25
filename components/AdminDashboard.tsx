@@ -281,41 +281,49 @@ export default function AdminDashboard() {
     try {
       // Get today's date in YYYY-MM-DD format
       const today = new Date().toISOString().split('T')[0];
-      const res = await fetch(`/api/admin/daily-report/download?date=${today}`);
-      if (res.status === 404) {
-        // If no report exists for today, generate it on-the-fly
-        const collectRes = await fetch("/api/admin/daily-report/collect", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ date: today }),
-        });
-        if (!collectRes.ok) {
-          throw new Error("Failed to collect today's data");
+      
+      // First, try to collect today's data (this will create the report if it doesn't exist)
+      const collectRes = await fetch("/api/admin/daily-report/collect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ date: today }),
+      });
+      
+      if (!collectRes.ok) {
+        const errorData = await collectRes.json().catch(() => ({}));
+        if (errorData.message && errorData.message.includes("already exists")) {
+          // Report already exists, proceed to download
+        } else {
+          throw new Error(errorData.error || "Failed to collect today's data");
         }
-        // Now download it
-        const downloadRes = await fetch(`/api/admin/daily-report/download?date=${today}`);
-        if (!downloadRes.ok) {
+      }
+      
+      // Wait a moment for the report to be saved
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Now download it
+      const downloadRes = await fetch(`/api/admin/daily-report/download?date=${today}`);
+      if (!downloadRes.ok) {
+        if (downloadRes.status === 404) {
+          alert("Report not found. Please try again in a moment.");
+        } else {
           throw new Error("Failed to download report");
         }
-        const blob = await downloadRes.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `today-data-${today}.csv`;
-        a.click();
-        window.URL.revokeObjectURL(url);
-      } else {
-        const blob = await res.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `today-data-${today}.csv`;
-        a.click();
-        window.URL.revokeObjectURL(url);
+        return;
       }
+      
+      const blob = await downloadRes.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `last-24-hours-${today}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Error downloading today's data:", error);
-      alert("Failed to download today's data");
+      alert(`Failed to download today's data: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   };
 
@@ -376,21 +384,24 @@ export default function AdminDashboard() {
       {/* Performance Metrics */}
       <div className="grid md:grid-cols-3 gap-5">
         <div className="rs-card p-6">
-          <p className="text-sm text-slate-600">Quiz Pass Rate</p>
+          <p className="text-sm text-slate-600 font-medium">Quiz Pass Rate</p>
+          <p className="text-xs text-slate-500 mb-1">Users scoring ≥60% in Quiz</p>
           <p className="text-4xl font-semibold text-emerald-900">{stats.passRate}%</p>
-          <p className="text-xs text-slate-500 mt-2">{stats.totalQuizPasses} / {stats.totalQuizAttempts} attempts</p>
+          <p className="text-xs text-slate-500 mt-2">{stats.totalQuizPasses} passed / {stats.totalQuizAttempts} total attempts</p>
         </div>
         <div className="rs-card p-6">
-          <p className="text-sm text-slate-600">Success Rate</p>
+          <p className="text-sm text-slate-600 font-medium">Simulation Success Rate</p>
+          <p className="text-xs text-slate-500 mb-1">Users completing simulations successfully</p>
           <p className="text-4xl font-semibold text-emerald-900">{stats.successRate}%</p>
-          <p className="text-xs text-slate-500 mt-2">Website-wide success rate</p>
+          <p className="text-xs text-slate-500 mt-2">{stats.totalSimulationPlays > 0 ? `${Math.round((stats.totalSimulationPlays * stats.successRate) / 100)} completed / ${stats.totalSimulationPlays} total plays` : "No simulation data"}</p>
         </div>
         <div className="rs-card p-6">
-          <p className="text-sm text-slate-600">Appreciation Rate</p>
+          <p className="text-sm text-slate-600 font-medium">Appreciation Rate</p>
+          <p className="text-xs text-slate-500 mb-1">Certificates with appreciation messages</p>
           <p className="text-4xl font-semibold text-emerald-900">
             {stats.totalCertificates > 0 ? Math.round((stats.totalAppreciations / stats.totalCertificates) * 100) : 0}%
           </p>
-          <p className="text-xs text-slate-500 mt-2">{stats.totalAppreciations} / {stats.totalCertificates} certificates</p>
+          <p className="text-xs text-slate-500 mt-2">{stats.totalAppreciations} appreciations / {stats.totalCertificates} certificates</p>
         </div>
       </div>
 
@@ -537,11 +548,15 @@ export default function AdminDashboard() {
           <div>
             <h2 className="text-lg font-semibold text-emerald-900">Daily Reports</h2>
             <p className="text-sm text-slate-600">Download 24-hour data (12 AM to 11:59 PM) for any date</p>
+            <p className="text-xs text-amber-700 mt-1 bg-amber-50 p-2 rounded">
+              📅 <strong>Note:</strong> Daily reports are automatically collected at 11:59 PM each day and stored permanently. 
+              You can download today's data anytime using the button below. Historical reports are available after collection.
+            </p>
           </div>
           <div className="flex gap-2">
-            <Button onClick={handleDownloadTodayData} className="rs-btn-secondary text-sm">
+            <Button onClick={handleDownloadTodayData} className="rs-btn-secondary text-sm" disabled={loadingReports}>
               <Download className="h-4 w-4 mr-1" />
-              Download Today's Data (Last 24h)
+              {loadingReports ? "Generating..." : "Download Last 24 Hours"}
             </Button>
             <Button onClick={loadDailyReports} variant="outline" size="sm" disabled={loadingReports}>
               Refresh
@@ -587,29 +602,42 @@ export default function AdminDashboard() {
           <div>
             <h2 className="text-lg font-semibold text-emerald-900">Appreciation Messages</h2>
             <p className="text-sm text-slate-600">Latest appreciation messages from certificate recipients</p>
+            <p className="text-xs text-slate-500 mt-1">Total: {appreciations.length} messages</p>
           </div>
           <div className="flex gap-2">
-            <Button onClick={loadAppreciations} variant="outline" size="sm" disabled={loadingAppreciations}>
-              Refresh
+            <Button 
+              onClick={loadAppreciations} 
+              variant="outline" 
+              size="sm" 
+              disabled={loadingAppreciations}
+            >
+              {loadingAppreciations ? "Loading..." : "Refresh"}
             </Button>
-            <Button onClick={handleExportAppreciations} className="rs-btn-secondary text-sm">
-              <Download className="h-4 w-4" /> Export CSV
+            <Button 
+              onClick={handleExportAppreciations} 
+              className="rs-btn-secondary text-sm"
+              disabled={loadingAppreciations || appreciations.length === 0}
+            >
+              <Download className="h-4 w-4 mr-1" /> Export CSV
             </Button>
           </div>
         </div>
         {loadingAppreciations ? (
           <div className="text-center py-8 text-slate-600">Loading appreciations...</div>
         ) : appreciations.length === 0 ? (
-          <div className="text-sm text-slate-600 text-center py-8">No appreciations yet</div>
+          <div className="text-sm text-slate-600 text-center py-8">
+            <p>No appreciations yet</p>
+            <p className="text-xs text-slate-500 mt-2">Appreciations will appear here when users submit feedback after downloading certificates.</p>
+          </div>
         ) : (
           <div className="space-y-3 max-h-96 overflow-y-auto">
             {appreciations.slice(0, 50).map((a, idx) => (
               <div key={idx} className="rounded-xl border border-emerald-100 bg-white/90 p-4">
                 <div className="flex items-start justify-between mb-2">
-                  <div className="font-semibold text-emerald-900">{a.fullName}</div>
+                  <div className="font-semibold text-emerald-900">{a.fullName || "Anonymous"}</div>
                   <div className="text-xs text-slate-500">{new Date(a.createdAt).toLocaleString()}</div>
                 </div>
-                <div className="text-sm text-slate-600 whitespace-pre-wrap">{a.appreciationText}</div>
+                <div className="text-sm text-slate-600 whitespace-pre-wrap">{a.appreciationText || "No message"}</div>
               </div>
             ))}
             {appreciations.length > 50 && (
