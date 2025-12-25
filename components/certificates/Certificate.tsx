@@ -39,6 +39,9 @@ export interface CertificateData {
   issueDate: string;
   email?: string;
   score?: string;
+  total?: string;
+  institution?: string;
+  activityType?: string;
   details?: string;
   eventName?: string;
   referenceId?: string;
@@ -200,6 +203,11 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data }, ref)
             <p className={`${playfair.className} mt-4 text-3xl md:text-4xl font-semibold text-green-900`}>
               {data.fullName}
             </p>
+            {data.institution && (
+              <p className={`${inter.className} mt-2 text-base text-gray-700 font-medium`}>
+                {data.institution}
+              </p>
+            )}
             <p className={`${inter.className} mt-2 text-base text-gray-600`}>
               {data.district && `District: ${data.district}`}
             </p>
@@ -215,8 +223,18 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data }, ref)
                 {data.details}
               </p>
             )}
-            {data.score && (
-              <p className={`${inter.className} mt-4 text-base text-green-700 font-semibold`}>
+            {data.activityType && (
+              <p className={`${inter.className} mt-4 text-base text-emerald-700 font-semibold`}>
+                Activity: {data.activityType.charAt(0).toUpperCase() + data.activityType.slice(1)}
+              </p>
+            )}
+            {data.score && data.total && (
+              <p className={`${inter.className} mt-2 text-base text-green-700 font-semibold`}>
+                Score: {data.score} / {data.total}
+              </p>
+            )}
+            {data.score && !data.total && (
+              <p className={`${inter.className} mt-2 text-base text-green-700 font-semibold`}>
                 Achievement: {data.score}
               </p>
             )}

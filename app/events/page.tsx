@@ -151,9 +151,6 @@ export default function EventsPage() {
                     <span>{new Date(event.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                   </div>
                 </div>
-                <div className="pt-2 border-t border-emerald-100">
-                  <p className="text-xs font-mono text-slate-500">{event.referenceId}</p>
-                </div>
               </div>
             ))}
           </div>

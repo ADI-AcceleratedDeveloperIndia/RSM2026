@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "react-i18next";
-import { CheckCircle2, Clock, XCircle, Copy, Check } from "lucide-react";
+import { CheckCircle2, Clock, XCircle, Copy, Check, List } from "lucide-react";
 
 type OrganizerStatus = "pending" | "approved" | "rejected" | null;
 
@@ -26,6 +26,9 @@ export default function OrganizerPage() {
   const [finalId, setFinalId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showEventIds, setShowEventIds] = useState(false);
+  const [events, setEvents] = useState<any[]>([]);
+  const [loadingEvents, setLoadingEvents] = useState(false);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,6 +80,24 @@ export default function OrganizerPage() {
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const fetchEventIds = async (organizerId: string) => {
+    setLoadingEvents(true);
+    try {
+      const response = await fetch(`/api/organizer/events?organizerId=${organizerId}`);
+      const data = await response.json();
+      if (response.ok) {
+        setEvents(data.events || []);
+        setShowEventIds(true);
+      } else {
+        alert(data.error || "Failed to fetch events");
+      }
+    } catch (error) {
+      alert("Failed to fetch events. Please try again.");
+    } finally {
+      setLoadingEvents(false);
+    }
   };
 
   if (temporaryId && mode === "check") {
@@ -163,6 +184,54 @@ export default function OrganizerPage() {
                     ? "మీరు ఇప్పుడు ఈవెంట్‌లను సృష్టించవచ్చు."
                     : "You can now create events."}
                 </p>
+                <div className="mt-4 pt-4 border-t border-emerald-200">
+                  <Button
+                    variant="outline"
+                    onClick={() => fetchEventIds(finalId)}
+                    disabled={loadingEvents}
+                    className="w-full"
+                  >
+                    {loadingEvents ? (
+                      i18n.language === "te" ? "లోడ్ అవుతోంది..." : "Loading..."
+                    ) : (
+                      <>
+                        <List className="h-4 w-4 mr-2" />
+                        {i18n.language === "te" ? "మీ ఈవెంట్ ID లను చూడండి" : "View Your Event IDs"}
+                      </>
+                    )}
+                  </Button>
+                </div>
+                {showEventIds && (
+                  <div className="mt-4 space-y-2">
+                    {events.length === 0 ? (
+                      <p className="text-sm text-slate-600 text-center">
+                        {i18n.language === "te"
+                          ? "ఇంకా ఈవెంట్‌లు సృష్టించబడలేదు"
+                          : "No events created yet"}
+                      </p>
+                    ) : (
+                      events.map((event) => (
+                        <div
+                          key={event.referenceId}
+                          className="flex items-center justify-between p-3 bg-emerald-50 rounded-lg border border-emerald-200"
+                        >
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-emerald-900">{event.title}</p>
+                            <p className="text-xs text-slate-600 font-mono mt-1">{event.referenceId}</p>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => copyToClipboard(event.referenceId)}
+                            className="ml-2"
+                          >
+                            {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                          </Button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

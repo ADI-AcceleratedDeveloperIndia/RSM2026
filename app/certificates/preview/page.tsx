@@ -65,6 +65,9 @@ function CertificatePreviewContent() {
               issueDate: new Date(cert.createdAt).toISOString(),
               email: cert.userEmail,
               score: cert.score?.toString(),
+              total: cert.total?.toString(),
+              institution: cert.institution,
+              activityType: cert.activityType,
               details: undefined,
               eventName: cert.eventTitle,
               referenceId: cert.certificateId, // Use proper certificate number format (KRMR-RSM-2026-PDL-RHL-TYPE-00001)

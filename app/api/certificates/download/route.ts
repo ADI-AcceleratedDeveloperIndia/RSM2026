@@ -314,11 +314,21 @@ function generateCertificateHTML({
       <div class="content">
         <p style="text-align: center;">
           This is to certify that <span class="name">${certificate.fullName}</span>
-          ${certificate.institution ? `from ${certificate.institution}` : ""}
-          has ${certificate.type === "merit" ? "achieved merit in" : certificate.type === "organiser" ? "organized" : "participated in"} 
-          ${certificate.eventTitle || "Road Safety Month activities"}
+          ${certificate.institution ? `<br/><span style="font-size: 18px; color: #2d5016; font-weight: 500;">${certificate.institution}</span>` : ""}
+          has ${certificate.type === "MERIT" ? "achieved merit in" : certificate.type === "ORGANIZER" ? "organized" : "participated in"} 
+          ${certificate.activityType ? `<strong>${certificate.activityType.charAt(0).toUpperCase() + certificate.activityType.slice(1)}</strong>` : ""}
+          ${certificate.eventTitle ? ` - ${certificate.eventTitle}` : ""}
           ${certificate.eventDate ? `on ${new Date(certificate.eventDate).toLocaleDateString()}` : ""}.
         </p>
+        ${certificate.score !== undefined && certificate.total !== undefined ? `
+          <p style="text-align: center; margin-top: 20px; font-size: 18px; color: #1a472a; font-weight: bold;">
+            Score: ${certificate.score} / ${certificate.total}
+          </p>
+        ` : certificate.score !== undefined ? `
+          <p style="text-align: center; margin-top: 20px; font-size: 18px; color: #1a472a; font-weight: bold;">
+            Achievement: ${certificate.score}
+          </p>
+        ` : ""}
       </div>
 
       <div class="signatures">
