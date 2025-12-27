@@ -27,6 +27,11 @@ Add these environment variables in your Vercel project settings:
    - Secret for HMAC certificate URL signing
    - Generate with: `openssl rand -base64 32`
 
+6. **NEXT_PUBLIC_GA_MEASUREMENT_ID** (Optional)
+   - Google Analytics 4 Measurement ID
+   - Default: `G-YRNQ80952L` (already configured in code)
+   - Only add if you want to override the default or use different IDs for different environments
+
 **Note:** Minister and Secretary names are already hardcoded in the application, so they don't need to be set as environment variables.
 
 ## How to Add in Vercel
