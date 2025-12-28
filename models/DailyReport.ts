@@ -53,3 +53,9 @@ const DailyReportSchema = new Schema({
 
 export default models.DailyReport || model("DailyReport", DailyReportSchema);
 
+
+
+
+
+
+
