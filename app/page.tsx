@@ -168,31 +168,33 @@ export default function Home() {
                 </Link>
                 <Link href="/basics" className="rs-btn-secondary">
                   <BookOpen className="h-5 w-5" />
-                  Learning Test Material
+                  Learning Test
                 </Link>
-                <button
-                  onClick={handleAnthemClick}
-                  className="rs-btn-secondary"
-                  aria-label="Play Road Safety Anthem"
-                >
-                  <Music className="h-5 w-5" />
-                  {isPlaying ? "Stop Anthem" : "Anthem"}
-                </button>
-                <button
-                  onClick={() => {
-                    const link = document.createElement("a");
-                    link.href = "/assets/ROADSAFETY3.wav";
-                    link.download = "Road-Safety-Anthem.wav";
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                  }}
-                  className="rs-btn-secondary"
-                  aria-label="Download Road Safety Anthem"
-                  title="Download Anthem"
-                >
-                  <Download className="h-5 w-5" />
-                </button>
+                <div className="flex gap-2 sm:gap-3 flex-nowrap">
+                  <button
+                    onClick={handleAnthemClick}
+                    className="rs-btn-secondary"
+                    aria-label="Play Road Safety Anthem"
+                  >
+                    <Music className="h-5 w-5" />
+                    {isPlaying ? "Stop Anthem" : "Anthem"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      const link = document.createElement("a");
+                      link.href = "/assets/ROADSAFETY3.wav";
+                      link.download = "Road-Safety-Anthem.wav";
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                    }}
+                    className="rs-btn-secondary"
+                    aria-label="Download Road Safety Anthem"
+                    title="Download Anthem"
+                  >
+                    <Download className="h-5 w-5" />
+                  </button>
+                </div>
                 <button
                   onClick={() => {
                     const link = document.createElement("a");
