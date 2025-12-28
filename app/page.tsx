@@ -251,7 +251,10 @@ export default function Home() {
                   ))}
                 </div>
                 <div className="text-center text-white relative z-10">
-                  <p className="text-xs uppercase tracking-[0.35em] text-black font-bold">{tc("liveDashboard")}</p>
+                  <p className="text-xs uppercase tracking-[0.35em] text-black font-bold flex items-center justify-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-red-500 animate-blink"></span>
+                    {tc("liveDashboard")}
+                  </p>
                   <p className="text-sm font-bold text-black">{tc("updatedEveryHour")}</p>
                 </div>
               </div>

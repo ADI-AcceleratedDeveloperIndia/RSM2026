@@ -383,7 +383,10 @@ export default function AdminDashboard() {
               <div className="h-11 w-11 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center">
                 {card.icon}
               </div>
-              <span className="text-xs text-slate-500 uppercase tracking-wide">Live</span>
+              <span className="text-xs text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-red-500 animate-blink"></span>
+                Live
+              </span>
             </div>
             <p className="text-3xl font-semibold text-emerald-900 mt-4">{card.value}</p>
             <p className="text-sm text-slate-600">{card.label}</p>
