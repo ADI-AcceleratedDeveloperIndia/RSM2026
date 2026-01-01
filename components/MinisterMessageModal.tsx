@@ -8,14 +8,12 @@ interface MinisterMessageModalProps {
   onClose: () => void;
 }
 
-// YouTube video IDs or local video filenames
-// Option 1: Use YouTube (easier, faster) - Just paste YouTube video IDs or URLs
-// Option 2: Use local videos - Use filenames like "Helmet.mp4"
+// YouTube video IDs - Minister's message videos
 const VIDEOS: string[] = [
-  "", // Helmet - Paste YouTube video ID/URL here (e.g., "dQw4w9WgXcQ" or "https://youtube.com/watch?v=...") OR "Helmet.mp4" for local
-  "", // Seat belt - Paste YouTube video ID/URL here OR "Seat belt.mp4" for local
-  "", // Phone distraction - Paste YouTube video ID/URL here OR "Phone distraction.mp4" for local
-  "", // Way to ambulance - Paste YouTube video ID/URL here OR "Way to ambulance.mp4" for local
+  "c_WBXwg6138", // Helmet - https://youtu.be/c_WBXwg6138
+  "-oIy3Ob2C0c", // Seat belt - https://youtu.be/-oIy3Ob2C0c
+  "BUDbkQGp35M", // Phone distraction - https://youtu.be/BUDbkQGp35M
+  "KCRQ5Oz2jtI", // Way to ambulance - https://youtu.be/KCRQ5Oz2jtI
 ];
 
 // Helper to check if a video is YouTube
