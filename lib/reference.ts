@@ -1,13 +1,15 @@
 // Fixed Reference ID Format: 
-// Statewide: TGSG-RSM-2026-PDL-RHL-EVT-SW-00001 (TGSG = Telangana State Government)
-// Regional: KRMR-RSM-2026-PDL-RHL-EVT-RG-00001 (KRMR = Karimnagar district code)
+// Online Statewide: TGSG-RSM-2026-PDL-RHL-EVT-ON-00001 (TGSG = Telangana State Government)
+// Offline Statewide: TGSG-RSM-2026-PDL-RHL-EVT-OF-00001
+// Online Regional: KRMR-RSM-2026-PDL-RHL-EVT-ON-00001 (KRMR = Karimnagar district code)
+// Offline Regional: KRMR-RSM-2026-PDL-RHL-EVT-OF-00001
 // First 4 letters: TGSG for statewide, District code for regional
 // RSM = Road Safety Month (hardcoded)
 // 2026 = Year (hardcoded)
 // PDL = Officer code (Padala Rahul)
 // RHL = Officer code (Rahul)
-// EVT-SW-00001 or EVT-RG-00001 = Event ID with type (5 digits, 00001 to 100000)
-// SW = Statewide Event, RG = Regional Event
+// EVT-ON-00001 or EVT-OF-00001 = Event ID with participation context (5 digits, 00001 to 100000)
+// ON = Online Event, OF = Offline Event
 
 const STATEWIDE_CODE = "TGSG"; // Telangana State Government
 const PROGRAM_CODE = "RSM";
@@ -77,21 +79,25 @@ export function isStatewideEventId(eventReferenceId: string): boolean {
   return prefix === STATEWIDE_CODE;
 }
 
-export function generateEventId(eventNumber: number, eventType: "statewide" | "regional"): string {
+export function generateEventId(
+  eventNumber: number, 
+  participationContext: "online" | "offline"
+): string {
   if (eventNumber < 1 || eventNumber > 100000) {
     throw new Error("Event number must be between 1 and 100000");
   }
   const eventId = eventNumber.toString().padStart(5, "0");
-  const typeCode = eventType === "statewide" ? "SW" : "RG";
-  return `EVT-${typeCode}-${eventId}`;
+  const contextCode = participationContext === "online" ? "ON" : "OF";
+  return `EVT-${contextCode}-${eventId}`;
 }
 
 export function generateEventReferenceId(
   eventNumber: number, 
   eventType: "statewide" | "regional",
-  districtName?: string
+  districtName?: string,
+  participationContext: "online" | "offline" = "offline" // Events are offline by default
 ): string {
-  const eventId = generateEventId(eventNumber, eventType);
+  const eventId = generateEventId(eventNumber, participationContext);
   
   // Use TGSG for statewide, district code for regional
   const prefixCode = eventType === "statewide" 
@@ -105,8 +111,9 @@ export function generateCertificateNumber(
   type: "MERIT" | "PARTICIPANT" | "ORGANIZER",
   certificateNumber?: number,
   eventType?: "statewide" | "regional" | null,
-  eventReferenceId?: string | null, // Event Reference ID to extract district code
-  districtName?: string | null // District name (fallback)
+  eventReferenceId?: string | null, // Event Reference ID to extract district code and participation context
+  districtName?: string | null, // District name (fallback)
+  participationContext?: "online" | "offline" | null // Participation context: online or offline
 ): string {
   // If certificateNumber is provided, use it (for backward compatibility)
   // Otherwise, generate a random 5-digit number
@@ -152,7 +159,19 @@ export function generateCertificateNumber(
     prefixCode = "KRMR";
   }
   
-  return `${prefixCode}-${PROGRAM_CODE}-${YEAR}-${OFFICER_CODE_1}-${OFFICER_CODE_2}-${type}-${certNum}`;
+  // Extract participation context from event ID if not provided
+  let contextCode = "ON"; // Default to online
+  if (participationContext) {
+    contextCode = participationContext === "online" ? "ON" : "OF";
+  } else if (eventReferenceId) {
+    // Try to extract from event ID (EVT-ON- or EVT-OF-)
+    const eventIdMatch = eventReferenceId.match(/EVT-(ON|OF)-/);
+    if (eventIdMatch) {
+      contextCode = eventIdMatch[1];
+    }
+  }
+  
+  return `${prefixCode}-${PROGRAM_CODE}-${YEAR}-${OFFICER_CODE_1}-${OFFICER_CODE_2}-${type}-${contextCode}-${certNum}`;
 }
 
 export function generateTemporaryOrganizerId(): string {

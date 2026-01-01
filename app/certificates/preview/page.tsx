@@ -90,6 +90,7 @@ function CertificatePreviewContent() {
               referenceId: cert.certificateId, // Use proper certificate number format (KRMR-RSM-2026-PDL-RHL-TYPE-00001)
               eventType: cert.eventType || null, // Pass eventType for regional certificate logic
               eventReferenceId: cert.eventReferenceId || null, // Pass event reference ID to check TGSG prefix
+              participationContext: cert.participationContext || null, // Pass participationContext for subtitle logic
             });
           } else {
             // Fallback to URL params

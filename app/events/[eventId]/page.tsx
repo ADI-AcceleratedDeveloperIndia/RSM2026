@@ -19,6 +19,8 @@ type Event = {
   approved: boolean;
   organizerId?: string;
   eventType?: "statewide" | "regional";
+  eventContext?: "online" | "offline";
+  district?: string;
   groupPhoto?: string;
   youtubeVideos?: string[];
 };
@@ -378,12 +380,23 @@ export default function EventDetailsPage() {
               </span>
               {event.eventType === "statewide" && (
                 <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium">
-                  {i18n.language === "te" ? "రాష్ట్రవ్యాప్త" : "Statewide Event"} (SW)
+                  {i18n.language === "te" ? "రాష్ట్రవ్యాప్త" : "Statewide Event"}
                 </span>
               )}
               {event.eventType === "regional" && (
                 <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs font-medium">
-                  {i18n.language === "te" ? "ప్రాంతీయ" : "Regional Event"} (RG)
+                  {i18n.language === "te" ? "ప్రాంతీయ" : "Regional Event"}
+                </span>
+              )}
+              {event.eventContext && (
+                <span className={`px-2 py-1 rounded text-xs font-medium ${
+                  event.eventContext === "online" 
+                    ? "bg-green-100 text-green-800" 
+                    : "bg-orange-100 text-orange-800"
+                }`}>
+                  {i18n.language === "te" 
+                    ? (event.eventContext === "online" ? "ఆన్లైన్" : "ఆఫ్‌లైన్")
+                    : (event.eventContext === "online" ? "Online" : "Offline")}
                 </span>
               )}
             </div>

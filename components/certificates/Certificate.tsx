@@ -47,6 +47,7 @@ export interface CertificateData {
   referenceId?: string;
   eventType?: "statewide" | "regional" | null; // Event type for regional certificate logic
   eventReferenceId?: string | null; // Event reference ID to check TGSG prefix
+  participationContext?: "online" | "offline" | null; // Participation context: online or offline
   regionalAuthority?: {
     officerName: string;
     officerTitle: string;
@@ -267,8 +268,30 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data }, ref)
             >
               {config.title}
             </h1>
+            {/* Dynamic subtitle based on participation context and event type */}
             <p className={`${inter.className} mt-3 text-base md:text-lg text-gray-700`}>
-              {config.subtitle}
+              {(() => {
+                const participationContext = data.participationContext;
+                const eventType = data.eventType;
+                
+                // Determine subtitle based on 5 scenarios:
+                // 1. Online without event ID
+                // 2. Online with statewide event ID
+                // 3. Online with regional event ID
+                // 4. Offline with statewide event ID
+                // 5. Offline with regional event ID
+                
+                if (participationContext === "online" && !eventType) {
+                  return "Online Event - Road Safety Month - Telangana";
+                } else if (eventType === "statewide") {
+                  return "Statewide Event - Road Safety Month - Telangana";
+                } else if (eventType === "regional") {
+                  return "Regional Event - Road Safety Month - Telangana";
+                } else {
+                  // Fallback to static subtitle from config
+                  return config.subtitle;
+                }
+              })()}
             </p>
           </div>
 

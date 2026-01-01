@@ -72,6 +72,7 @@ export default function EventsPage() {
     date: "",
     location: "Karimnagar",
     eventType: "statewide" as "statewide" | "regional",
+    eventContext: "online" as "online" | "offline", // Event context: online (on website) or offline (physical)
     district: "",
   });
 
@@ -115,6 +116,7 @@ export default function EventsPage() {
           date: "",
           location: "",
           eventType: "statewide",
+          eventContext: "online",
           district: "",
         });
         setOrganizerId("");
@@ -327,6 +329,31 @@ export default function EventsPage() {
               </p>
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="eventContext" className="text-sm font-semibold text-emerald-900">
+                {i18n.language === "te" ? "ఈవెంట్ సందర్భం *" : "Event Context *"}
+              </Label>
+              <select
+                id="eventContext"
+                value={formData.eventContext}
+                onChange={(e) => setFormData({ ...formData, eventContext: e.target.value as "online" | "offline" })}
+                required
+                className="h-11 w-full rounded-lg border border-emerald-200 px-3 text-sm focus:border-emerald-500 focus:outline-none"
+              >
+                <option value="online">
+                  {i18n.language === "te" ? "ఆన్లైన్ ఈవెంట్ (వెబ్‌సైట్‌లో)" : "Online Event (on website)"}
+                </option>
+                <option value="offline">
+                  {i18n.language === "te" ? "ఆఫ్‌లైన్ ఈవెంట్ (భౌతిక)" : "Offline Event (physical)"}
+                </option>
+              </select>
+              <p className="text-xs text-slate-500">
+                {i18n.language === "te"
+                  ? "ఆన్లైన్: వెబ్‌సైట్‌లో జరుగుతుంది | ఆఫ్‌లైన్: భౌతిక స్థలంలో జరుగుతుంది"
+                  : "Online: Happens on website | Offline: Physical event at a location"}
+              </p>
+            </div>
+
             {formData.eventType === "regional" && (
               <div className="space-y-2">
                 <Label htmlFor="district" className="text-sm font-semibold text-emerald-900">
@@ -380,18 +407,8 @@ export default function EventsPage() {
                     </p>
                     <p className="text-xs text-emerald-700">
                       {i18n.language === "te" 
-                        ? `ఈవెంట్ రకం: ${formData.eventType === "statewide" ? "రాష్ట్రవ్యాప్త" : "ప్రాంతీయ"}`
-                        : `Event Type: ${formData.eventType === "statewide" ? "Statewide Event" : "Regional Event"}`}
-                      {formData.eventType === "statewide" && (
-                        <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs font-medium">
-                          SW
-                        </span>
-                      )}
-                      {formData.eventType === "regional" && (
-                        <span className="ml-2 px-2 py-0.5 bg-purple-100 text-purple-800 rounded text-xs font-medium">
-                          RG
-                        </span>
-                      )}
+                        ? `ఈవెంట్ రకం: ${formData.eventType === "statewide" ? "రాష్ట్రవ్యాప్త" : "ప్రాంతీయ"} | సందర్భం: ${formData.eventContext === "online" ? "ఆన్లైన్" : "ఆఫ్‌లైన్"}`
+                        : `Event Type: ${formData.eventType === "statewide" ? "Statewide Event" : "Regional Event"} | Context: ${formData.eventContext === "online" ? "Online" : "Offline"}`}
                     </p>
                   </div>
                 )}

@@ -41,6 +41,7 @@ export async function GET(request: NextRequest) {
         eventReferenceId: certificate.eventReferenceId, // Event Reference ID (TGSG-* or district code-*)
         eventType: certificate.eventType, // statewide or regional
         district: certificate.district, // District name
+        participationContext: certificate.participationContext, // online or offline
         createdAt: certificate.createdAt,
         userEmail: certificate.userEmail,
       },

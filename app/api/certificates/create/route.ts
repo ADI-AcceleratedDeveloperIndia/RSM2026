@@ -51,16 +51,18 @@ export async function POST(request: NextRequest) {
     await connectDB();
 
     // Determine participation context
-    // ONLINE: User participates in online activities (basics, simulation, quiz, guides, prevention, special)
-    // OFFLINE: User only generates certificate for offline event (must have event ID)
+    // If event is found, use the event's context (online/offline)
+    // Otherwise: ONLINE if no event ID, OFFLINE if event ID provided but not found
     const participationContext = validated.participationContext || 
-      (validated.organizerReferenceId ? "offline" : "online");
+      (eventIdUsed && eventContext ? eventContext : 
+       (validated.organizerReferenceId ? "offline" : "online"));
 
     // If organizer reference ID (Event ID) is provided, validate it and get event details
     // FALLBACK: If validation fails for ANY reason, silently ignore event ID and proceed without it
     let eventReferenceId: string | undefined;
     let eventTitle: string | undefined;
     let eventType: string | undefined; // statewide or regional
+    let eventContext: string | undefined; // online or offline - from the event itself
     let eventIdUsed = false; // Track if event ID was successfully used
     
     if (validated.organizerReferenceId) {
@@ -85,6 +87,7 @@ export async function POST(request: NextRequest) {
               eventReferenceId = event.referenceId;
               eventTitle = event.title;
               eventType = event.eventType; // Get event type: statewide or regional
+              eventContext = (event as any).eventContext || "online"; // Get event context: online or offline (default to online for old events)
               eventIdUsed = true;
             }
           } else {
@@ -92,6 +95,7 @@ export async function POST(request: NextRequest) {
             eventReferenceId = event.referenceId;
             eventTitle = event.title;
             eventType = event.eventType; // Get event type: statewide or regional
+            eventContext = (event as any).eventContext || "online"; // Get event context: online or offline (default to online for old events)
             eventIdUsed = true;
           }
         }
@@ -169,13 +173,16 @@ export async function POST(request: NextRequest) {
           validated.type, 
           undefined, 
           (eventType === "statewide" || eventType === "regional" ? eventType : null) as "statewide" | "regional" | null | undefined, 
-          eventReferenceId, // Pass event reference ID to extract district code
-          finalDistrict || null // Pass district name (already extracted from event if available)
+          eventReferenceId, // Pass event reference ID to extract district code and event context
+          finalDistrict || null, // Pass district name (already extracted from event if available)
+          participationContext || null // Pass participation context (matches event context if event exists, or online/offline based on user input)
         ); // No number = random
         
-        // Extract the random number from the certificateId for storage
-        const certNumMatch = certificateId.match(/-(\d{5})$/);
-        const certificateNumber = certNumMatch ? parseInt(certNumMatch[1]) : Math.floor(Math.random() * 90000) + 10000;
+        // Extract the certificate number from the certificateId for storage
+        // Format: {PREFIX}-RSM-2026-PDL-RHL-{TYPE}-{CONTEXT}-{NUMBER}
+        // Example: KRMR-RSM-2026-PDL-RHL-PARTICIPANT-ON-45231
+        const certNumMatch = certificateId.match(/-(ON|OF)-(\d{5})$/);
+        const certificateNumber = certNumMatch ? parseInt(certNumMatch[2]) : Math.floor(Math.random() * 90000) + 10000;
         
         certificate = new Certificate({
           certificateId,

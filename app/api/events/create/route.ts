@@ -12,6 +12,7 @@ const createEventSchema = z.object({
   date: z.string(),
   location: z.string().optional(),
   eventType: z.enum(["statewide", "regional"]), // Event type: statewide or regional
+  eventContext: z.enum(["online", "offline"]).optional(), // Event context: online or offline (defaults to online)
   district: z.string().optional(), // District name (required for regional events)
   photos: z.array(z.string()).optional(),
 });
@@ -76,10 +77,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Determine event context: online (happens on website) or offline (physical event)
+    const eventContext = validated.eventContext || "online"; // Default to online
+    
     const referenceId = generateEventReferenceId(
       nextEventNumber, 
       validated.eventType,
-      validated.district
+      validated.district,
+      eventContext // Use event context: online or offline
     );
 
     const event = new Event({
@@ -92,6 +97,7 @@ export async function POST(request: NextRequest) {
       date: new Date(validated.date),
       location: validated.location || "Karimnagar",
       eventType: validated.eventType, // Store event type: statewide or regional
+      eventContext: eventContext, // Store event context: online or offline
       district: validated.district, // Store district for regional events
       approved: true, // Auto-approve events from approved organizers
       photos: validated.photos || [],

@@ -16,6 +16,13 @@ const EventSchema = new Schema({
     default: "statewide",
     index: true 
   }, // Event type: statewide or regional
+  eventContext: {
+    type: String,
+    enum: ["online", "offline"],
+    required: true,
+    default: "online",
+    index: true
+  }, // Event context: online (happens on website) or offline (physical event)
   district: { type: String }, // District name (required for regional events)
   approved: { type: Boolean, default: false }, // Must be approved by admin
   photos: [String], // Legacy field, kept for backward compatibility

@@ -446,17 +446,6 @@ function generateCertificateHTML({
           <div class="signature-name">${ministerName}</div>
           <div class="signature-title">${ministerTitle}</div>
         </div>
-        ${showPadalaRahul ? `
-        <div class="signature-block">
-          <div class="signature-name">Sri Padala Rahul Garu</div>
-          <div class="signature-title">Regional Transport Authority Member, Karimnagar</div>
-        </div>
-        ` : showPlaceholder ? `
-        <div class="signature-block">
-          <div class="signature-name">Regional Authority</div>
-          <div class="signature-title">${certificate.district || "District"}</div>
-        </div>
-        ` : ""}
       </div>
 
       
