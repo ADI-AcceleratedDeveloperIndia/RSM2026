@@ -101,12 +101,18 @@ export default function AdminDashboard() {
   const [loadingReports, setLoadingReports] = useState(false);
   const [appreciations, setAppreciations] = useState<{ fullName: string; appreciationText: string; createdAt: string }[]>([]);
   const [loadingAppreciations, setLoadingAppreciations] = useState(false);
+  const [parentsPledges, setParentsPledges] = useState<{ _id: string; childName: string; institutionName: string; parentName: string; district: string; createdAt: string }[]>([]);
+  const [loadingPledges, setLoadingPledges] = useState(false);
+  const [clubEntries, setClubEntries] = useState<{ _id: string; institutionName: string; district: string; pointOfContact: string; organizerId: string; createdAt: string }[]>([]);
+  const [loadingClub, setLoadingClub] = useState(false);
 
   useEffect(() => {
     loadStats();
     loadOrganizers();
     loadDailyReports();
     loadAppreciations();
+    loadParentsPledges();
+    loadClubEntries();
   }, []);
 
   const loadAppreciations = async () => {
@@ -119,6 +125,32 @@ export default function AdminDashboard() {
       console.error("Error loading appreciations:", error);
     } finally {
       setLoadingAppreciations(false);
+    }
+  };
+
+  const loadParentsPledges = async () => {
+    setLoadingPledges(true);
+    try {
+      const res = await fetch("/api/admin/parents-pledge/list");
+      const data = await res.json();
+      setParentsPledges(data.items || []);
+    } catch (error) {
+      console.error("Error loading parents pledges:", error);
+    } finally {
+      setLoadingPledges(false);
+    }
+  };
+
+  const loadClubEntries = async () => {
+    setLoadingClub(true);
+    try {
+      const res = await fetch("/api/admin/club/list");
+      const data = await res.json();
+      setClubEntries(data.items || []);
+    } catch (error) {
+      console.error("Error loading club entries:", error);
+    } finally {
+      setLoadingClub(false);
     }
   };
 
@@ -673,6 +705,108 @@ export default function AdminDashboard() {
                 Showing latest 50 of {appreciations.length} appreciations. Export CSV to see all.
               </div>
             )}
+          </div>
+        )}
+      </div>
+
+      {/* Parents Pledge */}
+      <div className="rs-card p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-emerald-900">Parents Pledge (హామీ పత్రం)</h2>
+            <p className="text-sm text-slate-600">All parent pledge submissions</p>
+            <p className="text-xs text-slate-500 mt-1">Total: {parentsPledges.length} pledges</p>
+          </div>
+          <Button 
+            onClick={loadParentsPledges} 
+            variant="outline" 
+            size="sm" 
+            disabled={loadingPledges}
+          >
+            {loadingPledges ? "Loading..." : "Refresh"}
+          </Button>
+        </div>
+        {loadingPledges ? (
+          <div className="text-center py-8 text-slate-600">Loading pledges...</div>
+        ) : parentsPledges.length === 0 ? (
+          <div className="text-center py-8 text-slate-600">
+            <p>No pledges submitted yet</p>
+          </div>
+        ) : (
+          <div className="rs-table-wrapper">
+            <table className="rs-table text-sm">
+              <thead>
+                <tr>
+                  <th className="text-left">Child Name</th>
+                  <th className="text-left">Parent Name</th>
+                  <th className="text-left">Institution</th>
+                  <th className="text-left">District</th>
+                  <th className="text-left">Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {parentsPledges.map((pledge) => (
+                  <tr key={pledge._id}>
+                    <td className="font-medium">{pledge.childName}</td>
+                    <td>{pledge.parentName}</td>
+                    <td>{pledge.institutionName}</td>
+                    <td>{pledge.district}</td>
+                    <td className="text-xs">{new Date(pledge.createdAt).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Club Entries */}
+      <div className="rs-card p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-emerald-900">Road Safety Club</h2>
+            <p className="text-sm text-slate-600">Schools and institutions that joined the Club</p>
+            <p className="text-xs text-slate-500 mt-1">Total: {clubEntries.length} members</p>
+          </div>
+          <Button 
+            onClick={loadClubEntries} 
+            variant="outline" 
+            size="sm" 
+            disabled={loadingClub}
+          >
+            {loadingClub ? "Loading..." : "Refresh"}
+          </Button>
+        </div>
+        {loadingClub ? (
+          <div className="text-center py-8 text-slate-600">Loading club entries...</div>
+        ) : clubEntries.length === 0 ? (
+          <div className="text-center py-8 text-slate-600">
+            <p>No club members yet</p>
+          </div>
+        ) : (
+          <div className="rs-table-wrapper">
+            <table className="rs-table text-sm">
+              <thead>
+                <tr>
+                  <th className="text-left">Institution</th>
+                  <th className="text-left">District</th>
+                  <th className="text-left">Point of Contact</th>
+                  <th className="text-left">Organizer ID</th>
+                  <th className="text-left">Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {clubEntries.map((entry) => (
+                  <tr key={entry._id}>
+                    <td className="font-medium">{entry.institutionName}</td>
+                    <td>{entry.district}</td>
+                    <td>{entry.pointOfContact}</td>
+                    <td className="font-mono text-xs">{entry.organizerId}</td>
+                    <td className="text-xs">{new Date(entry.createdAt).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

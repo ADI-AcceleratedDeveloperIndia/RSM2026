@@ -22,12 +22,14 @@ import {
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import AudioGuide from "@/components/AudioGuide";
+import ParentsPledgeModal from "@/components/ParentsPledgeModal";
 
 export default function Home() {
-  const { t } = useTranslation("common");
+  const { t, i18n } = useTranslation("common");
   const { t: tc } = useTranslation("content");
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [pledgeModalOpen, setPledgeModalOpen] = useState(false);
 
   // Check if anthem was playing when component mounts
   useEffect(() => {
@@ -210,8 +212,16 @@ export default function Home() {
                   <Download className="h-5 w-5" />
                   Download Poster
                 </button>
+                <button
+                  onClick={() => setPledgeModalOpen(true)}
+                  className="rs-btn-secondary"
+                  aria-label="Parents Pledge"
+                >
+                  {i18n.language === "te" ? "హామీ పత్రం" : "Parents Pledge"}
+                </button>
               </div>
             </div>
+            <ParentsPledgeModal open={pledgeModalOpen} onOpenChange={setPledgeModalOpen} />
             <div className="relative flex-1 min-w-[280px] w-full">
               <div className="rs-roadstrap flex flex-col items-center gap-4 sm:gap-6 md:gap-8 p-4 sm:p-6 md:p-8 lg:p-10 relative overflow-hidden" style={{ background: 'transparent' }}>
                 {/* Video Background */}

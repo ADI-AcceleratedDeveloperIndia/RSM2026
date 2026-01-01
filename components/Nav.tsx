@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { useState, useEffect } from "react";
 import type { ReactNode } from "react";
-import { Menu, X, Home, Scale, GraduationCap, ShieldCheck, FileText, Cpu, Award, CalendarDays, ShieldHalf, MapPin, Heart } from "lucide-react";
+import { Menu, X, Home, Scale, GraduationCap, ShieldCheck, FileText, Cpu, Award, CalendarDays, ShieldHalf, MapPin, Heart, Users } from "lucide-react";
 
 const navIcons: Record<string, ReactNode> = {
   "/": <Home className="h-4 w-4" />,
@@ -17,6 +17,7 @@ const navIcons: Record<string, ReactNode> = {
   "/prevention": <ShieldHalf className="h-4 w-4" />,
   "/events": <CalendarDays className="h-4 w-4" />,
   "/certificates": <Award className="h-4 w-4" />,
+  "/club": <Users className="h-4 w-4" />,
   "/special": <Heart className="h-4 w-4" />,
 };
 
@@ -46,6 +47,7 @@ export default function Nav() {
     { href: "/prevention", label: i18n.language === "te" ? "ప్రివెన్షన్" : "Prevention", sublabel: i18n.language === "te" ? "గ్రాడ్యుయేట్స్" : "Graduates", key: "/prevention" },
     { href: "/events", label: t("events") || "Events", sublabel: null, key: "/events" },
     { href: "/certificates", label: t("certificates") || "Certificates", sublabel: null, key: "/certificates" },
+    { href: "/club", label: i18n.language === "te" ? "క్లబ్" : "Club", sublabel: null, key: "/club" },
     { href: "/special", label: i18n.language === "te" ? "స్పెషల్" : "Special", sublabel: null, key: "/special", isSpecial: true },
   ];
 
