@@ -100,6 +100,33 @@ export async function exportCertificateToPdf(element: HTMLElement, fileName: str
       imageCount: images.length
     });
 
+    // Helper function to get RGB value from computed style
+    // Browsers convert oklab/lab to RGB in computed styles, so we use that
+    const getRgbFromComputed = (computedValue: string, fallback: string): string => {
+      // If it's already RGB/RGBA, return it
+      if (computedValue.startsWith("rgb")) {
+        return computedValue;
+      }
+      
+      // If it's hex, return it
+      if (computedValue.startsWith("#")) {
+        return computedValue;
+      }
+      
+      // For transparent or other special values, return as is
+      if (computedValue === "transparent" || computedValue === "initial" || computedValue === "inherit") {
+        return computedValue;
+      }
+      
+      // If it contains oklab/lab, return fallback (browser should have converted it, but just in case)
+      if (computedValue.includes("oklab(") || computedValue.includes("lab(") || computedValue.includes("oklch(") || computedValue.includes("lch(")) {
+        return fallback;
+      }
+      
+      // Return the computed value as-is (should be RGB from browser)
+      return computedValue || fallback;
+    };
+
     // Define onclone callback once for reuse
     const oncloneCallback = (clonedDocument: Document) => {
       // Ensure all images in cloned document have absolute URLs
@@ -125,6 +152,69 @@ export async function exportCertificateToPdf(element: HTMLElement, fileName: str
         imgElement.style.display = "block";
         imgElement.style.visibility = "visible";
       });
+
+      // Clean up unsupported color functions (oklab, lab) from all elements
+      const certificateElement = clonedDocument.querySelector(".certificate-export") as HTMLElement | null;
+      if (certificateElement) {
+        const cleanStyles: Partial<CSSStyleDeclaration> = {
+          boxShadow: "none",
+          filter: "none",
+          mixBlendMode: "normal",
+          backgroundImage: "none",
+          backgroundColor: "#ffffff",
+        };
+
+        const applyCleanStyles = (node: Element) => {
+          const htmlElement = node as HTMLElement;
+          
+          // Get computed styles to check for oklab/lab colors
+          const computedStyle = window.getComputedStyle(htmlElement);
+          
+          // Force-set computed RGB values to avoid oklab/lab parsing issues
+          // Browsers convert oklab/lab to RGB in computed styles, so we use those values
+          // This ensures html2canvas sees RGB instead of oklab/lab in the source CSS
+          try {
+            const computedColor = computedStyle.color;
+            const computedBg = computedStyle.backgroundColor;
+            const computedBorder = computedStyle.borderColor;
+            const computedOutline = computedStyle.outlineColor;
+            const computedTextDeco = computedStyle.textDecorationColor;
+            
+            // Always set color properties to their computed RGB values
+            if (computedColor && computedColor !== "rgba(0, 0, 0, 0)") {
+              htmlElement.style.color = getRgbFromComputed(computedColor, "#000000");
+            }
+            if (computedBg && computedBg !== "rgba(0, 0, 0, 0)" && computedBg !== "transparent") {
+              htmlElement.style.backgroundColor = getRgbFromComputed(computedBg, "#ffffff");
+            }
+            if (computedBorder && computedBorder !== "rgba(0, 0, 0, 0)") {
+              htmlElement.style.borderColor = getRgbFromComputed(computedBorder, "#000000");
+            }
+            if (computedOutline && computedOutline !== "rgba(0, 0, 0, 0)") {
+              htmlElement.style.outlineColor = getRgbFromComputed(computedOutline, "#000000");
+            }
+            if (computedTextDeco && computedTextDeco !== "rgba(0, 0, 0, 0)") {
+              htmlElement.style.textDecorationColor = getRgbFromComputed(computedTextDeco, computedColor || "#000000");
+            }
+          } catch (e) {
+            // Ignore errors in color conversion
+            console.warn("Color conversion error:", e);
+          }
+          
+          // Apply other clean styles
+          Object.entries(cleanStyles).forEach(([property, value]) => {
+            if (value !== undefined) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (htmlElement.style as any)[property] = value;
+            }
+          });
+          
+          // Recursively apply to children
+          Array.from(node.children).forEach(applyCleanStyles);
+        };
+
+        applyCleanStyles(certificateElement);
+      }
     };
 
     // Add timeout to prevent hanging - increased to 45 seconds for complex certificates
