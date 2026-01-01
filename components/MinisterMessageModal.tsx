@@ -8,12 +8,42 @@ interface MinisterMessageModalProps {
   onClose: () => void;
 }
 
-const VIDEOS = [
-  "Helmet.mp4",
-  "Seat belt.mp4",
-  "Phone distraction.mp4",
-  "Way to ambulance.mp4",
+// YouTube video IDs or local video filenames
+// Option 1: Use YouTube (easier, faster) - Just paste YouTube video IDs or URLs
+// Option 2: Use local videos - Use filenames like "Helmet.mp4"
+const VIDEOS: string[] = [
+  "", // Helmet - Paste YouTube video ID/URL here (e.g., "dQw4w9WgXcQ" or "https://youtube.com/watch?v=...") OR "Helmet.mp4" for local
+  "", // Seat belt - Paste YouTube video ID/URL here OR "Seat belt.mp4" for local
+  "", // Phone distraction - Paste YouTube video ID/URL here OR "Phone distraction.mp4" for local
+  "", // Way to ambulance - Paste YouTube video ID/URL here OR "Way to ambulance.mp4" for local
 ];
+
+// Helper to check if a video is YouTube
+const isYouTubeVideo = (video: string): boolean => {
+  if (!video) return false;
+  return video.includes("youtube.com") || video.includes("youtu.be") || (!video.includes(".") && video.length > 0);
+};
+
+// Helper to get YouTube embed URL
+const getYouTubeEmbedUrl = (videoIdOrUrl: string): string | null => {
+  if (!videoIdOrUrl) return null;
+  
+  // If it's already a full URL, extract ID
+  if (videoIdOrUrl.includes("youtube.com") || videoIdOrUrl.includes("youtu.be")) {
+    const match = videoIdOrUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/);
+    if (match) {
+      return `https://www.youtube.com/embed/${match[1]}?autoplay=1&rel=0&modestbranding=1&controls=1`;
+    }
+    return videoIdOrUrl;
+  }
+  
+  // If it's just a video ID (no dots, looks like an ID)
+  if (!videoIdOrUrl.includes(".") && videoIdOrUrl.length > 5) {
+    return `https://www.youtube.com/embed/${videoIdOrUrl}?autoplay=1&rel=0&modestbranding=1&controls=1`;
+  }
+  
+  return null;
+};
 
 export default function MinisterMessageModal({ open, onClose }: MinisterMessageModalProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -26,9 +56,10 @@ export default function MinisterMessageModal({ open, onClose }: MinisterMessageM
     }
   }, [open]);
 
-  // Autoplay when video changes
+  // Autoplay when video changes (only for local videos)
   useEffect(() => {
-    if (open && videoRef.current) {
+    const currentVideo = VIDEOS[currentIndex];
+    if (open && videoRef.current && !isYouTubeVideo(currentVideo)) {
       videoRef.current.load();
       videoRef.current.play().catch((err) => {
         console.warn("Autoplay prevented:", err);
@@ -87,14 +118,26 @@ export default function MinisterMessageModal({ open, onClose }: MinisterMessageM
 
         {/* Video Container - Mobile First: Full width, responsive height */}
         <div className="relative w-full" style={{ aspectRatio: "16/9", maxHeight: "calc(95vh - 80px)" }}>
-          <video
-            ref={videoRef}
-            src={`/Message by Minister/${VIDEOS[currentIndex]}`}
-            controls
-            className="w-full h-full object-contain"
-            playsInline
-            style={{ maxHeight: "100%" }}
-          />
+          {getYouTubeEmbedUrl(VIDEOS[currentIndex]) ? (
+            <iframe
+              key={currentIndex} // Force reload on video change
+              src={getYouTubeEmbedUrl(VIDEOS[currentIndex]) || ""}
+              className="w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              style={{ border: "none" }}
+              title={`Minister Message Video ${currentIndex + 1}`}
+            />
+          ) : (
+            <video
+              ref={videoRef}
+              src={`/Message by Minister/${VIDEOS[currentIndex]}`}
+              controls
+              className="w-full h-full object-contain"
+              playsInline
+              style={{ maxHeight: "100%" }}
+            />
+          )}
         </div>
 
         {/* Navigation Arrows - Mobile First: Larger touch targets, positioned for mobile */}
