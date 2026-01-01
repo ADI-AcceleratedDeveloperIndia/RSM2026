@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import puppeteer from "puppeteer-core";
-import chromium from "@sparticuz/chromium";
 import connectDB from "@/lib/db";
 import ParentsPledge from "@/models/ParentsPledge";
-
-chromium.setGraphicsMode = false;
-const isServerless = process.env.VERCEL === "1" || process.env.AWS_LAMBDA_FUNCTION_NAME;
 
 const TELUGU_PLEDGE = `తల్లిదండ్రుల హామీ పత్రం
 
@@ -185,72 +180,19 @@ export async function GET(request: NextRequest) {
 
     const html = generatePledgeHTML(pledge);
 
-    // For local development, return HTML and let client generate PNG
-    // For production/serverless, use Puppeteer
-    if (!isServerless && !process.env.PUPPETEER_EXECUTABLE_PATH) {
-      // Return HTML for client-side conversion
-      return NextResponse.json({
-        html: html,
-        pledge: {
-          childName: pledge.childName,
-          parentName: pledge.parentName,
-          institutionName: pledge.institutionName,
-          district: pledge.district,
-          date: new Date(pledge.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }),
-        },
-        useClientSide: true,
-      });
-    }
-
-    // Generate PNG using Puppeteer (for production/serverless)
-    const chromiumArgs = isServerless 
-      ? [
-          ...chromium.args,
-          "--disable-gpu",
-          "--disable-dev-shm-usage",
-          "--disable-setuid-sandbox",
-          "--no-first-run",
-          "--no-sandbox",
-          "--no-zygote",
-          "--single-process",
-        ]
-      : [];
-
-    const browser = await puppeteer.launch({
-      args: chromiumArgs,
-      defaultViewport: { width: 800, height: 1200 },
-      executablePath: isServerless
-        ? await chromium.executablePath()
-        : process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
-      headless: true,
-      timeout: 30000,
+    // Always use client-side generation for better reliability and scalability
+    // This avoids Puppeteer timeouts and memory issues on Vercel serverless
+    return NextResponse.json({
+      html: html,
+      pledge: {
+        childName: pledge.childName,
+        parentName: pledge.parentName,
+        institutionName: pledge.institutionName,
+        district: pledge.district,
+        date: new Date(pledge.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }),
+      },
+      useClientSide: true,
     });
-
-    try {
-      const page = await browser.newPage();
-      await page.setContent(html, { 
-        waitUntil: "domcontentloaded",
-        timeout: 15000,
-      });
-
-      // Wait for fonts to load
-      await new Promise(resolve => setTimeout(resolve, 3000));
-
-      const png = await page.screenshot({
-        type: "png",
-        fullPage: true,
-      });
-
-      return new NextResponse(png as unknown as BodyInit, {
-        status: 200,
-        headers: {
-          "Content-Type": "image/png",
-          "Content-Disposition": `attachment; filename="Parents-Pledge-${pledge.childName.replace(/\s+/g, "-")}.png"`,
-        },
-      });
-    } finally {
-      await browser.close();
-    }
   } catch (error: any) {
     console.error("PNG generation error:", {
       message: error?.message || String(error),

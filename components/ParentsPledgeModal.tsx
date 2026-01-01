@@ -233,45 +233,45 @@ export default function ParentsPledgeModal({ open, onOpenChange }: ParentsPledge
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-2xl max-h-[95vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="text-2xl text-emerald-900">
+          <DialogTitle className="text-xl sm:text-2xl text-emerald-900">
             {i18n.language === "te" ? "తల్లిదండ్రుల హామీ పత్రం" : "Parents Pledge"}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-xs sm:text-sm">
             {i18n.language === "te" 
               ? "రోడ్డు భద్రతకు మీ హామీ ఇవ్వండి" 
               : "Take the pledge for road safety"}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className="space-y-4 sm:space-y-6 py-2 sm:py-4">
           {/* Pledge Content */}
-          <div className="space-y-4">
-            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
-              <h3 className="font-semibold text-emerald-900 mb-2">
+          <div className="space-y-3 sm:space-y-4">
+            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 sm:p-4">
+              <h3 className="text-sm sm:text-base font-semibold text-emerald-900 mb-2">
                 {i18n.language === "te" ? "హామీ పత్రం" : "Pledge Text"}
               </h3>
-              <div className="space-y-3 text-sm">
-                <div className="whitespace-pre-line text-slate-700">{TELUGU_PLEDGE}</div>
-                <div className="border-t border-emerald-200 pt-3 mt-3">
-                  <div className="whitespace-pre-line text-slate-700">{ENGLISH_PLEDGE}</div>
+              <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
+                <div className="whitespace-pre-line text-slate-700 leading-relaxed">{TELUGU_PLEDGE}</div>
+                <div className="border-t border-emerald-200 pt-2 sm:pt-3 mt-2 sm:mt-3">
+                  <div className="whitespace-pre-line text-slate-700 leading-relaxed">{ENGLISH_PLEDGE}</div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded text-sm">
+              <div className="bg-red-50 border border-red-200 text-red-700 px-3 sm:px-4 py-2 rounded text-xs sm:text-sm">
                 {error}
               </div>
             )}
 
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="childName" className="text-sm font-semibold text-emerald-900">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="childName" className="text-xs sm:text-sm font-semibold text-emerald-900">
                   {i18n.language === "te" ? "పిల్లవాడి పేరు *" : "Name of the Child *"}
                 </Label>
                 <Input
@@ -279,12 +279,12 @@ export default function ParentsPledgeModal({ open, onOpenChange }: ParentsPledge
                   value={formData.childName}
                   onChange={(e) => setFormData({ ...formData, childName: e.target.value })}
                   required
-                  className="h-11"
+                  className="h-10 sm:h-11 text-sm sm:text-base"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="institutionName" className="text-sm font-semibold text-emerald-900">
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="institutionName" className="text-xs sm:text-sm font-semibold text-emerald-900">
                   {i18n.language === "te" ? "పాఠశాల పేరు *" : "Name of the Institution (School) *"}
                 </Label>
                 <Input
@@ -292,14 +292,14 @@ export default function ParentsPledgeModal({ open, onOpenChange }: ParentsPledge
                   value={formData.institutionName}
                   onChange={(e) => setFormData({ ...formData, institutionName: e.target.value })}
                   required
-                  className="h-11"
+                  className="h-10 sm:h-11 text-sm sm:text-base"
                 />
               </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="parentName" className="text-sm font-semibold text-emerald-900">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="parentName" className="text-xs sm:text-sm font-semibold text-emerald-900">
                   {i18n.language === "te" ? "తల్లిదండ్రుల పేరు *" : "Name of the Parent *"}
                 </Label>
                 <Input
@@ -307,12 +307,12 @@ export default function ParentsPledgeModal({ open, onOpenChange }: ParentsPledge
                   value={formData.parentName}
                   onChange={(e) => setFormData({ ...formData, parentName: e.target.value })}
                   required
-                  className="h-11"
+                  className="h-10 sm:h-11 text-sm sm:text-base"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="district" className="text-sm font-semibold text-emerald-900">
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="district" className="text-xs sm:text-sm font-semibold text-emerald-900">
                   {i18n.language === "te" ? "జిల్లా పేరు *" : "District Name *"}
                 </Label>
                 <select
@@ -320,7 +320,7 @@ export default function ParentsPledgeModal({ open, onOpenChange }: ParentsPledge
                   value={formData.district}
                   onChange={(e) => setFormData({ ...formData, district: e.target.value })}
                   required
-                  className="h-11 w-full rounded-lg border border-emerald-200 px-3 text-sm focus:border-emerald-500 focus:outline-none"
+                  className="h-10 sm:h-11 w-full rounded-lg border border-emerald-200 px-3 text-xs sm:text-sm focus:border-emerald-500 focus:outline-none"
                 >
                   <option value="">{i18n.language === "te" ? "జిల్లాను ఎంచుకోండి" : "Select District"}</option>
                   {DISTRICTS.map((district) => (
@@ -336,20 +336,20 @@ export default function ParentsPledgeModal({ open, onOpenChange }: ParentsPledge
               <Button
                 type="submit"
                 disabled={submitting}
-                className="w-full rs-btn-primary h-12 text-base"
+                className="w-full rs-btn-primary h-11 sm:h-12 text-sm sm:text-base touch-manipulation"
               >
                 {submitting ? (
                   <>
-                    <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                    {i18n.language === "te" ? "సమర్పిస్తోంది..." : "Submitting..."}
+                    <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin mr-2" />
+                    <span className="text-xs sm:text-sm">{i18n.language === "te" ? "సమర్పిస్తోంది..." : "Submitting..."}</span>
                   </>
                 ) : (
-                  i18n.language === "te" ? "నేను హామీ తీసుకుంటున్నాను" : "I Take the Pledge"
+                  <span className="text-xs sm:text-sm">{i18n.language === "te" ? "నేను హామీ తీసుకుంటున్నాను" : "I Take the Pledge"}</span>
                 )}
               </Button>
             ) : (
-              <div className="space-y-3">
-                <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-lg text-sm text-center">
+              <div className="space-y-2 sm:space-y-3">
+                <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm text-center">
                   {i18n.language === "te" 
                     ? "హామీ విజయవంతంగా సమర్పించబడింది! PNG డౌన్‌లోడ్ చేయండి." 
                     : "Pledge submitted successfully! Download your PNG certificate."}
@@ -358,17 +358,17 @@ export default function ParentsPledgeModal({ open, onOpenChange }: ParentsPledge
                   type="button"
                   onClick={handleDownloadPNG}
                   disabled={downloading}
-                  className="w-full rs-btn-primary h-12 text-base"
+                  className="w-full rs-btn-primary h-11 sm:h-12 text-sm sm:text-base touch-manipulation"
                 >
                   {downloading ? (
                     <>
-                      <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                      {i18n.language === "te" ? "డౌన్‌లోడ్ అవుతోంది..." : "Downloading..."}
+                      <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin mr-2" />
+                      <span className="text-xs sm:text-sm">{i18n.language === "te" ? "డౌన్‌లోడ్ అవుతోంది..." : "Downloading..."}</span>
                     </>
                   ) : (
                     <>
-                      <Download className="h-5 w-5 mr-2" />
-                      {i18n.language === "te" ? "PNG డౌన్‌లోడ్ చేయండి" : "Download PNG"}
+                      <Download className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                      <span className="text-xs sm:text-sm">{i18n.language === "te" ? "PNG డౌన్‌లోడ్ చేయండి" : "Download PNG"}</span>
                     </>
                   )}
                 </Button>
