@@ -114,13 +114,20 @@ export default function MinisterMessageModal({ open, onClose }: MinisterMessageM
           <X className="h-5 w-5 sm:h-6 sm:w-6" />
         </button>
 
-        {/* Video Container - Mobile First: Full width, responsive height */}
-        <div className="relative w-full" style={{ aspectRatio: "16/9", maxHeight: "calc(95vh - 80px)" }}>
+        {/* Video Container - Mobile First: Full width, responsive height, proportional scaling */}
+        <div 
+          className="relative w-full overflow-hidden" 
+          style={{ 
+            aspectRatio: "16/9", 
+            maxHeight: "calc(95vh - 80px)",
+            width: "100%"
+          }}
+        >
           {getYouTubeEmbedUrl(VIDEOS[currentIndex]) ? (
             <iframe
               key={currentIndex} // Force reload on video change
               src={getYouTubeEmbedUrl(VIDEOS[currentIndex]) || ""}
-              className="w-full h-full"
+              className="absolute inset-0 w-full h-full"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
               style={{ border: "none" }}
