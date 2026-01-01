@@ -157,11 +157,11 @@ function CertificatePreviewContent() {
     setIsDownloading(true);
     setDownloadError(null);
 
-    // Add timeout to prevent infinite hanging
+    // Add timeout to prevent infinite hanging - increased to 50 seconds
     const timeoutId = setTimeout(() => {
       setIsDownloading(false);
-      setDownloadError("PDF generation is taking longer than expected. Please try again.");
-    }, 30000); // 30 second timeout
+      setDownloadError("PDF generation timed out. The certificate may be too complex. Please try again or use the server-side download option.");
+    }, 50000); // 50 second timeout
 
     try {
       console.log("Starting client-side PDF generation...", {
@@ -186,15 +186,16 @@ function CertificatePreviewContent() {
       
       // Provide more specific error messages
       let errorMessage = "Could not generate the PDF. Please retry after a few seconds.";
+      
       if (error?.message) {
         if (error.message.includes("timeout")) {
-          errorMessage = "PDF generation timed out. The certificate may be too complex. Please try again.";
+          errorMessage = "PDF generation timed out. The certificate may be too complex. Please try refreshing the page and downloading again. If the issue persists, try using a different browser or device.";
         } else if (error.message.includes("jsPDF") || error.message.includes("module")) {
           errorMessage = "PDF library error. Please refresh the page and try again.";
         } else if (error.message.includes("Canvas") || error.message.includes("canvas")) {
-          errorMessage = "Image conversion failed. Please check your browser console for details.";
+          errorMessage = "Image conversion failed. Please ensure all images are loaded and try again.";
         } else {
-          errorMessage = `PDF generation failed: ${error.message}`;
+          errorMessage = `PDF generation failed: ${error.message}. Please try again.`;
         }
       }
       

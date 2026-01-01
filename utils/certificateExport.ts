@@ -9,22 +9,34 @@ export async function exportCertificateToPdf(element: HTMLElement, fileName: str
     // Wait for DOM to be fully rendered and images to load
     await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     
-    // Wait for all images in the certificate to load
+    // Wait for all images in the certificate to load with better timeout handling
     const images = element.querySelectorAll("img");
-    await Promise.all(
-      Array.from(images).map((img) => {
-        if (img.complete) return Promise.resolve();
-        return new Promise((resolve, reject) => {
-          img.onload = resolve;
-          img.onerror = resolve; // Continue even if image fails
-          // Timeout after 5 seconds per image
-          setTimeout(() => resolve, 5000);
-        });
-      })
-    );
+    const imagePromises = Array.from(images).map((img) => {
+      if (img.complete && img.naturalWidth > 0) {
+        return Promise.resolve<void>(undefined);
+      }
+      return new Promise<void>((resolve) => {
+        const timeout = setTimeout(() => {
+          console.warn("Image load timeout:", img.src);
+          resolve(); // Continue even if image times out
+        }, 10000); // 10 seconds per image
+        
+        img.onload = () => {
+          clearTimeout(timeout);
+          resolve();
+        };
+        img.onerror = () => {
+          clearTimeout(timeout);
+          console.warn("Image load error:", img.src);
+          resolve(); // Continue even if image fails
+        };
+      });
+    });
+    
+    await Promise.all(imagePromises);
 
-    // Small delay to ensure everything is settled
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    // Small delay to ensure everything is settled - increased for complex certificates
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const html2canvasModule = await import("html2canvas");
     const jsPDFModule = await import("jspdf");
@@ -47,17 +59,19 @@ export async function exportCertificateToPdf(element: HTMLElement, fileName: str
       throw new Error("Failed to load jsPDF module. Module structure: " + JSON.stringify(Object.keys(jsPDFModule)));
     }
 
-    const scale = 2.5;
+    const scale = 2.0; // Reduced from 2.5 to improve performance
 
     // Add timeout wrapper for html2canvas
     const canvasPromise = html2canvas(element, {
       scale,
       backgroundColor: "#ffffff",
       useCORS: true,
-      allowTaint: true,
+      allowTaint: false, // Changed to false for better compatibility
       logging: false,
       windowWidth: element.scrollWidth,
       windowHeight: element.scrollHeight,
+      removeContainer: true, // Remove container after rendering
+      imageTimeout: 15000, // 15 second timeout for images
       ignoreElements: (element) => {
         // Ignore elements that might cause issues
         return element.classList.contains("no-export");
@@ -119,9 +133,9 @@ export async function exportCertificateToPdf(element: HTMLElement, fileName: str
       },
     });
 
-    // Add timeout to prevent hanging
+    // Add timeout to prevent hanging - increased to 45 seconds for complex certificates
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error("Canvas generation timeout after 25 seconds")), 25000);
+      setTimeout(() => reject(new Error("Canvas generation timeout after 45 seconds")), 45000);
     });
 
     const canvas = await Promise.race([canvasPromise, timeoutPromise]) as HTMLCanvasElement;
