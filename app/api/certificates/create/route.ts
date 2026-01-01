@@ -50,13 +50,6 @@ export async function POST(request: NextRequest) {
 
     await connectDB();
 
-    // Determine participation context
-    // If event is found, use the event's context (online/offline)
-    // Otherwise: ONLINE if no event ID, OFFLINE if event ID provided but not found
-    const participationContext = validated.participationContext || 
-      (eventIdUsed && eventContext ? eventContext : 
-       (validated.organizerReferenceId ? "offline" : "online"));
-
     // If organizer reference ID (Event ID) is provided, validate it and get event details
     // FALLBACK: If validation fails for ANY reason, silently ignore event ID and proceed without it
     let eventReferenceId: string | undefined;
@@ -104,6 +97,12 @@ export async function POST(request: NextRequest) {
         console.warn(`Event Reference ID validation error: ${eventError?.message || 'Unknown error'} for ${validated.organizerReferenceId}. Proceeding without event ID.`);
       }
     }
+
+    // Determine participation context: prefer event context if available, otherwise use user input, default to "online"
+    const participationContext: "online" | "offline" = 
+      (eventContext === "online" || eventContext === "offline") ? eventContext :
+      (validated.participationContext === "online" || validated.participationContext === "offline") ? validated.participationContext :
+      "online";
 
     // Validation: Offline participation MUST have event ID
     if (participationContext === "offline" && !eventIdUsed) {
@@ -175,7 +174,7 @@ export async function POST(request: NextRequest) {
           (eventType === "statewide" || eventType === "regional" ? eventType : null) as "statewide" | "regional" | null | undefined, 
           eventReferenceId, // Pass event reference ID to extract district code and event context
           finalDistrict || null, // Pass district name (already extracted from event if available)
-          participationContext || null // Pass participation context (matches event context if event exists, or online/offline based on user input)
+          participationContext // Pass participation context (matches event context if event exists, or online/offline based on user input)
         ); // No number = random
         
         // Extract the certificate number from the certificateId for storage
