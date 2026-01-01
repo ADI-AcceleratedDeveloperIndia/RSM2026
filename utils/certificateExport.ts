@@ -9,20 +9,44 @@ export async function exportCertificateToPdf(element: HTMLElement, fileName: str
     // Wait for DOM to be fully rendered and images to load
     await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     
-    // Wait for all images to load (simplified approach)
+    // Wait for all images to load and convert to absolute URLs
     const images = element.querySelectorAll("img");
     console.log(`Found ${images.length} images`);
     
+    // Convert all image srcs to absolute URLs for html2canvas
+    images.forEach((img) => {
+      const imgElement = img as HTMLImageElement;
+      if (imgElement.src && !imgElement.src.startsWith("http") && !imgElement.src.startsWith("data:")) {
+        const baseUrl = window.location.origin;
+        if (imgElement.src.startsWith("/")) {
+          imgElement.src = baseUrl + imgElement.src;
+        } else if (imgElement.getAttribute("src")) {
+          imgElement.src = baseUrl + "/" + imgElement.getAttribute("src");
+        }
+      }
+      // Remove problematic attributes
+      imgElement.removeAttribute("srcset");
+      imgElement.removeAttribute("decoding");
+      imgElement.removeAttribute("loading");
+    });
+    
     const imagePromises = Array.from(images).map((img) => {
       const imgElement = img as HTMLImageElement;
-      if (imgElement.complete && imgElement.naturalWidth > 0) {
+      if (imgElement.complete && imgElement.naturalWidth > 0 && imgElement.naturalHeight > 0) {
         return Promise.resolve<void>(undefined);
       }
       return new Promise<void>((resolve) => {
         const timeout = setTimeout(() => {
           console.warn("Image load timeout:", imgElement.src);
+          resolve(); // Continue even if timeout
+        }, 8000); // Increased to 8 seconds
+        
+        if (imgElement.complete) {
+          clearTimeout(timeout);
           resolve();
-        }, 5000);
+          return;
+        }
+        
         imgElement.onload = () => {
           clearTimeout(timeout);
           resolve();
@@ -30,15 +54,16 @@ export async function exportCertificateToPdf(element: HTMLElement, fileName: str
         imgElement.onerror = () => {
           clearTimeout(timeout);
           console.warn("Image load error:", imgElement.src);
-          resolve();
+          resolve(); // Continue even if error
         };
       });
     });
     
     await Promise.all(imagePromises);
+    console.log("All images loaded");
 
-    // Small delay to ensure everything is settled
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    // Longer delay to ensure everything is fully rendered
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
     const html2canvasModule = await import("html2canvas");
     const jsPDFModule = await import("jspdf");
@@ -64,13 +89,15 @@ export async function exportCertificateToPdf(element: HTMLElement, fileName: str
     // Adaptive scale based on element size to prevent timeouts
     // Very aggressive scaling for large certificates to prevent timeouts
     const elementArea = element.scrollWidth * element.scrollHeight;
-    const scale = elementArea > 1000000 ? 1.0 : elementArea > 500000 ? 1.25 : 1.5;
+    // Use even lower scale for better performance and reliability
+    const scale = elementArea > 1000000 ? 0.8 : elementArea > 500000 ? 1.0 : 1.2;
     
     console.log("PDF generation config:", {
       width: element.scrollWidth,
       height: element.scrollHeight,
       area: elementArea,
-      scale: scale
+      scale: scale,
+      imageCount: images.length
     });
 
     // Add timeout wrapper for html2canvas with aggressive optimizations
@@ -86,18 +113,28 @@ export async function exportCertificateToPdf(element: HTMLElement, fileName: str
       imageTimeout: 5000, // Reduced to 5 seconds per image
       foreignObjectRendering: false, // Disable for better performance
       onclone: (clonedDocument) => {
-        // Minimal onclone - just fix image srcs
-        const nextImages = clonedDocument.querySelectorAll("img[src]");
-        nextImages.forEach((img) => {
+        // Ensure all images in cloned document have absolute URLs
+        const clonedImages = clonedDocument.querySelectorAll("img");
+        clonedImages.forEach((img) => {
           const imgElement = img as HTMLImageElement;
+          // Force absolute URL
           if (imgElement.src && !imgElement.src.startsWith("http") && !imgElement.src.startsWith("data:")) {
             const baseUrl = window.location.origin;
-            if (imgElement.src.startsWith("/")) {
-              imgElement.src = baseUrl + imgElement.src;
+            const srcAttr = imgElement.getAttribute("src") || imgElement.src;
+            if (srcAttr.startsWith("/")) {
+              imgElement.src = baseUrl + srcAttr;
+            } else {
+              imgElement.src = baseUrl + "/" + srcAttr;
             }
           }
+          // Remove all problematic attributes
           imgElement.removeAttribute("srcset");
           imgElement.removeAttribute("decoding");
+          imgElement.removeAttribute("loading");
+          imgElement.removeAttribute("data-nimg");
+          // Ensure image is visible
+          imgElement.style.display = "block";
+          imgElement.style.visibility = "visible";
         });
       },
       ignoreElements: (element) => {

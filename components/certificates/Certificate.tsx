@@ -1,7 +1,6 @@
 "use client";
 
-import { forwardRef } from "react";
-import Image from "next/image";
+import { forwardRef, useEffect, useState } from "react";
 import { Playfair_Display, Inter } from "next/font/google";
 
 const playfair = Playfair_Display({
@@ -116,6 +115,7 @@ interface CertificateProps {
 
 const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data }, ref) => {
   const config = CERTIFICATE_TYPES[data.certificateType] ?? CERTIFICATE_TYPES.ORG;
+  const [imagesLoaded, setImagesLoaded] = useState(false);
 
   // Regional authority logic: 
   // - TGSG-* (statewide) should NEVER show regional person
@@ -138,6 +138,34 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data }, ref)
     title: "Regional Transport Authority Member, Karimnagar",
   };
 
+  // Preload images for better html2canvas compatibility
+  useEffect(() => {
+    const imageUrls = [
+      "/assets/logo/Telangana-LOGO.png",
+      "/assets/logo/roadsafetymonth2026logo.png",
+      "/assets/leadership/CM.png",
+      "/assets/minister/Sri-Ponnam-Prabhakar.jpg",
+      "/assets/signatures/minister%20ponnam%20prabhakar%20sign.jpg",
+    ];
+    
+    if (showPadalaRahul) {
+      imageUrls.push(padalaRahulDetails.photo);
+    }
+
+    const loadPromises = imageUrls.map((url) => {
+      return new Promise<void>((resolve) => {
+        const img = new window.Image();
+        img.onload = () => resolve();
+        img.onerror = () => resolve(); // Continue even if image fails
+        img.src = url;
+      });
+    });
+
+    Promise.all(loadPromises).then(() => {
+      setImagesLoaded(true);
+    });
+  }, [showPadalaRahul]);
+
   return (
     <div
       ref={ref}
@@ -157,21 +185,21 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data }, ref)
           {/* Header */}
           <div className="flex flex-col items-start justify-between gap-4 border-b border-green-200 pb-6 md:flex-row">
             <div className="flex items-center justify-start gap-2" style={{ maxWidth: "380px" }}>
-              <Image
+              <img
                 src="/assets/logo/Telangana-LOGO.png"
                 alt="Government of Telangana"
                 width={80}
                 height={80}
                 className="h-20 w-20 object-contain flex-shrink-0"
-                unoptimized
+                style={{ display: "block" }}
               />
-              <Image
+              <img
                 src="/assets/logo/roadsafetymonth2026logo.png"
                 alt="Telangana Road Safety Month 2026"
                 width={140}
                 height={90}
                 className="h-20 w-auto object-contain flex-shrink-0"
-                unoptimized
+                style={{ display: "block" }}
               />
             </div>
 
@@ -209,7 +237,12 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data }, ref)
                           className="relative h-20 w-20 overflow-hidden rounded-full border-4 border-green-600"
                           style={{ boxShadow: "0 12px 30px rgba(0, 64, 32, 0.25)" }}
                         >
-                          <Image src={item.photo} alt={item.name} fill className="object-cover" sizes="80px" unoptimized />
+                          <img 
+                            src={item.photo} 
+                            alt={item.name} 
+                            className="object-cover"
+                            style={{ width: "100%", height: "100%", display: "block" }}
+                          />
                         </div>
                       ) : (
                         <div
@@ -304,13 +337,13 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data }, ref)
             </div>
 
             <div className="flex flex-col items-center space-y-1">
-              <Image
+              <img
                 src="/assets/signatures/minister%20ponnam%20prabhakar%20sign.jpg"
                 alt="Minister Signature"
                 width={120}
                 height={50}
                 className="h-10 w-auto object-contain mb-2"
-                unoptimized
+                style={{ display: "block" }}
               />
               <div className="mt-3 space-y-1">
                 <p className={`${inter.className} font-semibold text-gray-800 text-sm`}>
