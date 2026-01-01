@@ -59,7 +59,10 @@ export async function exportCertificateToPdf(element: HTMLElement, fileName: str
       throw new Error("Failed to load jsPDF module. Module structure: " + JSON.stringify(Object.keys(jsPDFModule)));
     }
 
-    const scale = 2.0; // Reduced from 2.5 to improve performance
+    // Adaptive scale based on element size to prevent timeouts
+    // Large certificates (>1000px) use lower scale for better performance
+    const elementArea = element.scrollWidth * element.scrollHeight;
+    const scale = elementArea > 1000000 ? 1.5 : elementArea > 500000 ? 1.75 : 2.0;
 
     // Add timeout wrapper for html2canvas
     const canvasPromise = html2canvas(element, {
@@ -71,21 +74,22 @@ export async function exportCertificateToPdf(element: HTMLElement, fileName: str
       windowWidth: element.scrollWidth,
       windowHeight: element.scrollHeight,
       removeContainer: true, // Remove container after rendering
-      imageTimeout: 15000, // 15 second timeout for images
+      imageTimeout: 10000, // Reduced to 10 seconds per image
+      foreignObjectRendering: false, // Disable for better performance
       ignoreElements: (element) => {
         // Ignore elements that might cause issues
         return element.classList.contains("no-export");
       },
       onclone: (clonedDocument) => {
+        // Simplified onclone for better performance
         const certificateElement = clonedDocument.querySelector(".certificate-export") as HTMLElement | null;
         if (certificateElement) {
-          // Convert Next.js Image components to regular img tags
+          // Quick image optimization - only fix src attributes
           const nextImages = clonedDocument.querySelectorAll("img[src]");
           nextImages.forEach((img) => {
             const imgElement = img as HTMLImageElement;
             // Ensure src is absolute URL for html2canvas
             if (imgElement.src && !imgElement.src.startsWith("http") && !imgElement.src.startsWith("data:")) {
-              // Convert relative paths to absolute
               const baseUrl = window.location.origin;
               if (imgElement.src.startsWith("/")) {
                 imgElement.src = baseUrl + imgElement.src;
@@ -96,46 +100,27 @@ export async function exportCertificateToPdf(element: HTMLElement, fileName: str
             imgElement.removeAttribute("decoding");
           });
 
+          // Simplified style cleaning - only essential styles
           const cleanStyles: Partial<CSSStyleDeclaration> = {
             boxShadow: "none",
             filter: "none",
             mixBlendMode: "normal",
-            backgroundImage: "none",
-            backgroundColor: "#ffffff",
           };
 
-          const applyCleanStyles = (node: Element) => {
-            const htmlElement = node as HTMLElement;
-            
-            // Clean any lab() colors and replace with standard colors
-            const computedStyle = window.getComputedStyle(htmlElement);
-            if (computedStyle.color && computedStyle.color.includes("lab(")) {
-              htmlElement.style.color = "#000000";
+          // Apply styles only to top-level element for performance
+          Object.entries(cleanStyles).forEach(([property, value]) => {
+            if (value !== undefined) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (certificateElement.style as any)[property] = value;
             }
-            if (computedStyle.backgroundColor && computedStyle.backgroundColor.includes("lab(")) {
-              htmlElement.style.backgroundColor = "#ffffff";
-            }
-            if (computedStyle.borderColor && computedStyle.borderColor.includes("lab(")) {
-              htmlElement.style.borderColor = "#000000";
-            }
-            
-            Object.entries(cleanStyles).forEach(([property, value]) => {
-              if (value !== undefined) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (htmlElement.style as any)[property] = value;
-              }
-            });
-            Array.from(node.children).forEach(applyCleanStyles);
-          };
-
-          applyCleanStyles(certificateElement);
+          });
         }
       },
     });
 
-    // Add timeout to prevent hanging - increased to 45 seconds for complex certificates
+    // Add timeout to prevent hanging - increased to 60 seconds for very large certificates
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error("Canvas generation timeout after 45 seconds")), 45000);
+      setTimeout(() => reject(new Error("Canvas generation timeout after 60 seconds")), 60000);
     });
 
     const canvas = await Promise.race([canvasPromise, timeoutPromise]) as HTMLCanvasElement;
@@ -144,7 +129,9 @@ export async function exportCertificateToPdf(element: HTMLElement, fileName: str
       throw new Error("Canvas generation failed: invalid canvas dimensions");
     }
 
-    const imgData = canvas.toDataURL("image/png", 1.0);
+    // Use slightly lower quality for very large images to reduce processing time
+    const quality = elementArea > 1000000 ? 0.95 : 1.0;
+    const imgData = canvas.toDataURL("image/png", quality);
     
     if (!imgData || imgData === "data:,") {
       throw new Error("Failed to convert canvas to image data");

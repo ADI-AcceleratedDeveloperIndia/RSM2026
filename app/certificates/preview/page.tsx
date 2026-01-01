@@ -157,11 +157,11 @@ function CertificatePreviewContent() {
     setIsDownloading(true);
     setDownloadError(null);
 
-    // Add timeout to prevent infinite hanging - increased to 50 seconds
+    // Add timeout to prevent infinite hanging - increased to 65 seconds for large certificates
     const timeoutId = setTimeout(() => {
       setIsDownloading(false);
-      setDownloadError("PDF generation timed out. The certificate may be too complex. Please try again or use the server-side download option.");
-    }, 50000); // 50 second timeout
+      setDownloadError("PDF generation timed out. The certificate may be too complex. Please try refreshing the page and downloading again. If the issue persists, try using a different browser.");
+    }, 65000); // 65 second timeout
 
     try {
       console.log("Starting client-side PDF generation...", {
