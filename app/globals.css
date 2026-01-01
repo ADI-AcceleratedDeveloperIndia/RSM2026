@@ -72,18 +72,29 @@ main {
   filter: none !important;
 }
 
-/* Override Tailwind colors with standard hex/rgb for html2canvas compatibility */
-.certificate-export .text-green-800 { color: #166534 !important; }
-.certificate-export .text-green-900 { color: #14532d !important; }
-.certificate-export .text-green-600 { color: #16a34a !important; }
-.certificate-export .text-green-700 { color: #15803d !important; }
-.certificate-export .text-gray-500 { color: #6b7280 !important; }
-.certificate-export .text-gray-600 { color: #4b5563 !important; }
-.certificate-export .text-gray-700 { color: #374151 !important; }
-.certificate-export .text-gray-800 { color: #1f2937 !important; }
-.certificate-export .bg-white { background-color: #ffffff !important; }
-.certificate-export .border-green-200 { border-color: #bbf7d0 !important; }
-.certificate-export .border-green-600 { border-color: #16a34a !important; }
+/* CRITICAL: Override ALL colors to RGB to prevent oklab/lab parsing errors in html2canvas */
+.certificate-export,
+.certificate-export *,
+.certificate-export *::before,
+.certificate-export *::after {
+  /* Force all colors to RGB - prevents oklab parsing */
+  color: rgb(0, 0, 0) !important;
+  background-color: rgb(255, 255, 255) !important;
+  border-color: rgb(0, 0, 0) !important;
+}
+
+/* Preserve green colors for certificate (using RGB) */
+.certificate-export .text-green-800,
+.certificate-export .text-green-900 { color: rgb(22, 101, 52) !important; }
+.certificate-export .text-green-600 { color: rgb(22, 163, 74) !important; }
+.certificate-export .text-green-700 { color: rgb(21, 128, 61) !important; }
+.certificate-export .text-gray-500 { color: rgb(107, 114, 128) !important; }
+.certificate-export .text-gray-600 { color: rgb(75, 85, 99) !important; }
+.certificate-export .text-gray-700 { color: rgb(55, 65, 81) !important; }
+.certificate-export .text-gray-800 { color: rgb(31, 41, 55) !important; }
+.certificate-export .bg-white { background-color: rgb(255, 255, 255) !important; }
+.certificate-export .border-green-200 { border-color: rgb(187, 247, 208) !important; }
+.certificate-export .border-green-600 { border-color: rgb(22, 163, 74) !important; }
 
 @media print {
   .certificate-preview-page {
