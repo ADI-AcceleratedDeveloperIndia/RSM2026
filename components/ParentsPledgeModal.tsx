@@ -174,15 +174,21 @@ export default function ParentsPledgeModal({ open, onOpenChange }: ParentsPledge
       const html2canvasModule = await import("html2canvas");
       const html2canvas = html2canvasModule.default ?? html2canvasModule;
 
-      // Create a temporary container
+      // Create a temporary container that won't affect layout
       const container = document.createElement("div");
-      container.style.position = "absolute";
+      container.style.position = "fixed";
+      container.style.top = "0";
       container.style.left = "-9999px";
       container.style.width = "800px";
+      container.style.height = "auto";
+      container.style.visibility = "hidden";
+      container.style.pointerEvents = "none";
+      container.style.zIndex = "-1";
+      container.style.overflow = "hidden";
       container.innerHTML = html;
       document.body.appendChild(container);
 
-      // Wait for fonts to load
+      // Wait for fonts and images to load
       await new Promise(resolve => setTimeout(resolve, 2000));
 
       // Generate canvas
@@ -192,7 +198,11 @@ export default function ParentsPledgeModal({ open, onOpenChange }: ParentsPledge
         useCORS: true,
         allowTaint: true,
         logging: false,
+        removeContainer: false, // We'll remove it manually
       });
+
+      // Remove container immediately after canvas generation
+      document.body.removeChild(container);
 
       // Convert to blob and download
       canvas.toBlob((blob) => {
@@ -201,12 +211,15 @@ export default function ParentsPledgeModal({ open, onOpenChange }: ParentsPledge
           const a = document.createElement("a");
           a.href = url;
           a.download = `Parents-Pledge-${pledgeData.childName.replace(/\s+/g, "-")}.png`;
+          a.style.display = "none";
           document.body.appendChild(a);
           a.click();
-          document.body.removeChild(a);
-          window.URL.revokeObjectURL(url);
+          // Clean up after a short delay
+          setTimeout(() => {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+          }, 100);
         }
-        document.body.removeChild(container);
       }, "image/png");
     } catch (err) {
       console.error("Client-side PNG generation error:", err);
