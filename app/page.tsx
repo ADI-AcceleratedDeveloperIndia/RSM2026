@@ -23,6 +23,7 @@ import {
 import { useState, useRef, useEffect } from "react";
 import AudioGuide from "@/components/AudioGuide";
 import ParentsPledgeModal from "@/components/ParentsPledgeModal";
+import MinisterMessageModal from "@/components/MinisterMessageModal";
 
 export default function Home() {
   const { t, i18n } = useTranslation("common");
@@ -30,6 +31,7 @@ export default function Home() {
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [pledgeModalOpen, setPledgeModalOpen] = useState(false);
+  const [ministerMessageModalOpen, setMinisterMessageModalOpen] = useState(false);
 
   // Check if anthem was playing when component mounts
   useEffect(() => {
@@ -239,26 +241,40 @@ export default function Home() {
                 <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(255, 255, 255, 0.3)', zIndex: 1 }}></div>
                 
                 <div className="grid w-full max-w-md grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2" style={{ position: 'relative', zIndex: 10 }}>
-                  {leadershipProfiles.map((leader) => (
-                    <div
-                      key={leader.name}
-                      className="flex flex-col items-center gap-3 sm:gap-4 rounded-2xl sm:rounded-3xl border border-white/70 bg-white/95 p-4 sm:p-6 text-emerald-900 backdrop-blur-lg shadow-[0_18px_38px_rgba(0,0,0,0.22)]"
-                    >
-                      <div className="relative h-32 w-32 sm:h-40 sm:w-40 overflow-hidden rounded-full border-2 sm:border-4 border-white shadow-[0_16px_28px_rgba(0,0,0,0.18)]">
-                        <Image
-                          src={leader.image}
-                          alt={leader.alt}
-                          width={320}
-                          height={320}
-                          className="h-full w-full object-cover"
-                        />
+                  {leadershipProfiles.map((leader, index) => {
+                    const isMinister = leader.image.includes("Sri-Ponnam-Prabhakar");
+                    return (
+                      <div
+                        key={leader.name}
+                        className="flex flex-col items-center gap-3 sm:gap-4 rounded-2xl sm:rounded-3xl border border-white/70 bg-white/95 p-4 sm:p-6 text-emerald-900 backdrop-blur-lg shadow-[0_18px_38px_rgba(0,0,0,0.22)]"
+                      >
+                        <div className="relative">
+                          {isMinister && (
+                            <button
+                              onClick={() => setMinisterMessageModalOpen(true)}
+                              className="absolute -top-2 left-1/2 -translate-x-1/2 z-10 bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1 rounded-full shadow-md transition-colors"
+                              aria-label="View Minister Message"
+                            >
+                              Message
+                            </button>
+                          )}
+                          <div className="relative h-32 w-32 sm:h-40 sm:w-40 overflow-hidden rounded-full border-2 sm:border-4 border-white shadow-[0_16px_28px_rgba(0,0,0,0.18)]">
+                            <Image
+                              src={leader.image}
+                              alt={leader.alt}
+                              width={320}
+                              height={320}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                        </div>
+                        <div className="text-center space-y-1">
+                          <p className="text-xs uppercase tracking-wide text-emerald-500">{leader.title}</p>
+                          <p className="text-lg font-semibold text-emerald-900">{leader.name}</p>
+                        </div>
                       </div>
-                      <div className="text-center space-y-1">
-                        <p className="text-xs uppercase tracking-wide text-emerald-500">{leader.title}</p>
-                        <p className="text-lg font-semibold text-emerald-900">{leader.name}</p>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
                 <div className="text-center text-white relative z-10">
                   <p className="text-xs uppercase tracking-[0.35em] text-black font-bold flex items-center justify-center gap-1.5">
@@ -370,12 +386,21 @@ export default function Home() {
           </div>
           <div className="rs-card overflow-hidden p-0">
             <div className="flex flex-col items-center gap-4 p-6 bg-white">
-              <div className="relative h-40 w-40 rounded-full overflow-hidden border-4 border-emerald-200 shadow-lg">
-                <img
-                  src="/assets/minister/Sri-Ponnam-Prabhakar.jpg"
-                  alt={tc("transportMinisterAlt")}
-                  className="h-full w-full object-cover"
-                />
+              <div className="relative">
+                <button
+                  onClick={() => setMinisterMessageModalOpen(true)}
+                  className="absolute -top-2 left-1/2 -translate-x-1/2 z-10 bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1 rounded-full shadow-md transition-colors"
+                  aria-label="View Minister Message"
+                >
+                  Message
+                </button>
+                <div className="relative h-40 w-40 rounded-full overflow-hidden border-4 border-emerald-200 shadow-lg">
+                  <img
+                    src="/assets/minister/Sri-Ponnam-Prabhakar.jpg"
+                    alt={tc("transportMinisterAlt")}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
               </div>
               <div className="text-center">
                 <p className="text-lg font-semibold text-emerald-900">{tc("transportMinisterName")}</p>
@@ -386,6 +411,7 @@ export default function Home() {
               </p>
             </div>
           </div>
+          <MinisterMessageModal open={ministerMessageModalOpen} onClose={() => setMinisterMessageModalOpen(false)} />
         </div>
       </section>
 
