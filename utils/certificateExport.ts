@@ -100,99 +100,90 @@ export async function exportCertificateToPdf(element: HTMLElement, fileName: str
       imageCount: images.length
     });
 
-    // Add timeout wrapper for html2canvas with aggressive optimizations
-    const canvasPromise = html2canvas(element, {
-      scale,
-      backgroundColor: "#ffffff",
-      useCORS: true,
-      allowTaint: true, // Changed back to true - some browsers need this
-      logging: true, // Enable logging to debug issues
-      windowWidth: element.scrollWidth,
-      windowHeight: element.scrollHeight,
-      removeContainer: true, // Remove container after rendering
-      imageTimeout: 5000, // Reduced to 5 seconds per image
-      foreignObjectRendering: false, // Disable for better performance
-      onclone: (clonedDocument) => {
-        // Ensure all images in cloned document have absolute URLs
-        const clonedImages = clonedDocument.querySelectorAll("img");
-        clonedImages.forEach((img) => {
-          const imgElement = img as HTMLImageElement;
-          // Force absolute URL
-          if (imgElement.src && !imgElement.src.startsWith("http") && !imgElement.src.startsWith("data:")) {
-            const baseUrl = window.location.origin;
-            const srcAttr = imgElement.getAttribute("src") || imgElement.src;
-            if (srcAttr.startsWith("/")) {
-              imgElement.src = baseUrl + srcAttr;
-            } else {
-              imgElement.src = baseUrl + "/" + srcAttr;
-            }
+    // Define onclone callback once for reuse
+    const oncloneCallback = (clonedDocument: Document) => {
+      // Ensure all images in cloned document have absolute URLs
+      const clonedImages = clonedDocument.querySelectorAll("img");
+      clonedImages.forEach((img) => {
+        const imgElement = img as HTMLImageElement;
+        // Force absolute URL
+        if (imgElement.src && !imgElement.src.startsWith("http") && !imgElement.src.startsWith("data:")) {
+          const baseUrl = window.location.origin;
+          const srcAttr = imgElement.getAttribute("src") || imgElement.src;
+          if (srcAttr.startsWith("/")) {
+            imgElement.src = baseUrl + srcAttr;
+          } else {
+            imgElement.src = baseUrl + "/" + srcAttr;
           }
-          // Remove all problematic attributes
-          imgElement.removeAttribute("srcset");
-          imgElement.removeAttribute("decoding");
-          imgElement.removeAttribute("loading");
-          imgElement.removeAttribute("data-nimg");
-          // Ensure image is visible
-          imgElement.style.display = "block";
-          imgElement.style.visibility = "visible";
-        });
-      },
-      ignoreElements: (element) => {
-        // Ignore elements that might cause issues
-        return element.classList.contains("no-export");
-      },
-    });
+        }
+        // Remove all problematic attributes
+        imgElement.removeAttribute("srcset");
+        imgElement.removeAttribute("decoding");
+        imgElement.removeAttribute("loading");
+        imgElement.removeAttribute("data-nimg");
+        // Ensure image is visible
+        imgElement.style.display = "block";
+        imgElement.style.visibility = "visible";
+      });
+    };
 
-    // Add timeout to prevent hanging - reduced to 30 seconds with retry logic
+    // Add timeout to prevent hanging - increased to 45 seconds for complex certificates
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error("Canvas generation timeout after 30 seconds")), 30000);
+      setTimeout(() => reject(new Error("Canvas generation timeout after 45 seconds")), 45000);
     });
 
     let canvas: HTMLCanvasElement | null = null;
+    let lastError: Error | null = null;
     
-    // Try up to 2 times with progressively lower scale
-    for (let attempt = 0; attempt < 2; attempt++) {
+    // Try up to 3 times with progressively lower scale
+    const scales = [scale, scale * 0.7, scale * 0.5];
+    
+    for (let attempt = 0; attempt < scales.length; attempt++) {
       try {
-        if (attempt > 0) {
-          // On retry, use even lower scale
-          const retryScale = scale * 0.75;
-          console.log(`Retry attempt ${attempt + 1} with scale ${retryScale}`);
-          const retryCanvasPromise = html2canvas(element, {
-            scale: retryScale,
-            backgroundColor: "#ffffff",
-            useCORS: true,
-            allowTaint: true,
-            logging: false,
-            windowWidth: element.scrollWidth,
-            windowHeight: element.scrollHeight,
-            removeContainer: true,
-            imageTimeout: 5000,
-            foreignObjectRendering: false,
-            ignoreElements: (element) => {
-              return element.classList.contains("no-export");
-            },
-          });
-          const retryTimeout = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error("Canvas generation timeout after 30 seconds")), 30000);
-          });
-          canvas = await Promise.race([retryCanvasPromise, retryTimeout]) as HTMLCanvasElement;
-        } else {
-          canvas = await Promise.race([canvasPromise, timeoutPromise]) as HTMLCanvasElement;
+        const currentScale = scales[attempt];
+        console.log(`Canvas generation attempt ${attempt + 1} with scale ${currentScale}`);
+        
+        const attemptCanvasPromise = html2canvas(element, {
+          scale: currentScale,
+          backgroundColor: "#ffffff",
+          useCORS: true,
+          allowTaint: true,
+          logging: attempt === 0, // Only log first attempt
+          windowWidth: element.scrollWidth,
+          windowHeight: element.scrollHeight,
+          removeContainer: true,
+          imageTimeout: 8000, // 8 seconds per image
+          foreignObjectRendering: false,
+          onclone: attempt === 0 ? oncloneCallback : undefined, // Only use onclone on first attempt
+          ignoreElements: (element) => {
+            return element.classList.contains("no-export");
+          },
+        });
+        
+        const attemptTimeout = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error(`Canvas generation timeout after 45 seconds (attempt ${attempt + 1})`)), 45000);
+        });
+        
+        canvas = await Promise.race([attemptCanvasPromise, attemptTimeout]) as HTMLCanvasElement;
+        
+        if (canvas && canvas.width > 0 && canvas.height > 0) {
+          console.log(`Canvas generated successfully on attempt ${attempt + 1}`);
+          break; // Success, exit retry loop
         }
-        break; // Success, exit retry loop
       } catch (error: any) {
+        lastError = error;
         console.warn(`Canvas generation attempt ${attempt + 1} failed:`, error?.message);
-        if (attempt === 1) {
+        if (attempt === scales.length - 1) {
           // Last attempt failed, throw the error
           throw error;
         }
         // Wait a bit before retry
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 2000));
       }
     }
     
-    if (!canvas) {
-      throw new Error("Failed to generate canvas after all retry attempts");
+    if (!canvas || !canvas.width || !canvas.height) {
+      throw lastError || new Error("Failed to generate canvas after all retry attempts");
     }
     
     if (!canvas || !canvas.width || !canvas.height) {
