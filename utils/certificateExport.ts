@@ -129,6 +129,30 @@ export async function exportCertificateToPdf(element: HTMLElement, fileName: str
 
     // Define onclone callback once for reuse
     const oncloneCallback = (clonedDocument: Document) => {
+      // CRITICAL FIX: Inject style tag to override ALL oklab/lab colors BEFORE html2canvas processes
+      const styleOverride = clonedDocument.createElement("style");
+      styleOverride.textContent = `
+        /* Force all colors to RGB - prevents oklab/lab parsing errors */
+        .certificate-export * {
+          color: rgb(0, 0, 0) !important;
+          background-color: rgb(255, 255, 255) !important;
+          border-color: rgb(0, 0, 0) !important;
+        }
+        /* Preserve green colors for certificate */
+        .certificate-export .text-green-800,
+        .certificate-export .text-green-900 { color: rgb(22, 101, 52) !important; }
+        .certificate-export .text-green-600 { color: rgb(22, 163, 74) !important; }
+        .certificate-export .text-green-700 { color: rgb(21, 128, 61) !important; }
+        .certificate-export .text-gray-500 { color: rgb(107, 114, 128) !important; }
+        .certificate-export .text-gray-600 { color: rgb(75, 85, 99) !important; }
+        .certificate-export .text-gray-700 { color: rgb(55, 65, 81) !important; }
+        .certificate-export .text-gray-800 { color: rgb(31, 41, 55) !important; }
+        .certificate-export .bg-white { background-color: rgb(255, 255, 255) !important; }
+        .certificate-export .border-green-200 { border-color: rgb(187, 247, 208) !important; }
+        .certificate-export .border-green-600 { border-color: rgb(22, 163, 74) !important; }
+      `;
+      clonedDocument.head.appendChild(styleOverride);
+
       // Ensure all images in cloned document have absolute URLs
       const clonedImages = clonedDocument.querySelectorAll("img");
       clonedImages.forEach((img) => {
@@ -167,38 +191,35 @@ export async function exportCertificateToPdf(element: HTMLElement, fileName: str
         const applyCleanStyles = (node: Element) => {
           const htmlElement = node as HTMLElement;
           
-          // Get computed styles to check for oklab/lab colors
-          const computedStyle = window.getComputedStyle(htmlElement);
-          
-          // Force-set computed RGB values to avoid oklab/lab parsing issues
-          // Browsers convert oklab/lab to RGB in computed styles, so we use those values
-          // This ensures html2canvas sees RGB instead of oklab/lab in the source CSS
+          // Get computed styles and FORCE them to RGB
           try {
+            const computedStyle = window.getComputedStyle(htmlElement);
+            
+            // ALWAYS set color properties to RGB - don't check, just force set
             const computedColor = computedStyle.color;
             const computedBg = computedStyle.backgroundColor;
             const computedBorder = computedStyle.borderColor;
-            const computedOutline = computedStyle.outlineColor;
-            const computedTextDeco = computedStyle.textDecorationColor;
             
-            // Always set color properties to their computed RGB values
-            if (computedColor && computedColor !== "rgba(0, 0, 0, 0)") {
+            // Convert to RGB if not already
+            if (computedColor) {
               htmlElement.style.color = getRgbFromComputed(computedColor, "#000000");
             }
-            if (computedBg && computedBg !== "rgba(0, 0, 0, 0)" && computedBg !== "transparent") {
+            if (computedBg && computedBg !== "transparent") {
               htmlElement.style.backgroundColor = getRgbFromComputed(computedBg, "#ffffff");
             }
-            if (computedBorder && computedBorder !== "rgba(0, 0, 0, 0)") {
+            if (computedBorder) {
               htmlElement.style.borderColor = getRgbFromComputed(computedBorder, "#000000");
             }
-            if (computedOutline && computedOutline !== "rgba(0, 0, 0, 0)") {
-              htmlElement.style.outlineColor = getRgbFromComputed(computedOutline, "#000000");
-            }
-            if (computedTextDeco && computedTextDeco !== "rgba(0, 0, 0, 0)") {
-              htmlElement.style.textDecorationColor = getRgbFromComputed(computedTextDeco, computedColor || "#000000");
-            }
+            
+            // Force set all border colors
+            htmlElement.style.borderTopColor = getRgbFromComputed(computedStyle.borderTopColor, "#000000");
+            htmlElement.style.borderRightColor = getRgbFromComputed(computedStyle.borderRightColor, "#000000");
+            htmlElement.style.borderBottomColor = getRgbFromComputed(computedStyle.borderBottomColor, "#000000");
+            htmlElement.style.borderLeftColor = getRgbFromComputed(computedStyle.borderLeftColor, "#000000");
           } catch (e) {
-            // Ignore errors in color conversion
-            console.warn("Color conversion error:", e);
+            // Ignore errors but set safe defaults
+            htmlElement.style.color = "#000000";
+            htmlElement.style.backgroundColor = "#ffffff";
           }
           
           // Apply other clean styles
