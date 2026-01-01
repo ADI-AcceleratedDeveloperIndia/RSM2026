@@ -168,7 +168,7 @@ export async function POST(request: NextRequest) {
         certificateId = generateCertificateNumber(
           validated.type, 
           undefined, 
-          eventType, 
+          (eventType === "statewide" || eventType === "regional" ? eventType : null) as "statewide" | "regional" | null | undefined, 
           eventReferenceId, // Pass event reference ID to extract district code
           finalDistrict || null // Pass district name (already extracted from event if available)
         ); // No number = random

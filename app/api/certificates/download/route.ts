@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
     const isTGSGEvent = eventRefId.startsWith("TGSG-");
     const isRegionalEvent = eventType === "regional" && !isTGSGEvent; // Regional AND not TGSG
     const isStatewideEvent = eventType === "statewide" || isTGSGEvent; // Explicitly statewide OR TGSG prefix
-    const isKarimnagar = certificate.district?.toLowerCase() === "karimnagar";
+    const isKarimnagar = (certificate as any).district?.toLowerCase() === "karimnagar";
     
     // Only show regional person if it's a regional event (NOT statewide/TGSG)
     const showPadalaRahul = isRegionalEvent && !isStatewideEvent && isKarimnagar;
@@ -303,19 +303,8 @@ function generateCertificateHTML({
                      certificate.eventType === "statewide" ? "statewide" : null);
   const participationContext = certificate.participationContext || null;
   
-  // Regional authority logic: 
-  // - TGSG-* (statewide) should NEVER show regional person
-  // - Only regional event IDs (district codes like KRMR-*) should show regional person
-  // - Check event reference ID prefix to ensure TGSG never shows regional person
-  const eventRefId = certificate.eventReferenceId || "";
-  const isTGSGEvent = eventRefId.startsWith("TGSG-");
-  const isRegionalEvent = eventType === "regional" && !isTGSGEvent; // Regional AND not TGSG
-  const isStatewideEvent = eventType === "statewide" || isTGSGEvent; // Explicitly statewide OR TGSG prefix
-  const isKarimnagar = certificate.district?.toLowerCase() === "karimnagar";
-  
-  // Only show regional person if it's a regional event (NOT statewide/TGSG)
-  const showPadalaRahul = isRegionalEvent && !isStatewideEvent && isKarimnagar;
-  const showPlaceholder = isRegionalEvent && !isStatewideEvent && !isKarimnagar;
+  // Note: showPadalaRahul and showPlaceholder are passed as parameters to this function
+  // They are already calculated in the calling function based on event type and district
 
   return `
     <!DOCTYPE html>

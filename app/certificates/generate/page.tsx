@@ -204,7 +204,7 @@ function CertificateGenerateContent() {
   const selectedType = watch("certificateType");
   const districtValue = watch("district");
   const referenceIdValue = watch("referenceId");
-  const hasEventIdEntered = referenceIdValue && referenceIdValue.includes("EVT-");
+  const hasEventIdEntered = !!(referenceIdValue && referenceIdValue.includes("EVT-"));
   const isStatewideEvent = hasEventIdEntered && referenceIdValue?.startsWith("TGSG-");
   const isRegionalEvent = hasEventIdEntered && !isStatewideEvent;
   
@@ -355,7 +355,7 @@ function CertificateGenerateContent() {
       params.set("certId", result.certificateId);
       params.set("type", data.certificateType);
       params.set("name", data.fullName);
-      params.set("district", data.district);
+      if (data.district) params.set("district", data.district);
       params.set("date", data.issueDate);
       if (data.email) params.set("email", data.email);
       if (data.score) params.set("score", data.score);

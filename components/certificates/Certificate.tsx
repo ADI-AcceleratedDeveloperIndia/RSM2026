@@ -47,6 +47,7 @@ export interface CertificateData {
   eventName?: string;
   referenceId?: string;
   eventType?: "statewide" | "regional" | null; // Event type for regional certificate logic
+  eventReferenceId?: string | null; // Event reference ID to check TGSG prefix
   regionalAuthority?: {
     officerName: string;
     officerTitle: string;
