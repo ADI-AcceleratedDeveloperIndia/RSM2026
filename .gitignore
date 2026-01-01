@@ -39,3 +39,7 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+
+# Large video files (now using YouTube instead)
+public/Message by Minister/*.mp4
+public/Message by Minister/backup/
