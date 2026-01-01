@@ -135,18 +135,33 @@ export default function ParentsPledgeModal({ open, onOpenChange }: ParentsPledge
       if (contentType?.includes("application/json")) {
         // Client-side generation needed
         const data = await pngRes.json();
-        await generatePNGClientSide(data.html, data.pledge);
+        if (!data.html) {
+          throw new Error("HTML content not received from server");
+        }
+        await generatePNGClientSide(data.html, data.pledge || {
+          childName: formData.childName,
+          parentName: formData.parentName,
+          institutionName: formData.institutionName,
+          district: formData.district,
+        });
       } else {
         // Server-side PNG ready
         const blob = await pngRes.blob();
+        if (blob.size === 0) {
+          throw new Error("Received empty PNG file");
+        }
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
         a.download = `Parents-Pledge-${formData.childName.replace(/\s+/g, "-")}.png`;
         document.body.appendChild(a);
         a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
+        setTimeout(() => {
+          if (a.parentNode) {
+            document.body.removeChild(a);
+          }
+          window.URL.revokeObjectURL(url);
+        }, 200);
       }
 
       // Close modal and reset after download
@@ -174,56 +189,96 @@ export default function ParentsPledgeModal({ open, onOpenChange }: ParentsPledge
       const html2canvasModule = await import("html2canvas");
       const html2canvas = html2canvasModule.default ?? html2canvasModule;
 
-      // Create a temporary container that won't affect layout
+      // Create a temporary container - must be visible for html2canvas to work properly
       const container = document.createElement("div");
-      container.style.position = "fixed";
+      container.innerHTML = html;
+      
+      // Position off-screen but visible (html2canvas needs visible elements)
+      container.style.position = "absolute";
+      container.style.left = "0";
       container.style.top = "0";
-      container.style.left = "-9999px";
       container.style.width = "800px";
       container.style.height = "auto";
-      container.style.visibility = "hidden";
-      container.style.pointerEvents = "none";
-      container.style.zIndex = "-1";
-      container.style.overflow = "hidden";
-      container.innerHTML = html;
+      container.style.visibility = "visible";
+      container.style.opacity = "1";
+      container.style.pointerEvents = "auto";
+      container.style.zIndex = "99999";
+      container.style.overflow = "visible";
+      container.style.transform = "translateX(-9999px)"; // Move off-screen but keep visible
+      
       document.body.appendChild(container);
 
-      // Wait for fonts and images to load
+      // Wait for fonts, images, and layout to fully render
+      // Longer wait for mobile devices
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      // Generate canvas
+      // Generate canvas with mobile-friendly options
       const canvas = await html2canvas(container, {
-        scale: 2,
+        scale: 2, // Higher quality
         backgroundColor: "#ffffff",
         useCORS: true,
-        allowTaint: true,
+        allowTaint: false, // Better for mobile
         logging: false,
-        removeContainer: false, // We'll remove it manually
+        removeContainer: false,
+        width: 800,
+        height: container.scrollHeight || 1200,
+        windowWidth: 800,
+        windowHeight: container.scrollHeight || 1200,
+        x: 0,
+        y: 0,
+        onclone: (clonedDoc) => {
+          // Ensure cloned document has proper styles
+          const clonedContainer = clonedDoc.querySelector('body > div');
+          if (clonedContainer) {
+            (clonedContainer as HTMLElement).style.visibility = "visible";
+            (clonedContainer as HTMLElement).style.opacity = "1";
+          }
+        },
       });
 
-      // Remove container immediately after canvas generation
-      document.body.removeChild(container);
+      // Remove container after canvas generation
+      if (container.parentNode) {
+        document.body.removeChild(container);
+      }
+
+      // Verify canvas has content
+      if (!canvas || canvas.width === 0 || canvas.height === 0) {
+        throw new Error("Generated canvas is empty");
+      }
 
       // Convert to blob and download
-      canvas.toBlob((blob) => {
-        if (blob) {
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = `Parents-Pledge-${pledgeData.childName.replace(/\s+/g, "-")}.png`;
-          a.style.display = "none";
-          document.body.appendChild(a);
-          a.click();
-          // Clean up after a short delay
-          setTimeout(() => {
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-          }, 100);
-        }
-      }, "image/png");
+      return new Promise<void>((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (blob && blob.size > 0) {
+            try {
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = `Parents-Pledge-${pledgeData.childName.replace(/\s+/g, "-")}.png`;
+              a.style.display = "none";
+              document.body.appendChild(a);
+              a.click();
+              
+              // Clean up after download
+              setTimeout(() => {
+                if (a.parentNode) {
+                  document.body.removeChild(a);
+                }
+                window.URL.revokeObjectURL(url);
+                resolve();
+              }, 300);
+            } catch (downloadError) {
+              console.error("Download error:", downloadError);
+              reject(new Error("Failed to download PNG"));
+            }
+          } else {
+            reject(new Error("Generated PNG is empty or invalid"));
+          }
+        }, "image/png", 1.0); // Maximum quality
+      });
     } catch (err) {
       console.error("Client-side PNG generation error:", err);
-      throw new Error("Failed to generate PNG in browser");
+      throw new Error(`Failed to generate PNG: ${err instanceof Error ? err.message : "Unknown error"}`);
     }
   };
 

@@ -18,6 +18,8 @@ const createCertSchema = z.object({
   organizerReferenceId: z.string().optional(), // Event Reference ID (optional for online without event)
   organizerId: z.string().optional(), // Organizer ID (required for scenarios 3, 4, 5)
   userEmail: z.string().email().optional(),
+  participationContext: z.enum(["online", "offline"]).optional(), // Participation context: online or offline
+  district: z.string().optional(), // District name (required for regional events)
 });
 
 export async function POST(request: NextRequest) {
@@ -48,10 +50,17 @@ export async function POST(request: NextRequest) {
 
     await connectDB();
 
+    // Determine participation context
+    // ONLINE: User participates in online activities (basics, simulation, quiz, guides, prevention, special)
+    // OFFLINE: User only generates certificate for offline event (must have event ID)
+    const participationContext = validated.participationContext || 
+      (validated.organizerReferenceId ? "offline" : "online");
+
     // If organizer reference ID (Event ID) is provided, validate it and get event details
     // FALLBACK: If validation fails for ANY reason, silently ignore event ID and proceed without it
     let eventReferenceId: string | undefined;
     let eventTitle: string | undefined;
+    let eventType: string | undefined; // statewide or regional
     let eventIdUsed = false; // Track if event ID was successfully used
     
     if (validated.organizerReferenceId) {
@@ -75,12 +84,14 @@ export async function POST(request: NextRequest) {
               // All validations passed - use event data
               eventReferenceId = event.referenceId;
               eventTitle = event.title;
+              eventType = event.eventType; // Get event type: statewide or regional
               eventIdUsed = true;
             }
           } else {
             // No organizer ID provided, event is valid - use event data
             eventReferenceId = event.referenceId;
             eventTitle = event.title;
+            eventType = event.eventType; // Get event type: statewide or regional
             eventIdUsed = true;
           }
         }
@@ -88,6 +99,39 @@ export async function POST(request: NextRequest) {
         // Any database error or exception - fallback to no event ID
         console.warn(`Event Reference ID validation error: ${eventError?.message || 'Unknown error'} for ${validated.organizerReferenceId}. Proceeding without event ID.`);
       }
+    }
+
+    // Validation: Offline participation MUST have event ID
+    if (participationContext === "offline" && !eventIdUsed) {
+      return NextResponse.json(
+        { error: "Offline participation requires a valid Event ID" },
+        { status: 400 }
+      );
+    }
+
+    // Auto-extract district from event if not provided (for both statewide and regional)
+    // This ensures we use event data when available instead of asking user
+    let finalDistrict = validated.district;
+    if (eventIdUsed && eventReferenceId) {
+      const eventDoc = await Event.findOne({ referenceId: eventReferenceId });
+      if (eventDoc?.district) {
+        finalDistrict = eventDoc.district; // Use district from event if available
+      } else if (eventType === "regional") {
+        // For regional events, try to extract from event ID prefix
+        const { getDistrictFromEventId } = await import("@/lib/reference");
+        const districtFromId = getDistrictFromEventId(eventReferenceId);
+        if (districtFromId) {
+          finalDistrict = districtFromId;
+        }
+      }
+    }
+    
+    // Validation: Regional events require district
+    if (eventType === "regional" && !finalDistrict) {
+      return NextResponse.json(
+        { error: "District is required for regional events" },
+        { status: 400 }
+      );
     }
     
     // If event ID validation failed or wasn't provided, set default online event title
@@ -119,7 +163,15 @@ export async function POST(request: NextRequest) {
     while (attempts < maxAttempts) {
       try {
         // Generate certificate ID with random number (no need to query database)
-        certificateId = generateCertificateNumber(validated.type); // No number = random
+        // Pass eventType and eventReferenceId to use correct prefix (TGSG for statewide, district code for regional)
+        // Use finalDistrict (already extracted from event if available)
+        certificateId = generateCertificateNumber(
+          validated.type, 
+          undefined, 
+          eventType, 
+          eventReferenceId, // Pass event reference ID to extract district code
+          finalDistrict || null // Pass district name (already extracted from event if available)
+        ); // No number = random
         
         // Extract the random number from the certificateId for storage
         const certNumMatch = certificateId.match(/-(\d{5})$/);
@@ -137,6 +189,9 @@ export async function POST(request: NextRequest) {
           eventReferenceId: eventReferenceId,
           eventTitle: eventTitle,
           organizerReferenceId: validated.organizerReferenceId,
+          participationContext: participationContext, // online or offline
+          eventType: eventType, // statewide or regional (null for online without event)
+          district: finalDistrict || undefined, // District (auto-extracted from event if available)
           userEmail: validated.userEmail,
           userIpHash,
         });
@@ -184,6 +239,7 @@ export async function POST(request: NextRequest) {
       downloadUrl, 
       certificateId,
       eventTitle: eventTitle || null,
+      eventType: eventType || null, // Pass eventType for regional certificate logic
     });
   } catch (error) {
     if (error instanceof z.ZodError) {

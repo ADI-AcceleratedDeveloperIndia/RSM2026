@@ -8,6 +8,42 @@ import { Textarea } from "@/components/ui/textarea";
 import { useTranslation } from "react-i18next";
 import { Loader2, CalendarCheck, CheckCircle2, MapPin, Calendar, Clock } from "lucide-react";
 
+const DISTRICTS = [
+  "Adilabad",
+  "Bhadradri Kothagudem",
+  "Hyderabad",
+  "Jagtial",
+  "Jangaon",
+  "Jayashankar Bhupalpally",
+  "Jogulamba Gadwal",
+  "Kamareddy",
+  "Karimnagar",
+  "Khammam",
+  "Kumuram Bheem Asifabad",
+  "Mahabubabad",
+  "Mahabubnagar",
+  "Mancherial",
+  "Medak",
+  "Medchal–Malkajgiri",
+  "Mulugu",
+  "Nagarkurnool",
+  "Nalgonda",
+  "Narayanpet",
+  "Nirmal",
+  "Nizamabad",
+  "Peddapalli",
+  "Rajanna Sircilla",
+  "Ranga Reddy",
+  "Sangareddy",
+  "Siddipet",
+  "Suryapet",
+  "Vikarabad",
+  "Wanaparthy",
+  "Warangal",
+  "Hanumakonda",
+  "Yadadri Bhuvanagiri",
+];
+
 type Event = {
   referenceId: string;
   title: string;
@@ -35,6 +71,8 @@ export default function EventsPage() {
     organizerId: "",
     date: "",
     location: "Karimnagar",
+    eventType: "statewide" as "statewide" | "regional",
+    district: "",
   });
 
   useEffect(() => {
@@ -75,7 +113,9 @@ export default function EventsPage() {
           title: "",
           organizerId: "",
           date: "",
-          location: "Karimnagar",
+          location: "",
+          eventType: "statewide",
+          district: "",
         });
         setOrganizerId("");
         // Refresh events list
@@ -244,10 +284,75 @@ export default function EventsPage() {
                   id="location"
                   value={formData.location}
                   onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  placeholder={i18n.language === "te" ? "స్థానం (ఐచ్ఛికం)" : "Location (Optional)"}
                   className="h-11 rounded-lg border border-emerald-200"
                 />
+                <p className="text-xs text-slate-500">
+                  {i18n.language === "te"
+                    ? "మీరు ఏదైనా స్థానం నమోదు చేయవచ్చు"
+                    : "You can enter any location"}
+                </p>
               </div>
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="eventType" className="text-sm font-semibold text-emerald-900">
+                {i18n.language === "te" ? "ఈవెంట్ రకం *" : "Event Type *"}
+              </Label>
+              <select
+                id="eventType"
+                value={formData.eventType}
+                onChange={(e) => {
+                  const newEventType = e.target.value as "statewide" | "regional";
+                  setFormData({ 
+                    ...formData, 
+                    eventType: newEventType,
+                    district: newEventType === "regional" ? "" : "" // Reset district when changing event type
+                  });
+                }}
+                required
+                className="h-11 w-full rounded-lg border border-emerald-200 px-3 text-sm focus:border-emerald-500 focus:outline-none"
+              >
+                <option value="statewide">
+                  {i18n.language === "te" ? "రాష్ట్రవ్యాప్త ఈవెంట్" : "Statewide Event"}
+                </option>
+                <option value="regional">
+                  {i18n.language === "te" ? "ప్రాంతీయ ఈవెంట్" : "Regional Event"}
+                </option>
+              </select>
+              <p className="text-xs text-slate-500">
+                {i18n.language === "te"
+                  ? "రాష్ట్రవ్యాప్త: అన్ని జిల్లాలలో | ప్రాంతీయ: ఒక జిల్లా/కాలేజీలో"
+                  : "Statewide: Across all districts | Regional: In one district/college"}
+              </p>
+            </div>
+
+            {formData.eventType === "regional" && (
+              <div className="space-y-2">
+                <Label htmlFor="district" className="text-sm font-semibold text-emerald-900">
+                  {i18n.language === "te" ? "జిల్లా *" : "District *"}
+                </Label>
+                <select
+                  id="district"
+                  value={formData.district}
+                  onChange={(e) => setFormData({ ...formData, district: e.target.value })}
+                  required
+                  className="h-11 w-full rounded-lg border border-emerald-200 px-3 text-sm focus:border-emerald-500 focus:outline-none"
+                >
+                  <option value="">{i18n.language === "te" ? "జిల్లాను ఎంచుకోండి" : "Select District"}</option>
+                  {DISTRICTS.map((district) => (
+                    <option key={district} value={district}>
+                      {district}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-slate-500">
+                  {i18n.language === "te"
+                    ? "ప్రాంతీయ ఈవెంట్ కోసం జిల్లా తప్పనిసరి"
+                    : "District is required for regional events"}
+                </p>
+              </div>
+            )}
 
             <Button type="submit" className="rs-btn-primary w-full justify-center" disabled={loading}>
               {loading ? (
@@ -268,10 +373,27 @@ export default function EventsPage() {
                     : "Event logged successfully!"}
                 </p>
                 {referenceId && (
-                  <p className="text-sm text-emerald-900">
-                    {i18n.language === "te" ? "రిఫరెన్స్ ID" : "Reference ID"}:{" "}
-                    <span className="font-mono font-semibold">{referenceId}</span>
-                  </p>
+                  <div className="space-y-2">
+                    <p className="text-sm text-emerald-900">
+                      {i18n.language === "te" ? "రిఫరెన్స్ ID" : "Reference ID"}:{" "}
+                      <span className="font-mono font-semibold">{referenceId}</span>
+                    </p>
+                    <p className="text-xs text-emerald-700">
+                      {i18n.language === "te" 
+                        ? `ఈవెంట్ రకం: ${formData.eventType === "statewide" ? "రాష్ట్రవ్యాప్త" : "ప్రాంతీయ"}`
+                        : `Event Type: ${formData.eventType === "statewide" ? "Statewide Event" : "Regional Event"}`}
+                      {formData.eventType === "statewide" && (
+                        <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs font-medium">
+                          SW
+                        </span>
+                      )}
+                      {formData.eventType === "regional" && (
+                        <span className="ml-2 px-2 py-0.5 bg-purple-100 text-purple-800 rounded text-xs font-medium">
+                          RG
+                        </span>
+                      )}
+                    </p>
+                  </div>
                 )}
                 <p className="text-xs text-emerald-800">
                   {i18n.language === "te"

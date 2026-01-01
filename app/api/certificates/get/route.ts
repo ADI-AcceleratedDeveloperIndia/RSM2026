@@ -38,7 +38,9 @@ export async function GET(request: NextRequest) {
         total: certificate.total,
         activityType: certificate.activityType,
         eventTitle: certificate.eventTitle,
-        eventReferenceId: certificate.eventReferenceId,
+        eventReferenceId: certificate.eventReferenceId, // Event Reference ID (TGSG-* or district code-*)
+        eventType: certificate.eventType, // statewide or regional
+        district: certificate.district, // District name
         createdAt: certificate.createdAt,
         userEmail: certificate.userEmail,
       },

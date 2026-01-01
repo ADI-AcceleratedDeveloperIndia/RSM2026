@@ -26,6 +26,11 @@ type Participant = {
   percentage: number;
   activityType: string;
   certificateDate: string;
+  participationContext?: string; // online or offline
+  eventType?: string; // statewide or regional
+  district?: string; // District for regional events
+  organizerId?: string; // Organizer ID
+  eventReferenceId?: string; // Event Reference ID
 };
 
 type EventParticipants = {
@@ -848,6 +853,9 @@ export default function AdminDashboard() {
                       <tr>
                         <th className="text-left">Name</th>
                         <th className="text-left">Institution</th>
+                        <th className="text-left">Context</th>
+                        <th className="text-left">Event Type</th>
+                        <th className="text-left">District</th>
                         <th className="text-left">Score</th>
                         <th className="text-left">Activity</th>
                         <th className="text-left">Certificate ID</th>
@@ -859,6 +867,29 @@ export default function AdminDashboard() {
                         <tr key={idx}>
                           <td className="font-medium">{p.name}</td>
                           <td>{p.institution}</td>
+                          <td>
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${
+                              p.participationContext === "online" 
+                                ? "bg-blue-100 text-blue-800" 
+                                : "bg-purple-100 text-purple-800"
+                            }`}>
+                              {p.participationContext || "N/A"}
+                            </span>
+                          </td>
+                          <td>
+                            {p.eventType ? (
+                              <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                p.eventType === "statewide" 
+                                  ? "bg-emerald-100 text-emerald-800" 
+                                  : "bg-amber-100 text-amber-800"
+                              }`}>
+                                {p.eventType}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-slate-400">-</span>
+                            )}
+                          </td>
+                          <td className="text-xs">{p.district || "-"}</td>
                           <td>
                             {p.score}/{p.total} ({p.percentage}%)
                           </td>

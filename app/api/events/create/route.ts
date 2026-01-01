@@ -11,6 +11,8 @@ const createEventSchema = z.object({
   organizerId: z.string().min(1), // Final organizer ID
   date: z.string(),
   location: z.string().optional(),
+  eventType: z.enum(["statewide", "regional"]), // Event type: statewide or regional
+  district: z.string().optional(), // District name (required for regional events)
   photos: z.array(z.string()).optional(),
 });
 
@@ -66,7 +68,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const referenceId = generateEventReferenceId(nextEventNumber);
+    // For regional events, district is required
+    if (validated.eventType === "regional" && !validated.district) {
+      return NextResponse.json(
+        { error: "District is required for regional events" },
+        { status: 400 }
+      );
+    }
+
+    const referenceId = generateEventReferenceId(
+      nextEventNumber, 
+      validated.eventType,
+      validated.district
+    );
 
     const event = new Event({
       referenceId,
@@ -77,6 +91,8 @@ export async function POST(request: NextRequest) {
       institution: organizer.institution,
       date: new Date(validated.date),
       location: validated.location || "Karimnagar",
+      eventType: validated.eventType, // Store event type: statewide or regional
+      district: validated.district, // Store district for regional events
       approved: true, // Auto-approve events from approved organizers
       photos: validated.photos || [],
       approvedAt: new Date(),

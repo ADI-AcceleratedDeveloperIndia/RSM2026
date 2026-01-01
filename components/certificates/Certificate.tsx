@@ -46,6 +46,7 @@ export interface CertificateData {
   details?: string;
   eventName?: string;
   referenceId?: string;
+  eventType?: "statewide" | "regional" | null; // Event type for regional certificate logic
   regionalAuthority?: {
     officerName: string;
     officerTitle: string;
@@ -115,6 +116,27 @@ interface CertificateProps {
 const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data }, ref) => {
   const config = CERTIFICATE_TYPES[data.certificateType] ?? CERTIFICATE_TYPES.ORG;
 
+  // Regional authority logic: 
+  // - TGSG-* (statewide) should NEVER show regional person
+  // - Only regional event IDs (district codes like KRMR-*) should show regional person
+  // - Check event reference ID prefix to ensure TGSG never shows regional person
+  const eventRefId = data.eventReferenceId || data.referenceId || "";
+  const isTGSGEvent = eventRefId.startsWith("TGSG-");
+  const isRegionalEvent = data.eventType === "regional" && !isTGSGEvent; // Regional AND not TGSG
+  const isStatewideEvent = data.eventType === "statewide" || isTGSGEvent; // Explicitly statewide OR TGSG prefix
+  const isKarimnagar = data.district?.toLowerCase() === "karimnagar";
+  
+  // Only show regional person if it's a regional event (NOT statewide/TGSG)
+  const showPadalaRahul = isRegionalEvent && !isStatewideEvent && isKarimnagar;
+  const showPlaceholder = isRegionalEvent && !isStatewideEvent && !isKarimnagar;
+
+  // Padala Rahul details (from padala-rahul-details.json)
+  const padalaRahulDetails = {
+    photo: "/assets/leadership/Karimnagarrtamemberpadalarahul.webp",
+    name: "Sri Padala Rahul Garu",
+    title: "Regional Transport Authority Member, Karimnagar",
+  };
+
   return (
     <div
       ref={ref}
@@ -164,23 +186,38 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data }, ref)
                   name: "Sri Ponnam Prabhakar Garu",
                   title: "Hon'ble Minister for Transport & BC Welfare",
                 },
-                data.regionalAuthority && {
-                  photo: data.regionalAuthority.photo,
-                  name: data.regionalAuthority.officerName,
-                  title: data.regionalAuthority.officerTitle,
+                // Regional authority: Show Padala Rahul for Karimnagar, placeholder for other districts
+                showPadalaRahul && {
+                  photo: padalaRahulDetails.photo,
+                  name: padalaRahulDetails.name,
+                  title: padalaRahulDetails.title,
+                },
+                showPlaceholder && {
+                  photo: null, // No photo for placeholder
+                  name: "Regional Authority",
+                  title: `${data.district} District`,
                 },
               ]
                 .filter(Boolean)
                 .map((leader, index) => {
-                  const item = leader as { photo: string; name: string; title: string };
+                  const item = leader as { photo: string | null; name: string; title: string };
                   return (
                     <div key={`${item.name}-${index}`} className="flex flex-col items-center justify-start text-center" style={{ width: "160px", minHeight: "140px" }}>
-                      <div
-                        className="relative h-20 w-20 overflow-hidden rounded-full border-4 border-green-600"
-                        style={{ boxShadow: "0 12px 30px rgba(0, 64, 32, 0.25)" }}
-                      >
-                        <Image src={item.photo} alt={item.name} fill className="object-cover" sizes="80px" unoptimized />
-                      </div>
+                      {item.photo ? (
+                        <div
+                          className="relative h-20 w-20 overflow-hidden rounded-full border-4 border-green-600"
+                          style={{ boxShadow: "0 12px 30px rgba(0, 64, 32, 0.25)" }}
+                        >
+                          <Image src={item.photo} alt={item.name} fill className="object-cover" sizes="80px" unoptimized />
+                        </div>
+                      ) : (
+                        <div
+                          className="relative h-20 w-20 overflow-hidden rounded-full border-4 border-dashed border-gray-400 bg-gray-100 flex items-center justify-center"
+                          style={{ boxShadow: "0 12px 30px rgba(0, 0, 0, 0.1)" }}
+                        >
+                          <span className="text-gray-400 text-xs">Photo</span>
+                        </div>
+                      )}
                       <p className={`${inter.className} mt-2 text-xs font-semibold text-green-800`} style={{ lineHeight: "1.3", wordWrap: "break-word", maxWidth: "140px" }}>{item.name}</p>
                       <p className={`${inter.className} text-[10px] text-gray-600 mt-1`} style={{ lineHeight: "1.3", wordWrap: "break-word", maxWidth: "140px" }}>{item.title}</p>
                     </div>

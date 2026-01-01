@@ -9,6 +9,14 @@ const EventSchema = new Schema({
   institution: { type: String, required: true },
   date: { type: Date, required: true },
   location: { type: String, required: true, default: "Karimnagar" },
+  eventType: { 
+    type: String, 
+    enum: ["statewide", "regional"], 
+    required: true,
+    default: "statewide",
+    index: true 
+  }, // Event type: statewide or regional
+  district: { type: String }, // District name (required for regional events)
   approved: { type: Boolean, default: false }, // Must be approved by admin
   photos: [String], // Legacy field, kept for backward compatibility
   groupPhoto: { type: String }, // GridFS file ID for group photo (max 1MB)

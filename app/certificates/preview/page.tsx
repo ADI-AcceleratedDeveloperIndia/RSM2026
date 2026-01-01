@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import Certificate, { CertificateCode, CertificateData } from "@/components/certificates/Certificate";
-import { getRegionalAuthority } from "@/lib/regional";
+// REMOVED: getRegionalAuthority import - Padala Rahul details saved in padala-rahul-details.json
+// import { getRegionalAuthority } from "@/lib/regional";
 import { exportCertificateToPdf } from "@/utils/certificateExport";
 import { Download, ArrowLeft, Award, Loader2 } from "lucide-react";
 
@@ -44,8 +45,8 @@ function CertificatePreviewContent() {
   const [certificateData, setCertificateData] = useState<CertificateData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Always show Padala Rahul photo (karimnagar)
-  const regionalAuthority = getRegionalAuthority("karimnagar");
+  // REMOVED: Padala Rahul - details saved in padala-rahul-details.json
+  // const regionalAuthority = getRegionalAuthority("karimnagar");
 
   useEffect(() => {
     const certId = searchParams.get("certId");
@@ -77,7 +78,7 @@ function CertificatePreviewContent() {
             setCertificateData({
               certificateType: certType,
               fullName: cert.fullName,
-              district: "Karimnagar", // Default district
+              district: cert.district || "Karimnagar", // Use district from certificate
               issueDate: new Date(cert.createdAt).toISOString(),
               email: cert.userEmail,
               score: cert.score?.toString(),
@@ -87,13 +88,8 @@ function CertificatePreviewContent() {
               details: undefined,
               eventName: cert.eventTitle,
               referenceId: cert.certificateId, // Use proper certificate number format (KRMR-RSM-2026-PDL-RHL-TYPE-00001)
-              regionalAuthority: regionalAuthority
-                ? {
-                    officerName: regionalAuthority.officerName,
-                    officerTitle: regionalAuthority.officerTitle,
-                    photo: regionalAuthority.photo,
-                  }
-                : undefined,
+              eventType: cert.eventType || null, // Pass eventType for regional certificate logic
+              eventReferenceId: cert.eventReferenceId || null, // Pass event reference ID to check TGSG prefix
             });
           } else {
             // Fallback to URL params
@@ -103,6 +99,7 @@ function CertificatePreviewContent() {
               return;
             }
             const type = (searchParams.get("type") || "ORG") as CertificateCode;
+            const eventTypeParam = searchParams.get("eventType"); // statewide, regional, or null
             setCertificateData({
               certificateType: type,
               fullName: safeDecode(searchParams.get("name")),
@@ -113,13 +110,7 @@ function CertificatePreviewContent() {
               details: safeDecode(searchParams.get("details")) || undefined,
               eventName: safeDecode(searchParams.get("event")) || undefined,
               referenceId: safeDecode(searchParams.get("ref")) || undefined,
-              regionalAuthority: regionalAuthority
-                ? {
-                    officerName: regionalAuthority.officerName,
-                    officerTitle: regionalAuthority.officerTitle,
-                    photo: regionalAuthority.photo,
-                  }
-                : undefined,
+              eventType: eventTypeParam === "statewide" ? "statewide" : eventTypeParam === "regional" ? "regional" : null,
             });
           }
           setLoading(false);
@@ -136,6 +127,7 @@ function CertificatePreviewContent() {
         return;
       }
       const type = (searchParams.get("type") || "ORG") as CertificateCode;
+      const eventTypeParam = searchParams.get("eventType"); // statewide, regional, or null
       setCertificateData({
         certificateType: type,
         fullName: safeDecode(searchParams.get("name")),
@@ -146,17 +138,11 @@ function CertificatePreviewContent() {
         details: safeDecode(searchParams.get("details")) || undefined,
         eventName: safeDecode(searchParams.get("event")) || undefined,
         referenceId: safeDecode(searchParams.get("ref")) || undefined,
-        regionalAuthority: regionalAuthority
-          ? {
-              officerName: regionalAuthority.officerName,
-              officerTitle: regionalAuthority.officerTitle,
-              photo: regionalAuthority.photo,
-            }
-          : undefined,
+        eventType: eventTypeParam === "statewide" ? "statewide" : eventTypeParam === "regional" ? "regional" : null,
       });
       setLoading(false);
     }
-  }, [router, searchParams, regionalAuthority]);
+  }, [router, searchParams]); // REMOVED: regionalAuthority dependency
 
   const handleDownload = async () => {
     if (!certificateRef.current || isDownloading || !certificateData) {

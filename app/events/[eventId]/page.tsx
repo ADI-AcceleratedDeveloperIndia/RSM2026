@@ -18,6 +18,7 @@ type Event = {
   institution: string;
   approved: boolean;
   organizerId?: string;
+  eventType?: "statewide" | "regional";
   groupPhoto?: string;
   youtubeVideos?: string[];
 };
@@ -366,6 +367,31 @@ export default function EventDetailsPage() {
             <div className="flex items-center gap-2 text-slate-600">
               <Calendar className="h-4 w-4 text-emerald-600" />
               <span>{new Date(event.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+            </div>
+          </div>
+
+          {/* Event Type and Reference ID */}
+          <div className="space-y-2 pt-2 border-t border-emerald-100">
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-slate-600 font-medium">
+                {i18n.language === "te" ? "ఈవెంట్ రకం" : "Event Type"}:
+              </span>
+              {event.eventType === "statewide" && (
+                <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium">
+                  {i18n.language === "te" ? "రాష్ట్రవ్యాప్త" : "Statewide Event"} (SW)
+                </span>
+              )}
+              {event.eventType === "regional" && (
+                <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs font-medium">
+                  {i18n.language === "te" ? "ప్రాంతీయ" : "Regional Event"} (RG)
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-slate-600 font-medium">
+                {i18n.language === "te" ? "ఈవెంట్ రిఫరెన్స్ ID" : "Event Reference ID"}:
+              </span>
+              <span className="font-mono text-xs text-emerald-700">{event.referenceId}</span>
             </div>
           </div>
 

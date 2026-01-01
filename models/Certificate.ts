@@ -20,6 +20,17 @@ const CertificateSchema = new Schema({
   }, // Allow any activity type (quiz, basics, simulation, guides, prevention, essay, custom activities, etc.)
   score: { type: Number, required: true },
   total: { type: Number, required: true },
+  participationContext: {
+    type: String,
+    enum: ["online", "offline"],
+    index: true,
+  }, // Participation context: online or offline
+  eventType: {
+    type: String,
+    enum: ["statewide", "regional"],
+    index: true,
+  }, // Event type: statewide or regional (null for online without event)
+  district: String, // District name (required for regional events)
   createdAt: { type: Date, default: Date.now },
   userEmail: String,
   userIpHash: String,

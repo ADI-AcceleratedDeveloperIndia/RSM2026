@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
       eventReferenceId: eventReferenceId,
     })
       .sort({ createdAt: -1 })
-      .select("certificateId fullName institution score total activityType createdAt")
+      .select("certificateId fullName institution score total activityType createdAt participationContext eventType district organizerReferenceId eventReferenceId")
       .lean();
 
     return NextResponse.json({
@@ -41,8 +41,9 @@ export async function GET(request: NextRequest) {
         date: event.date,
         location: event.location,
         organizerName: event.organizerName,
+        eventType: event.eventType, // Include event type
       },
-      participants: participants.map((p) => ({
+      participants: participants.map((p: any) => ({
         certificateId: p.certificateId,
         name: p.fullName,
         institution: p.institution || "N/A",
@@ -51,6 +52,11 @@ export async function GET(request: NextRequest) {
         percentage: p.total > 0 ? Math.round((p.score / p.total) * 100) : 0,
         activityType: p.activityType,
         certificateDate: p.createdAt,
+        participationContext: p.participationContext, // online or offline
+        eventType: p.eventType, // statewide or regional
+        district: p.district, // District for regional events
+        organizerId: p.organizerReferenceId, // Organizer ID (nullable)
+        eventReferenceId: p.eventReferenceId, // Event Reference ID
       })),
       totalParticipants: participants.length,
     });

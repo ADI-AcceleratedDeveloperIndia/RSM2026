@@ -12,7 +12,7 @@ import { join } from "path";
 chromium.setGraphicsMode = false;
 
 // Check if we're in a serverless environment (Vercel)
-const isServerless = process.env.VERCEL === "1" || process.env.AWS_LAMBDA_FUNCTION_NAME;
+const isServerless = process.env.VERCEL === "1" || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NEXT_PUBLIC_VERCEL === "1";
 
 export async function GET(request: NextRequest) {
   try {
@@ -30,21 +30,43 @@ export async function GET(request: NextRequest) {
     }
 
     await connectDB();
-    const certificate = await Certificate.findOne({ certificateId: cid });
+    const certificate = await Certificate.findOne({ certificateId: cid }).lean();
 
     if (!certificate) {
       return NextResponse.json({ error: "Certificate not found" }, { status: 404 });
     }
 
+    // Ensure eventType is explicitly checked (handle old certificates without eventType field)
+    // For old certificates or online without event, eventType should be null/undefined
+    const eventType = (certificate as any).eventType === "regional" ? "regional" : 
+                      (certificate as any).eventType === "statewide" ? "statewide" : null;
+    const participationContext = (certificate as any).participationContext || null;
+    
+    // Debug logging (remove in production if needed)
+    console.log("Certificate download - eventType:", eventType, "participationContext:", participationContext, "certificateId:", cid);
+
     // No QR code
     const qrDataUrl = "";
 
     // Load assets (in production, these should be stored securely)
-    // Include CM, Minister, and Padala Rahul (RTA) photos
     const cmPhotoPath = join(process.cwd(), "public", "assets", "leadership", "CM.png");
     const ministerPhotoPath = join(process.cwd(), "public", "assets", "minister", "Sri-Ponnam-Prabhakar.jpg");
     const emblemPath = join(process.cwd(), "public", "assets", "seals", "telangana-emblem.png");
     const ministerSigPath = join(process.cwd(), "public", "assets", "signatures", "minister.png");
+    
+    // Regional authority logic: 
+    // - TGSG-* (statewide) should NEVER show regional person
+    // - Only regional event IDs (district codes like KRMR-*) should show regional person
+    // - Check event reference ID prefix to ensure TGSG never shows regional person
+    const eventRefId = (certificate as any).eventReferenceId || "";
+    const isTGSGEvent = eventRefId.startsWith("TGSG-");
+    const isRegionalEvent = eventType === "regional" && !isTGSGEvent; // Regional AND not TGSG
+    const isStatewideEvent = eventType === "statewide" || isTGSGEvent; // Explicitly statewide OR TGSG prefix
+    const isKarimnagar = certificate.district?.toLowerCase() === "karimnagar";
+    
+    // Only show regional person if it's a regional event (NOT statewide/TGSG)
+    const showPadalaRahul = isRegionalEvent && !isStatewideEvent && isKarimnagar;
+    const showPlaceholder = isRegionalEvent && !isStatewideEvent && !isKarimnagar;
     const regionalPhotoPath = join(process.cwd(), "public", "assets", "leadership", "Karimnagarrtamemberpadalarahul.webp");
 
     let cmPhoto = "";
@@ -66,21 +88,31 @@ export async function GET(request: NextRequest) {
       if (existsSync(ministerSigPath)) {
         ministerSig = readFileSync(ministerSigPath, "base64");
       }
-      if (existsSync(regionalPhotoPath)) {
+      // Load Padala Rahul photo only for Karimnagar regional events
+      if (showPadalaRahul && existsSync(regionalPhotoPath)) {
         regionalPhoto = readFileSync(regionalPhotoPath, "base64");
       }
     } catch (err) {
       console.warn("Asset loading error:", err);
     }
 
+    // Pass eventType and participationContext to template function
+    const certificateWithContext = {
+      ...certificate,
+      eventType: eventType,
+      participationContext: participationContext,
+    };
+
     const html = generateCertificateHTML({
-      certificate,
+      certificate: certificateWithContext,
       qrDataUrl,
       cmPhoto: cmPhoto ? `data:image/png;base64,${cmPhoto}` : "",
       ministerPhoto: ministerPhoto ? `data:image/jpeg;base64,${ministerPhoto}` : "",
       emblem: emblem ? `data:image/png;base64,${emblem}` : "",
       ministerSig: ministerSig ? `data:image/png;base64,${ministerSig}` : "",
       regionalPhoto: regionalPhoto ? `data:image/webp;base64,${regionalPhoto}` : "",
+      showPadalaRahul: showPadalaRahul,
+      showPlaceholder: isRegionalEvent && !isKarimnagar,
     });
 
     // Set timeout for PDF generation (30 seconds max)
@@ -120,36 +152,84 @@ export async function GET(request: NextRequest) {
           ]
         : chromium.args;
 
+      // For local development, try to use Chrome/Chromium if available
+      let executablePath: string | undefined;
+      if (isServerless) {
+        executablePath = await chromium.executablePath();
+      } else {
+        // In local development, try to find Chrome/Chromium
+        // Common paths for macOS, Linux, and Windows
+        const possiblePaths = [
+          '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', // macOS
+          '/Applications/Chromium.app/Contents/MacOS/Chromium', // macOS Chromium
+          process.env.CHROME_PATH, // Custom path from env
+        ];
+        
+        // Try to find Chrome
+        for (const path of possiblePaths) {
+          if (path && existsSync(path)) {
+            executablePath = path;
+            break;
+          }
+        }
+      }
+
+      // If no executable found in local dev, throw helpful error
+      if (!isServerless && !executablePath) {
+        throw new Error(
+          "Chrome/Chromium not found. Please install Google Chrome or set CHROME_PATH environment variable. " +
+          "For macOS: Chrome should be at /Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+        );
+      }
+
       const browser = await puppeteer.launch({
         args: chromiumArgs,
         defaultViewport: chromium.defaultViewport,
-        executablePath: isServerless ? await chromium.executablePath() : undefined,
+        executablePath: executablePath,
         headless: true,
         timeout: 30000,
       });
 
+      const page = await browser.newPage();
+      
       try {
-        const page = await browser.newPage();
-        
-        // Set content with simpler wait strategy
+        // Set content and wait for network to be idle (all resources loaded)
         await page.setContent(html, { 
-          waitUntil: "domcontentloaded",
-          timeout: 15000,
+          waitUntil: "networkidle0", // Wait for all network requests to finish
+          timeout: 30000,
         });
         
-        // Wait for images to load
+        // Simple wait to ensure rendering is complete
+        // Don't use page.evaluate as it can cause "Target closed" errors
         await new Promise(resolve => setTimeout(resolve, 2000));
 
+        // Generate PDF immediately - don't do anything else that might close the page
         const pdf = await page.pdf({
           format: "A4",
           printBackground: true,
           margin: { top: "0", right: "0", bottom: "0", left: "0" },
-          timeout: 15000,
+          timeout: 30000,
         });
 
         return pdf;
+      } catch (error: any) {
+        console.error("PDF generation error in page:", error);
+        throw error;
       } finally {
-        await browser.close();
+        // Close page and browser in finally block
+        try {
+          if (page && !page.isClosed()) {
+            await page.close();
+          }
+        } catch (pageError) {
+          // Ignore page close errors
+        }
+        
+        try {
+          await browser.close();
+        } catch (browserError) {
+          // Ignore browser close errors
+        }
       }
     })();
 
@@ -188,6 +268,8 @@ function generateCertificateHTML({
   emblem,
   ministerSig,
   regionalPhoto,
+  showPadalaRahul,
+  showPlaceholder,
 }: {
   certificate: any;
   qrDataUrl: string;
@@ -196,6 +278,8 @@ function generateCertificateHTML({
   emblem: string;
   ministerSig: string;
   regionalPhoto: string;
+  showPadalaRahul: boolean;
+  showPlaceholder: boolean;
 }) {
   const ministerName = process.env.MINISTER_NAME || "Ponnam Prabhakar";
   const ministerTitle = process.env.MINISTER_TITLE || "Hon'ble Cabinet Minister";
@@ -213,6 +297,25 @@ function generateCertificateHTML({
     merit: "Merit",
     topper: "Topper",
   };
+
+  // Get event type and participation context (handle old certificates)
+  const eventType = (certificate.eventType === "regional" ? "regional" : 
+                     certificate.eventType === "statewide" ? "statewide" : null);
+  const participationContext = certificate.participationContext || null;
+  
+  // Regional authority logic: 
+  // - TGSG-* (statewide) should NEVER show regional person
+  // - Only regional event IDs (district codes like KRMR-*) should show regional person
+  // - Check event reference ID prefix to ensure TGSG never shows regional person
+  const eventRefId = certificate.eventReferenceId || "";
+  const isTGSGEvent = eventRefId.startsWith("TGSG-");
+  const isRegionalEvent = eventType === "regional" && !isTGSGEvent; // Regional AND not TGSG
+  const isStatewideEvent = eventType === "statewide" || isTGSGEvent; // Explicitly statewide OR TGSG prefix
+  const isKarimnagar = certificate.district?.toLowerCase() === "karimnagar";
+  
+  // Only show regional person if it's a regional event (NOT statewide/TGSG)
+  const showPadalaRahul = isRegionalEvent && !isStatewideEvent && isKarimnagar;
+  const showPlaceholder = isRegionalEvent && !isStatewideEvent && !isKarimnagar;
 
   return `
     <!DOCTYPE html>
@@ -311,13 +414,22 @@ function generateCertificateHTML({
         <div class="photo-blocks">
           ${cmPhoto ? `<img src="${cmPhoto}" class="portrait" alt="Chief Minister" />` : ""}
           ${ministerPhoto ? `<img src="${ministerPhoto}" class="portrait" alt="Minister" />` : ""}
-          ${regionalPhoto ? `<img src="${regionalPhoto}" class="portrait" alt="Padala Rahul - RTA Member" />` : ""}
+          ${showPadalaRahul && regionalPhoto ? `<img src="${regionalPhoto}" class="portrait" alt="Regional RTA Member" />` : ""}
+          ${showPlaceholder ? `<div class="portrait" style="background: #f3f4f6; border: 2px dashed #9ca3af; display: flex; align-items: center; justify-content: center; color: #6b7280; font-size: 12px;">Photo</div>` : ""}
         </div>
         <div></div>
       </div>
 
       <div class="title">CERTIFICATE OF ${typeLabels[displayType]?.toUpperCase() || "PARTICIPATION"}</div>
-      <div class="subtitle">Road Safety Month - Telangana</div>
+      <div class="subtitle">
+        ${participationContext === "online" && !eventType 
+          ? "Online Event - Road Safety Month - Telangana"
+          : eventType === "statewide"
+          ? "Statewide Event - Road Safety Month - Telangana"
+          : eventType === "regional"
+          ? "Regional Event - Road Safety Month - Telangana"
+          : "Road Safety Month - Telangana"}
+      </div>
 
       <div class="content">
         <p style="text-align: center;">
@@ -345,6 +457,17 @@ function generateCertificateHTML({
           <div class="signature-name">${ministerName}</div>
           <div class="signature-title">${ministerTitle}</div>
         </div>
+        ${showPadalaRahul ? `
+        <div class="signature-block">
+          <div class="signature-name">Sri Padala Rahul Garu</div>
+          <div class="signature-title">Regional Transport Authority Member, Karimnagar</div>
+        </div>
+        ` : showPlaceholder ? `
+        <div class="signature-block">
+          <div class="signature-name">Regional Authority</div>
+          <div class="signature-title">${certificate.district || "District"}</div>
+        </div>
+        ` : ""}
       </div>
 
       

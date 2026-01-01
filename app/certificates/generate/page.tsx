@@ -9,9 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { generateReferenceId } from "@/lib/reference";
+import { generateReferenceId, getDistrictFromEventId } from "@/lib/reference";
 import { Award, MapPin, Sparkles } from "lucide-react";
-import { getRegionalAuthority } from "@/lib/regional";
+// REMOVED: getRegionalAuthority import - Padala Rahul details saved in padala-rahul-details.json
+// import { getRegionalAuthority } from "@/lib/regional";
 
 const DISTRICTS = [
   "Adilabad",
@@ -59,10 +60,11 @@ const CERTIFICATE_OPTIONS = [
   { value: "COL", label: "COL – College Coordinator" },
 ];
 
+// Schema with district validation that checks referenceId
 const generateSchema = z.object({
   certificateType: z.enum(["ORG", "PAR", "MERIT", "TOPPER", "VOL", "SCH", "COL"]),
   fullName: z.string().min(1, "Name is required"),
-  district: z.string().min(1, "District is required"),
+  district: z.string().optional(), // Make it optional by default, validate with refine
   issueDate: z.string().min(1, "Issue date is required"),
   email: z.string().email().optional().or(z.literal("")),
   score: z.string().optional(),
@@ -70,6 +72,16 @@ const generateSchema = z.object({
   eventName: z.string().optional(),
   referenceId: z.string().optional(), // Event Reference ID
   organizerId: z.string().optional(), // Organizer ID (for Scenario 5)
+}).refine((data) => {
+  // District is required UNLESS it's a statewide event (TGSG-*)
+  const isStatewideEvent = data.referenceId?.startsWith("TGSG-");
+  if (!isStatewideEvent && (!data.district || data.district.trim() === "")) {
+    return false; // District is required for non-statewide events
+  }
+  return true;
+}, {
+  message: "District is required",
+  path: ["district"], // Attach error to district field
 });
 
 type GenerateForm = z.infer<typeof generateSchema>;
@@ -101,8 +113,8 @@ export default function CertificateGeneratePage() {
 function CertificateGenerateContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  // Always use karimnagar for Padala Rahul photo
-  const regionalAuthority = getRegionalAuthority("karimnagar");
+  // REMOVED: Padala Rahul - details saved in padala-rahul-details.json
+  // const regionalAuthority = getRegionalAuthority("karimnagar");
 
   // Read from sessionStorage (from activity completion)
   const [activityData, setActivityData] = useState<{
@@ -172,12 +184,13 @@ function CertificateGenerateContent() {
     setValue,
     watch,
     formState: { errors },
+    trigger,
   } = useForm<GenerateForm>({
     resolver: zodResolver(generateSchema),
     defaultValues: {
       certificateType: defaultType as GenerateForm["certificateType"],
       fullName: "",
-      district: regionalAuthority?.district || "",
+      district: "", // REMOVED: regionalAuthority?.district - Padala Rahul details saved in padala-rahul-details.json
       issueDate: new Date().toISOString().slice(0, 10),
       email: "",
       score: "",
@@ -190,6 +203,18 @@ function CertificateGenerateContent() {
 
   const selectedType = watch("certificateType");
   const districtValue = watch("district");
+  const referenceIdValue = watch("referenceId");
+  const hasEventIdEntered = referenceIdValue && referenceIdValue.includes("EVT-");
+  const isStatewideEvent = hasEventIdEntered && referenceIdValue?.startsWith("TGSG-");
+  const isRegionalEvent = hasEventIdEntered && !isStatewideEvent;
+  
+  // Re-validate district field when event ID changes (to update validation for statewide vs regional)
+  useEffect(() => {
+    if (referenceIdValue) {
+      // Re-validate district field when event type changes
+      setTimeout(() => trigger("district"), 100);
+    }
+  }, [referenceIdValue, trigger]);
 
   useEffect(() => {
     // Update certificate type when activity data loads
@@ -229,11 +254,12 @@ function CertificateGenerateContent() {
     });
   }, [searchParams, setValue, activityData, isFromActivity, defaultType]);
 
-  useEffect(() => {
-    if (regionalAuthority) {
-      setValue("district", regionalAuthority.district);
-    }
-  }, [regionalAuthority, setValue]);
+  // REMOVED: Padala Rahul district pre-fill - details saved in padala-rahul-details.json
+  // useEffect(() => {
+  //   if (regionalAuthority) {
+  //     setValue("district", regionalAuthority.district);
+  //   }
+  // }, [regionalAuthority, setValue]);
 
   const submit = async (data: GenerateForm) => {
     // If coming from activity and user hasn't answered the event question, don't submit
@@ -258,21 +284,30 @@ function CertificateGenerateContent() {
     let score = 0;
     let total = 100;
     if (activityData.score !== null && activityData.total !== null) {
-      score = activityData.score;
-      total = activityData.total;
+      score = Number(activityData.score);
+      total = Number(activityData.total);
     } else if (data.score) {
       // Try to parse score from string like "Scored 8/10 (80%)"
       const scoreMatch = data.score.match(/(\d+)\/(\d+)/);
       if (scoreMatch) {
-        score = parseInt(scoreMatch[1]);
-        total = parseInt(scoreMatch[2]);
+        score = Number(scoreMatch[1]);
+        total = Number(scoreMatch[2]);
       }
     }
+    
+    // Ensure score and total are valid numbers
+    if (typeof score !== "number" || isNaN(score)) score = 0;
+    if (typeof total !== "number" || isNaN(total)) total = 100;
+
+    // Determine participation context
+    // ONLINE: User participates in online activities (basics, simulation, quiz, guides, prevention, special)
+    // OFFLINE: User only generates certificate for offline event (not from activity, must have event ID)
+    const participationContext = isFromActivity ? "online" : "offline";
 
     // Extract Event Reference ID from referenceId field (if it's an event ID)
-    // Only include if user said they have an Event ID (hasEventId === true)
+    // Only include if user said they have an Event ID (hasEventId === true) OR if offline
     // If hasEventId === false, user is participating directly online, no Event ID needed
-    const eventRefId = (hasEventId === true && data.referenceId && data.referenceId.includes("EVT-")) 
+    const eventRefId = ((hasEventId === true || participationContext === "offline") && data.referenceId && data.referenceId.includes("EVT-")) 
       ? data.referenceId 
       : undefined;
 
@@ -285,11 +320,13 @@ function CertificateGenerateContent() {
           type: apiType,
           fullName: data.fullName,
           institution: "",
-          score: score,
-          total: total,
+          score: typeof score === "number" ? score : (score ? parseInt(String(score)) : 0),
+          total: typeof total === "number" ? total : (total ? parseInt(String(total)) : 100),
           activityType: activityData.activityType || "online",
           organizerReferenceId: eventRefId, // Event Reference ID
-          organizerId: data.organizerId || undefined, // Organizer ID (for Scenario 5)
+          organizerId: data.organizerId || undefined, // Organizer ID
+          participationContext: participationContext, // online or offline
+          district: data.district || undefined, // District (required for regional events)
           userEmail: data.email || undefined,
         }),
       });
@@ -324,9 +361,9 @@ function CertificateGenerateContent() {
       if (data.score) params.set("score", data.score);
       if (data.details) params.set("details", data.details);
       if (data.eventName) params.set("event", data.eventName);
-      // Always include regional authority (Padala Rahul)
-      if (regionalAuthority) {
-        params.set("rta", regionalAuthority.code);
+      // Pass eventType for regional certificate logic (statewide, regional, or null)
+      if (result.eventType) {
+        params.set("eventType", result.eventType);
       }
 
       router.push(`/certificates/preview?${params.toString()}&source=online`);
@@ -462,6 +499,56 @@ function CertificateGenerateContent() {
                 {...register("referenceId", { 
                   required: hasEventId === true ? "Event Reference ID is required" : false 
                 })}
+                onBlur={async (e) => {
+                  // Auto-fetch event details when event ID is entered (works for BOTH statewide and regional)
+                  const eventId = e.target.value.trim();
+                  if (eventId && eventId.includes("EVT-")) {
+                    try {
+                      const response = await fetch(`/api/events/get-by-id?eventId=${encodeURIComponent(eventId)}`);
+                      if (response.ok) {
+                        const data = await response.json();
+                        if (data.event) {
+                          // Check if it's a statewide event (TGSG-*)
+                          const isStatewide = eventId.startsWith("TGSG-");
+                          
+                          // Auto-populate district from event data
+                          // For statewide events: district is optional (clear if not in event data)
+                          // For regional events: district is required (extract from event data or event ID)
+                          if (isStatewide) {
+                            // For statewide events, district is optional - clear it if not in event data
+                            if (data.event.district) {
+                              setValue("district", data.event.district);
+                            } else {
+                              setValue("district", ""); // Clear district for statewide events
+                            }
+                          } else {
+                            // For regional events, district is required
+                            if (data.event.district) {
+                              setValue("district", data.event.district);
+                            } else {
+                              // Extract district from event ID prefix if not in event data
+                              const districtName = getDistrictFromEventId(eventId);
+                              if (districtName) {
+                                setValue("district", districtName);
+                              }
+                            }
+                          }
+                          
+                          // Auto-populate event name (for both statewide and regional)
+                          if (data.event.title) {
+                            setValue("eventName", data.event.title);
+                          }
+                          
+                          // Re-validate district field after setting value
+                          await trigger("district");
+                        }
+                      }
+                    } catch (error) {
+                      // Silently fail - user can still enter manually
+                      console.log("Could not auto-fetch event details");
+                    }
+                  }
+                }}
               />
               <p className="text-xs text-slate-500">
                 {hasEventId === true
@@ -510,15 +597,22 @@ function CertificateGenerateContent() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="district" className="text-sm font-semibold text-emerald-900">District *</Label>
+              <Label htmlFor="district" className="text-sm font-semibold text-emerald-900">
+                District {isStatewideEvent ? "" : "*"} {hasEventIdEntered && <span className="text-xs font-normal text-slate-500">(Auto-filled from Event ID)</span>}
+              </Label>
               <select
                 id="district"
                 value={districtValue || ""}
-                onChange={(event) => setValue("district", event.target.value)}
-                className="h-11 rounded-lg border border-emerald-200 px-3 text-sm focus:border-emerald-500 focus:outline-none"
+                onChange={async (event) => {
+                  setValue("district", event.target.value);
+                  await trigger("district");
+                }}
+                disabled={hasEventIdEntered}
+                required={!hasEventIdEntered && !isStatewideEvent}
+                className={`h-11 rounded-lg border border-emerald-200 px-3 text-sm focus:border-emerald-500 focus:outline-none ${hasEventIdEntered ? "bg-slate-100 cursor-not-allowed" : ""}`}
               >
-                <option value="" disabled>
-                  Select district
+                <option value="">
+                  {isStatewideEvent ? "Not required for statewide events" : "Select district"}
                 </option>
                 {DISTRICTS.map((district) => (
                   <option key={district} value={district}>
@@ -526,6 +620,21 @@ function CertificateGenerateContent() {
                   </option>
                 ))}
               </select>
+              {hasEventIdEntered && isStatewideEvent && (
+                <p className="text-xs text-slate-500">
+                  District is optional for statewide events (TGSG-*). Event ID determines all details.
+                </p>
+              )}
+              {hasEventIdEntered && isRegionalEvent && (
+                <p className="text-xs text-slate-500">
+                  District is automatically extracted from the Event ID. No need to select manually.
+                </p>
+              )}
+              {!hasEventIdEntered && (
+                <p className="text-xs text-slate-500">
+                  Select your district. If you have an Event ID, enter it first to auto-fill this field.
+                </p>
+              )}
               {errors.district && <p className="text-xs text-red-600">{errors.district.message}</p>}
             </div>
           </div>
@@ -562,13 +671,22 @@ function CertificateGenerateContent() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="eventName" className="text-sm font-semibold text-emerald-900">Event / Programme Name</Label>
+            <Label htmlFor="eventName" className="text-sm font-semibold text-emerald-900">
+              Event / Programme Name {hasEventIdEntered && <span className="text-xs font-normal text-slate-500">(Auto-filled from Event ID)</span>}
+            </Label>
             <Input
               id="eventName"
               placeholder="Event or programme title"
-              className="h-11 rounded-lg border border-emerald-200"
+              className={`h-11 rounded-lg border border-emerald-200 ${hasEventIdEntered ? "bg-slate-100 cursor-not-allowed" : ""}`}
               {...register("eventName")}
+              disabled={hasEventIdEntered}
+              readOnly={hasEventIdEntered}
             />
+            {hasEventIdEntered && (
+              <p className="text-xs text-slate-500">
+                Event name is automatically fetched from the Event ID. No need to enter manually.
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
