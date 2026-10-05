@@ -64,7 +64,7 @@ export async function POST() {
       ]),
     ]);
 
-    const toMap = (arr: any[], valField = "count") => {
+    const toMap = (arr: any[], valField: string | null = "count") => {
       const m: Record<string, any> = {};
       arr.forEach((item) => {
         if (item._id) m[item._id] = typeof valField === "string" ? item[valField] : item;

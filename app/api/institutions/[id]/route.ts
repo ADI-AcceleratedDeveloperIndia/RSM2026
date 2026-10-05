@@ -13,9 +13,11 @@ export async function GET(
     const { id } = await params;
     await connectDB();
 
-    const institution = await Institution.findOne({
-      $or: [{ institutionId: id }, { _id: id.match(/^[0-9a-fA-F]{24}$/) ? id : null }]
-    }).lean();
+    const query = id.match(/^[0-9a-fA-F]{24}$/)
+      ? { $or: [{ institutionId: id }, { _id: id }] }
+      : { institutionId: id };
+
+    const institution = (await Institution.findOne(query).lean()) as any;
 
     if (!institution) {
       return NextResponse.json({ error: "Institution not found" }, { status: 404 });
