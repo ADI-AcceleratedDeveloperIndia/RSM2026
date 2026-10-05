@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, CheckCircle, AlertTriangle, Building, Award, Calendar, TrendingUp } from "lucide-react";
+import { Users, CheckCircle, AlertTriangle, Building, Award, Calendar, TrendingUp, Sparkles, ShieldAlert, ArrowRight, Lightbulb } from "lucide-react";
 import { DISTRICT_NAMES } from "@/lib/districts";
+import Link from "next/link";
 
 export default function GovDashboard() {
   const [data, setData] = useState<any>(null);
   const [selectedDistrict, setSelectedDistrict] = useState("all");
+  const [intelligence, setIntelligence] = useState<any>(null);
 
   useEffect(() => {
     async function loadDashboard() {
@@ -99,6 +101,16 @@ export default function GovDashboard() {
           { id: 3, text: "Mass pledge event completed in Medchal", time: "2 hours ago" },
         ]
       });
+      // Fetch intelligence report
+      try {
+        const intelRes = await fetch("/api/gov/intelligence");
+        if (intelRes.ok) {
+          const intelData = await intelRes.json();
+          setIntelligence(intelData);
+        }
+      } catch (e) {
+        console.warn("Intelligence fetch error:", e);
+      }
     }
 
     loadDashboard();
@@ -161,6 +173,75 @@ export default function GovDashboard() {
           );
         })}
       </div>
+
+      {/* AI Intelligence & Anomaly Radar */}
+      {intelligence && (
+        <Card className="border-indigo-200 bg-gradient-to-r from-indigo-950 via-slate-900 to-indigo-900 text-white shadow-md">
+          <CardHeader className="pb-3 border-b border-indigo-800/60">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+                  <Sparkles size={20} />
+                </div>
+                <div>
+                  <CardTitle className="text-base text-white flex items-center gap-2">
+                    AI Safety Intelligence & Anomaly Radar
+                  </CardTitle>
+                  <p className="text-xs text-indigo-200">
+                    Continuous multi-district anomaly detection, bottleneck identification & policy directives
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs px-2.5 py-1 rounded-full bg-indigo-500/30 border border-indigo-400/30 text-indigo-200">
+                  Risk Level: <strong className="text-white">{intelligence.overallRiskLevel}</strong>
+                </span>
+                <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300">
+                  Safety Index: <strong className="text-white">{intelligence.intelligenceIndex}/100</strong>
+                </span>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-4 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {(intelligence.anomalies || []).slice(0, 2).map((anom: any) => (
+                <div
+                  key={anom.id}
+                  className="p-3 rounded-lg bg-slate-800/80 border border-slate-700/80 hover:border-indigo-400/50 transition-all text-xs"
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="font-semibold text-amber-300 flex items-center gap-1.5">
+                      <ShieldAlert size={14} className="text-amber-400" />
+                      {anom.title}
+                    </span>
+                    <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-red-950 text-red-300 border border-red-800">
+                      {anom.severity}
+                    </span>
+                  </div>
+                  <p className="text-slate-300 leading-relaxed mb-2">{anom.description}</p>
+                  <div className="p-2 rounded bg-indigo-950/70 border border-indigo-800/40 text-indigo-200 flex items-start gap-1.5">
+                    <Lightbulb size={13} className="text-indigo-400 shrink-0 mt-0.5" />
+                    <span><strong>Directive:</strong> {anom.recommendedAction}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex items-center justify-between pt-2 border-t border-indigo-800/50 text-xs">
+              <span className="text-indigo-300">
+                {intelligence.totalAnomalies} active anomalies detected across 33 revenue districts
+              </span>
+              <Link
+                href="/gov/4e"
+                className="text-indigo-200 hover:text-white flex items-center gap-1 font-medium hover:underline"
+              >
+                <span>Deep Dive in 4E Intelligence</span>
+                <ArrowRight size={13} />
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* 4E Breakdown */}
