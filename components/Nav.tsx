@@ -6,10 +6,11 @@ import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { useState, useEffect } from "react";
 import type { ReactNode } from "react";
-import { Menu, X, Home, Scale, GraduationCap, ShieldCheck, FileText, Cpu, Award, CalendarDays, ShieldHalf, MapPin, Heart, Users } from "lucide-react";
+import { Menu, X, Home, Scale, GraduationCap, ShieldCheck, FileText, Cpu, Award, CalendarDays, ShieldHalf, MapPin, Heart, Users, Target } from "lucide-react";
 
 const navIcons: Record<string, ReactNode> = {
   "/": <Home className="h-4 w-4" />,
+  "/actions": <Target className="h-4 w-4" />,
   "/basics": <Scale className="h-4 w-4" />,
   "/simulation": <Cpu className="h-4 w-4" />,
   "/quiz": <ShieldCheck className="h-4 w-4" />,
@@ -46,6 +47,7 @@ export default function Nav() {
     { href: "/guides", label: i18n.language === "te" ? "సేఫ్టీ గైడ్స్" : "Safety Guides", sublabel: i18n.language === "te" ? "అండర్ గ్రాడ్" : "Undergrad", key: "/guides" },
     { href: "/prevention", label: i18n.language === "te" ? "ప్రివెన్షన్" : "Prevention", sublabel: i18n.language === "te" ? "గ్రాడ్యుయేట్స్" : "Graduates", key: "/prevention" },
     { href: "/events", label: t("events") || "Events", sublabel: null, key: "/events" },
+    { href: "/actions", label: i18n.language === "te" ? "యాక్షన్స్" : "Actions", sublabel: i18n.language === "te" ? "ఇంపాక్ట్" : "Impact", key: "/actions" },
     { href: "/certificates", label: t("certificates") || "Certificates", sublabel: null, key: "/certificates" },
     { href: "/club", label: i18n.language === "te" ? "క్లబ్" : "Club", sublabel: null, key: "/club" },
     { href: "/special", label: i18n.language === "te" ? "స్పెషల్" : "Special", sublabel: null, key: "/special", isSpecial: true },
