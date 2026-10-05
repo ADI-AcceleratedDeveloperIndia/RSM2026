@@ -1,0 +1,1078 @@
+{
+  "source": {
+    "name": "Maruti Suzuki Driving School",
+    "url": "https://www.marutisuzukidrivingschool.com/mock-llr-road-sign",
+    "attribution": "Road signs and descriptions sourced from Maruti Suzuki Driving School's educational materials. Used for educational purposes only."
+  },
+  "totalSigns": 87,
+  "categories": {
+    "mandatory": {
+      "id": "mandatory",
+      "name": "Mandatory Signs",
+      "description": "These road signals and signs are used to make road users aware of specific laws and regulations that must be followed.",
+      "count": 32,
+      "signs": [
+        {
+          "id": 1,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_01.jpg",
+          "name": "No Entry",
+          "description": "This sign indicates that it is a no entry or restricted area ahead and no traffic is allowed.",
+          "hover_text": "No Entry: This sign indicates that it is a no entry or restricted area ahead and no traffic is allowed.",
+          "tooltip": {
+            "title": "No Entry",
+            "description": "This sign indicates that it is a no entry or restricted area ahead and no traffic is allowed.",
+            "category": "mandatory"
+          }
+        },
+        {
+          "id": 2,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_02.jpg",
+          "name": "One Way",
+          "description": "The way beyond this sign restricts traffic entry.",
+          "hover_text": "One Way: The way beyond this sign restricts traffic entry.",
+          "tooltip": {
+            "title": "One Way",
+            "description": "The way beyond this sign restricts traffic entry.",
+            "category": "mandatory"
+          }
+        },
+        {
+          "id": 3,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_03.jpg",
+          "name": "One Way",
+          "description": "This sign indicates that the oncoming traffic entry is restricted.",
+          "hover_text": "One Way: This sign indicates that the oncoming traffic entry is restricted.",
+          "tooltip": {
+            "title": "One Way",
+            "description": "This sign indicates that the oncoming traffic entry is restricted.",
+            "category": "mandatory"
+          }
+        },
+        {
+          "id": 4,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_04.jpg",
+          "name": "Vehicles prohibited in both directions",
+          "description": "This sign indicates that traffic flow is not allowed in this area.",
+          "hover_text": "Vehicles prohibited in both directions: This sign indicates that traffic flow is not allowed in this area.",
+          "tooltip": {
+            "title": "Vehicles prohibited in both directions",
+            "description": "This sign indicates that traffic flow is not allowed in this area.",
+            "category": "mandatory"
+          }
+        },
+        {
+          "id": 5,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_05.jpg",
+          "name": "All motor vehicles prohibited",
+          "description": "This sign indicates that no traffic movement is allowed in this area.",
+          "hover_text": "All motor vehicles prohibited: This sign indicates that no traffic movement is allowed in this area.",
+          "tooltip": {
+            "title": "All motor vehicles prohibited",
+            "description": "This sign indicates that no traffic movement is allowed in this area.",
+            "category": "mandatory"
+          }
+        },
+        {
+          "id": 6,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_06.jpg",
+          "name": "Truck prohibited",
+          "description": "This sign indicates that the area is a no entry zone for truck and HMV (Heavy Motor Vehicles).",
+          "hover_text": "Truck prohibited: This sign indicates that the area is a no entry zone for truck and HMV (Heavy Motor Vehicles).",
+          "tooltip": {
+            "title": "Truck prohibited",
+            "description": "This sign indicates that the area is a no entry zone for truck and HMV (Heavy Motor Vehicles).",
+            "category": "mandatory"
+          }
+        },
+        {
+          "id": 7,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_07.jpg",
+          "name": "Bullock & hand cart prohibited",
+          "description": "This sign indicates that entry of bullock carts and hand carts is not allowed.",
+          "hover_text": "Bullock & hand cart prohibited: This sign indicates that entry of bullock carts and hand carts is not allowed.",
+          "tooltip": {
+            "title": "Bullock & hand cart prohibited",
+            "description": "This sign indicates that entry of bullock carts and hand carts is not allowed.",
+            "category": "mandatory"
+          }
+        },
+        {
+          "id": 8,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_08.jpg",
+          "name": "Bullock cart prohibited",
+          "description": "This sign indicates that entry of bullock carts is not allowed.",
+          "hover_text": "Bullock cart prohibited: This sign indicates that entry of bullock carts is not allowed.",
+          "tooltip": {
+            "title": "Bullock cart prohibited",
+            "description": "This sign indicates that entry of bullock carts is not allowed.",
+            "category": "mandatory"
+          }
+        },
+        {
+          "id": 9,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_09.jpg",
+          "name": "Tongas prohibited",
+          "description": "This sign indicates that entry of tongas or horse carts is not allowed.",
+          "hover_text": "Tongas prohibited: This sign indicates that entry of tongas or horse carts is not allowed.",
+          "tooltip": {
+            "title": "Tongas prohibited",
+            "description": "This sign indicates that entry of tongas or horse carts is not allowed.",
+            "category": "mandatory"
+          }
+        },
+        {
+          "id": 10,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_10.jpg",
+          "name": "Hand cart prohibited",
+          "description": "This sign indicates that entry of hand carts is not allowed.",
+          "hover_text": "Hand cart prohibited: This sign indicates that entry of hand carts is not allowed.",
+          "tooltip": {
+            "title": "Hand cart prohibited",
+            "description": "This sign indicates that entry of hand carts is not allowed.",
+            "category": "mandatory"
+          }
+        },
+        {
+          "id": 11,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_11.jpg",
+          "name": "Cycle prohibited",
+          "description": "This sign indicates that entry of cycles is not allowed.",
+          "hover_text": "Cycle prohibited: This sign indicates that entry of cycles is not allowed.",
+          "tooltip": {
+            "title": "Cycle prohibited",
+            "description": "This sign indicates that entry of cycles is not allowed.",
+            "category": "mandatory"
+          }
+        },
+        {
+          "id": 12,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_12.jpg",
+          "name": "Pedestrians prohibited",
+          "description": "This sign indicates that movement of pedestrians is not allowed.",
+          "hover_text": "Pedestrians prohibited: This sign indicates that movement of pedestrians is not allowed.",
+          "tooltip": {
+            "title": "Pedestrians prohibited",
+            "description": "This sign indicates that movement of pedestrians is not allowed.",
+            "category": "mandatory"
+          }
+        },
+        {
+          "id": 13,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_13.jpg",
+          "name": "Right turn prohibited",
+          "description": "This sign indicates that traffic is not allowed to turn right.",
+          "hover_text": "Right turn prohibited: This sign indicates that traffic is not allowed to turn right.",
+          "tooltip": {
+            "title": "Right turn prohibited",
+            "description": "This sign indicates that traffic is not allowed to turn right.",
+            "category": "mandatory"
+          }
+        },
+        {
+          "id": 14,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_14.jpg",
+          "name": "Left turn prohibited",
+          "description": "This sign indicates that traffic is not allowed to turn left.",
+          "hover_text": "Left turn prohibited: This sign indicates that traffic is not allowed to turn left.",
+          "tooltip": {
+            "title": "Left turn prohibited",
+            "description": "This sign indicates that traffic is not allowed to turn left.",
+            "category": "mandatory"
+          }
+        },
+        {
+          "id": 15,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_15.jpg",
+          "name": "U-turn prohibited",
+          "description": "This sign indicates that traffic is not allowed to take a U-turn at this juncture.",
+          "hover_text": "U-turn prohibited: This sign indicates that traffic is not allowed to take a U-turn at this juncture.",
+          "tooltip": {
+            "title": "U-turn prohibited",
+            "description": "This sign indicates that traffic is not allowed to take a U-turn at this juncture.",
+            "category": "mandatory"
+          }
+        },
+        {
+          "id": 16,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_16.jpg",
+          "name": "Overtaking prohibited",
+          "description": "This sign indicates that overtaking or going past another vehicle is not allowed at this point.",
+          "hover_text": "Overtaking prohibited: This sign indicates that overtaking or going past another vehicle is not allowed at this point.",
+          "tooltip": {
+            "title": "Overtaking prohibited",
+            "description": "This sign indicates that overtaking or going past another vehicle is not allowed at this point.",
+            "category": "mandatory"
+          }
+        },
+        {
+          "id": 17,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_17.jpg",
+          "name": "Horn prohibited",
+          "description": "This sign indicates that it is a silence zone and honking or using horns is strictly not allowed in this area.",
+          "hover_text": "Horn prohibited: This sign indicates that it is a silence zone and honking or using horns is strictly not allowed in this area.",
+          "tooltip": {
+            "title": "Horn prohibited",
+            "description": "This sign indicates that it is a silence zone and honking or using horns is strictly not allowed in this area.",
+            "category": "mandatory"
+          }
+        },
+        {
+          "id": 18,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_18.jpg",
+          "name": "No parking",
+          "description": "This sign indicates that parking of vehicles is not allowed in this area and that, the vehicles would be towed away if found parked here.",
+          "hover_text": "No parking: This sign indicates that parking of vehicles is not allowed in this area and that, the vehicles would be towed away if found parked here.",
+          "tooltip": {
+            "title": "No parking",
+            "description": "This sign indicates that parking of vehicles is not allowed in this area and that, the vehicles would be towed away if found parked here.",
+            "category": "mandatory"
+          }
+        },
+        {
+          "id": 19,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_19.jpg",
+          "name": "Speed limit",
+          "description": "This sign designates the speed of traffic on road, as specified in the sign.",
+          "hover_text": "Speed limit: This sign designates the speed of traffic on road, as specified in the sign.",
+          "tooltip": {
+            "title": "Speed limit",
+            "description": "This sign designates the speed of traffic on road, as specified in the sign.",
+            "category": "mandatory"
+          }
+        },
+        {
+          "id": 20,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_20.jpg",
+          "name": "No stopping or standing",
+          "description": "This sign indicates that in order to have an obstruction free flow of traffic, no vehicle is allowed to stop or wait in this area.",
+          "hover_text": "No stopping or standing: This sign indicates that in order to have an obstruction free flow of traffic, no vehicle is allowed to stop or wait in this area.",
+          "tooltip": {
+            "title": "No stopping or standing",
+            "description": "This sign indicates that in order to have an obstruction free flow of traffic, no vehicle is allowed to stop or wait in this area.",
+            "category": "mandatory"
+          }
+        },
+        {
+          "id": 21,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_21.jpg",
+          "name": "Load limit",
+          "description": "This road sign limits the load of the vehicle, which should ply on the road further.",
+          "hover_text": "Load limit: This road sign limits the load of the vehicle, which should ply on the road further.",
+          "tooltip": {
+            "title": "Load limit",
+            "description": "This road sign limits the load of the vehicle, which should ply on the road further.",
+            "category": "mandatory"
+          }
+        },
+        {
+          "id": 22,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_22.jpg",
+          "name": "Restriction end sign",
+          "description": "This sign indicates that restrictions imposed by the earlier signs end here and are not meant to be followed from this point on.",
+          "hover_text": "Restriction end sign: This sign indicates that restrictions imposed by the earlier signs end here and are not meant to be followed from this point on.",
+          "tooltip": {
+            "title": "Restriction end sign",
+            "description": "This sign indicates that restrictions imposed by the earlier signs end here and are not meant to be followed from this point on.",
+            "category": "mandatory"
+          }
+        },
+        {
+          "id": 23,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_23.jpg",
+          "name": "Compulsory left turn",
+          "description": "This sign indicates that the driver has to take a compulsory left turn due to some diversion etc.",
+          "hover_text": "Compulsory left turn: This sign indicates that the driver has to take a compulsory left turn due to some diversion etc.",
+          "tooltip": {
+            "title": "Compulsory left turn",
+            "description": "This sign indicates that the driver has to take a compulsory left turn due to some diversion etc.",
+            "category": "mandatory"
+          }
+        },
+        {
+          "id": 24,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_24.jpg",
+          "name": "Compulsory turn right ahead",
+          "description": "This sign indicates that there is a compulsory right turn ahead and that the driver has to obey it.",
+          "hover_text": "Compulsory turn right ahead: This sign indicates that there is a compulsory right turn ahead and that the driver has to obey it.",
+          "tooltip": {
+            "title": "Compulsory turn right ahead",
+            "description": "This sign indicates that there is a compulsory right turn ahead and that the driver has to obey it.",
+            "category": "mandatory"
+          }
+        },
+        {
+          "id": 25,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_25.jpg",
+          "name": "Compulsory ahead only",
+          "description": "This sign indicates that the traffic has to move straight ahead without turning either left or right.",
+          "hover_text": "Compulsory ahead only: This sign indicates that the traffic has to move straight ahead without turning either left or right.",
+          "tooltip": {
+            "title": "Compulsory ahead only",
+            "description": "This sign indicates that the traffic has to move straight ahead without turning either left or right.",
+            "category": "mandatory"
+          }
+        },
+        {
+          "id": 26,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_26.jpg",
+          "name": "Compulsory ahead or turn right",
+          "description": "This sign indicates that the traffic should either move straight or take a right turn.",
+          "hover_text": "Compulsory ahead or turn right: This sign indicates that the traffic should either move straight or take a right turn.",
+          "tooltip": {
+            "title": "Compulsory ahead or turn right",
+            "description": "This sign indicates that the traffic should either move straight or take a right turn.",
+            "category": "mandatory"
+          }
+        },
+        {
+          "id": 27,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_27.jpg",
+          "name": "Compulsory ahead or turn left",
+          "description": "This sign indicates that the traffic should either move straight or take a left turn.",
+          "hover_text": "Compulsory ahead or turn left: This sign indicates that the traffic should either move straight or take a left turn.",
+          "tooltip": {
+            "title": "Compulsory ahead or turn left",
+            "description": "This sign indicates that the traffic should either move straight or take a left turn.",
+            "category": "mandatory"
+          }
+        },
+        {
+          "id": 28,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_28.jpg",
+          "name": "Compulsory keep left",
+          "description": "This sign indicates that the driver should drive in a left lane.",
+          "hover_text": "Compulsory keep left: This sign indicates that the driver should drive in a left lane.",
+          "tooltip": {
+            "title": "Compulsory keep left",
+            "description": "This sign indicates that the driver should drive in a left lane.",
+            "category": "mandatory"
+          }
+        },
+        {
+          "id": 29,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_29.jpg",
+          "name": "Compulsory cycle track",
+          "description": "This sign indicates that this lane is meant for cycles only.",
+          "hover_text": "Compulsory cycle track: This sign indicates that this lane is meant for cycles only.",
+          "tooltip": {
+            "title": "Compulsory cycle track",
+            "description": "This sign indicates that this lane is meant for cycles only.",
+            "category": "mandatory"
+          }
+        },
+        {
+          "id": 30,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_30.jpg",
+          "name": "Compulsory sound horn",
+          "description": "This sign indicates that it is compulsory to blow horn at this point.",
+          "hover_text": "Compulsory sound horn: This sign indicates that it is compulsory to blow horn at this point.",
+          "tooltip": {
+            "title": "Compulsory sound horn",
+            "description": "This sign indicates that it is compulsory to blow horn at this point.",
+            "category": "mandatory"
+          }
+        },
+        {
+          "id": 31,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_31.jpg",
+          "name": "Stop",
+          "description": "This sign indicates that the driver has to stop or halt here.",
+          "hover_text": "Stop: This sign indicates that the driver has to stop or halt here.",
+          "tooltip": {
+            "title": "Stop",
+            "description": "This sign indicates that the driver has to stop or halt here.",
+            "category": "mandatory"
+          }
+        },
+        {
+          "id": 32,
+          "image": "road_signs_paired_from_source/mandatory/mandatory_32.jpg",
+          "name": "Give Way",
+          "description": "This sign directs the traffic to give way to the traffic on your right side.",
+          "hover_text": "Give Way: This sign directs the traffic to give way to the traffic on your right side.",
+          "tooltip": {
+            "title": "Give Way",
+            "description": "This sign directs the traffic to give way to the traffic on your right side.",
+            "category": "mandatory"
+          }
+        }
+      ]
+    },
+    "cautionary": {
+      "id": "cautionary",
+      "name": "Cautionary Signs",
+      "description": "These signs are used to warn road users of potential hazards or dangerous conditions ahead.",
+      "count": 36,
+      "signs": [
+        {
+          "id": 1,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_01.jpg",
+          "name": "Right hand curve",
+          "description": "This sign cautions you about a right hand curve on the road ahead.",
+          "hover_text": "Right hand curve: This sign cautions you about a right hand curve on the road ahead.",
+          "tooltip": {
+            "title": "Right hand curve",
+            "description": "This sign cautions you about a right hand curve on the road ahead.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 2,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_02.jpg",
+          "name": "Left Hand Curve",
+          "description": "This sign cautions you about a left hand curve on the road ahead.",
+          "hover_text": "Left Hand Curve: This sign cautions you about a left hand curve on the road ahead.",
+          "tooltip": {
+            "title": "Left Hand Curve",
+            "description": "This sign cautions you about a left hand curve on the road ahead.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 3,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_03.jpg",
+          "name": "Right Hair Pin Bend",
+          "description": "This sign cautions you about a sharp right turn on the road ahead.",
+          "hover_text": "Right Hair Pin Bend: This sign cautions you about a sharp right turn on the road ahead.",
+          "tooltip": {
+            "title": "Right Hair Pin Bend",
+            "description": "This sign cautions you about a sharp right turn on the road ahead.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 4,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_04.jpg",
+          "name": "Left Hair Pin Bend",
+          "description": "This sign cautions you about a sharp left turn on the road ahead.",
+          "hover_text": "Left Hair Pin Bend: This sign cautions you about a sharp left turn on the road ahead.",
+          "tooltip": {
+            "title": "Left Hair Pin Bend",
+            "description": "This sign cautions you about a sharp left turn on the road ahead.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 5,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_05.jpg",
+          "name": "Right Reverse Bend",
+          "description": "This sign cautions the driver about the zigzag turn towrds right.",
+          "hover_text": "Right Reverse Bend: This sign cautions the driver about the zigzag turn towrds right.",
+          "tooltip": {
+            "title": "Right Reverse Bend",
+            "description": "This sign cautions the driver about the zigzag turn towrds right.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 6,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_06.jpg",
+          "name": "Left Reverse Bend",
+          "description": "This sign cautions the driver about the zigzag turn towrds left.",
+          "hover_text": "Left Reverse Bend: This sign cautions the driver about the zigzag turn towrds left.",
+          "tooltip": {
+            "title": "Left Reverse Bend",
+            "description": "This sign cautions the driver about the zigzag turn towrds left.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 7,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_07.jpg",
+          "name": "Steep ascent",
+          "description": "This sign indicates that there is a steep ascent ahead.",
+          "hover_text": "Steep ascent: This sign indicates that there is a steep ascent ahead.",
+          "tooltip": {
+            "title": "Steep ascent",
+            "description": "This sign indicates that there is a steep ascent ahead.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 8,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_08.jpg",
+          "name": "Steep descent",
+          "description": "This sign indicates that there is a steep descent ahead.",
+          "hover_text": "Steep descent: This sign indicates that there is a steep descent ahead.",
+          "tooltip": {
+            "title": "Steep descent",
+            "description": "This sign indicates that there is a steep descent ahead.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 9,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_09.jpg",
+          "name": "Narrow road ahead",
+          "description": "This sign cautions the driver to be careful as the road ahead is going to be narrow.",
+          "hover_text": "Narrow road ahead: This sign cautions the driver to be careful as the road ahead is going to be narrow.",
+          "tooltip": {
+            "title": "Narrow road ahead",
+            "description": "This sign cautions the driver to be careful as the road ahead is going to be narrow.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 10,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_10.jpg",
+          "name": "Road widens ahead",
+          "description": "This sign indicates that the road ahead widens, hence the driver should adjust accordingly.",
+          "hover_text": "Road widens ahead: This sign indicates that the road ahead widens, hence the driver should adjust accordingly.",
+          "tooltip": {
+            "title": "Road widens ahead",
+            "description": "This sign indicates that the road ahead widens, hence the driver should adjust accordingly.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 11,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_11.jpg",
+          "name": "Narrow bridge",
+          "description": "This sign indicates that the road ahead converges to a bridge which is of less width than the road.",
+          "hover_text": "Narrow bridge: This sign indicates that the road ahead converges to a bridge which is of less width than the road.",
+          "tooltip": {
+            "title": "Narrow bridge",
+            "description": "This sign indicates that the road ahead converges to a bridge which is of less width than the road.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 12,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_12.jpg",
+          "name": "Slippery road",
+          "description": "This sign indicates the slippery condition of the road ahead.",
+          "hover_text": "Slippery road: This sign indicates the slippery condition of the road ahead.",
+          "tooltip": {
+            "title": "Slippery road",
+            "description": "This sign indicates the slippery condition of the road ahead.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 13,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_13.jpg",
+          "name": "Cycle crossing",
+          "description": "This sign indicates that there is a cycle path intersecting ahead.",
+          "hover_text": "Cycle crossing: This sign indicates that there is a cycle path intersecting ahead.",
+          "tooltip": {
+            "title": "Cycle crossing",
+            "description": "This sign indicates that there is a cycle path intersecting ahead.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 14,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_14.jpg",
+          "name": "Pedestrian crossing",
+          "description": "This sign indicates that there is a pedestrian crossing ahead. These are also called zebra crossing.",
+          "hover_text": "Pedestrian crossing: This sign indicates that there is a pedestrian crossing ahead. These are also called zebra crossing.",
+          "tooltip": {
+            "title": "Pedestrian crossing",
+            "description": "This sign indicates that there is a pedestrian crossing ahead. These are also called zebra crossing.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 15,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_15.jpg",
+          "name": "School ahead",
+          "description": "This sign indicates that there is a school ahead/nearby.",
+          "hover_text": "School ahead: This sign indicates that there is a school ahead/nearby.",
+          "tooltip": {
+            "title": "School ahead",
+            "description": "This sign indicates that there is a school ahead/nearby.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 16,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_16.jpg",
+          "name": "Men at work",
+          "description": "This sign indicates that there is some repair/cleaning work etc. being undertaken on the road.",
+          "hover_text": "Men at work: This sign indicates that there is some repair/cleaning work etc. being undertaken on the road.",
+          "tooltip": {
+            "title": "Men at work",
+            "description": "This sign indicates that there is some repair/cleaning work etc. being undertaken on the road.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 17,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_17.jpg",
+          "name": "Cattle",
+          "description": "This sign indicates that there is a possibility of cattle straying on the road.",
+          "hover_text": "Cattle: This sign indicates that there is a possibility of cattle straying on the road.",
+          "tooltip": {
+            "title": "Cattle",
+            "description": "This sign indicates that there is a possibility of cattle straying on the road.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 18,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_18.jpg",
+          "name": "Falling rocks",
+          "description": "This sign indicates that road ahead is prone to falling rocks, especially in hilly areas.",
+          "hover_text": "Falling rocks: This sign indicates that road ahead is prone to falling rocks, especially in hilly areas.",
+          "tooltip": {
+            "title": "Falling rocks",
+            "description": "This sign indicates that road ahead is prone to falling rocks, especially in hilly areas.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 19,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_19.jpg",
+          "name": "Ferry",
+          "description": "This sign indicates that there is a ferry service ahead to cross the river.",
+          "hover_text": "Ferry: This sign indicates that there is a ferry service ahead to cross the river.",
+          "tooltip": {
+            "title": "Ferry",
+            "description": "This sign indicates that there is a ferry service ahead to cross the river.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 20,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_20.jpg",
+          "name": "Cross road",
+          "description": "This sign indicates that there is a crossing of roads ahead.",
+          "hover_text": "Cross road: This sign indicates that there is a crossing of roads ahead.",
+          "tooltip": {
+            "title": "Cross road",
+            "description": "This sign indicates that there is a crossing of roads ahead.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 21,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_21.jpg",
+          "name": "Gap in median",
+          "description": "This sign indicates that there is a gap in the divider of the road.",
+          "hover_text": "Gap in median: This sign indicates that there is a gap in the divider of the road.",
+          "tooltip": {
+            "title": "Gap in median",
+            "description": "This sign indicates that there is a gap in the divider of the road.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 22,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_22.jpg",
+          "name": "Side road right",
+          "description": "This sign indicates that there is a right side turn on the road in addition to straight movement of the road.",
+          "hover_text": "Side road right: This sign indicates that there is a right side turn on the road in addition to straight movement of the road.",
+          "tooltip": {
+            "title": "Side road right",
+            "description": "This sign indicates that there is a right side turn on the road in addition to straight movement of the road.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 23,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_23.jpg",
+          "name": "Y–intersections",
+          "description": "This sign depicts the actual formation of road ahead.",
+          "hover_text": "Y–intersections: This sign depicts the actual formation of road ahead.",
+          "tooltip": {
+            "title": "Y–intersections",
+            "description": "This sign depicts the actual formation of road ahead.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 24,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_24.jpg",
+          "name": "Y–intersections",
+          "description": "This sign depicts the actual formation of road ahead.",
+          "hover_text": "Y–intersections: This sign depicts the actual formation of road ahead.",
+          "tooltip": {
+            "title": "Y–intersections",
+            "description": "This sign depicts the actual formation of road ahead.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 25,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_25.jpg",
+          "name": "Y–intersections",
+          "description": "This sign depicts the actual formation of road ahead.",
+          "hover_text": "Y–intersections: This sign depicts the actual formation of road ahead.",
+          "tooltip": {
+            "title": "Y–intersections",
+            "description": "This sign depicts the actual formation of road ahead.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 26,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_26.jpg",
+          "name": "Staggered intersection",
+          "description": "These signs indicates that there is a left and right turns available on the straight road.",
+          "hover_text": "Staggered intersection: These signs indicates that there is a left and right turns available on the straight road.",
+          "tooltip": {
+            "title": "Staggered intersection",
+            "description": "These signs indicates that there is a left and right turns available on the straight road.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 27,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_27.jpg",
+          "name": "Staggered intersection",
+          "description": "These signs indicates that there is a left and right turns available on the straight road.",
+          "hover_text": "Staggered intersection: These signs indicates that there is a left and right turns available on the straight road.",
+          "tooltip": {
+            "title": "Staggered intersection",
+            "description": "These signs indicates that there is a left and right turns available on the straight road.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 28,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_28.jpg",
+          "name": "Side road left",
+          "description": "This sign indicates that there is a left side turn on the road.",
+          "hover_text": "Side road left: This sign indicates that there is a left side turn on the road.",
+          "tooltip": {
+            "title": "Side road left",
+            "description": "This sign indicates that there is a left side turn on the road.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 29,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_29.jpg",
+          "name": "T–intersection",
+          "description": "This sign indicates that straight ahead the traffic has to either turn left or right.",
+          "hover_text": "T–intersection: This sign indicates that straight ahead the traffic has to either turn left or right.",
+          "tooltip": {
+            "title": "T–intersection",
+            "description": "This sign indicates that straight ahead the traffic has to either turn left or right.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 30,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_30.jpg",
+          "name": "Major road ahead",
+          "description": "This sign is erected on arterial roads before it crosses a major road.",
+          "hover_text": "Major road ahead: This sign is erected on arterial roads before it crosses a major road.",
+          "tooltip": {
+            "title": "Major road ahead",
+            "description": "This sign is erected on arterial roads before it crosses a major road.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 31,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_31.jpg",
+          "name": "Roundabout",
+          "description": "This sign indicates that there is a roundabout ahead which is a substitute for intersection.",
+          "hover_text": "Roundabout: This sign indicates that there is a roundabout ahead which is a substitute for intersection.",
+          "tooltip": {
+            "title": "Roundabout",
+            "description": "This sign indicates that there is a roundabout ahead which is a substitute for intersection.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 32,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_32.jpg",
+          "name": "Dangerous dip",
+          "description": "This sign cautious the drivers that there is a dip ahead on the road.",
+          "hover_text": "Dangerous dip: This sign cautious the drivers that there is a dip ahead on the road.",
+          "tooltip": {
+            "title": "Dangerous dip",
+            "description": "This sign cautious the drivers that there is a dip ahead on the road.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 33,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_33.jpg",
+          "name": "Hump or rough road",
+          "description": "This sign indicates that there is a hump on the road ahead.",
+          "hover_text": "Hump or rough road: This sign indicates that there is a hump on the road ahead.",
+          "tooltip": {
+            "title": "Hump or rough road",
+            "description": "This sign indicates that there is a hump on the road ahead.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 34,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_34.jpg",
+          "name": "Barrier ahead",
+          "description": "This sign indicates that there is a toll collection point etc. ahead.",
+          "hover_text": "Barrier ahead: This sign indicates that there is a toll collection point etc. ahead.",
+          "tooltip": {
+            "title": "Barrier ahead",
+            "description": "This sign indicates that there is a toll collection point etc. ahead.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 35,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_35.jpg",
+          "name": "Loose gravel",
+          "description": "This sign indicate that lose earth or gravel keeps falling on the road.",
+          "hover_text": "Loose gravel: This sign indicate that lose earth or gravel keeps falling on the road.",
+          "tooltip": {
+            "title": "Loose gravel",
+            "description": "This sign indicate that lose earth or gravel keeps falling on the road.",
+            "category": "cautionary"
+          }
+        },
+        {
+          "id": 36,
+          "image": "road_signs_paired_from_source/cautionary/cautionary_36.jpg",
+          "name": "Speedbreaker",
+          "description": "This sign indicates that there is a speedbreaker on the road ahead.",
+          "hover_text": "Speedbreaker: This sign indicates that there is a speedbreaker on the road ahead.",
+          "tooltip": {
+            "title": "Speedbreaker",
+            "description": "This sign indicates that there is a speedbreaker on the road ahead.",
+            "category": "cautionary"
+          }
+        }
+      ]
+    },
+    "informatory": {
+      "id": "informatory",
+      "name": "Informatory Signs",
+      "description": "Informatory road signs are used to provide important information on direction, destination, roadside facilities, etc.",
+      "count": 19,
+      "signs": [
+        {
+          "id": 1,
+          "image": "road_signs_paired_from_source/informatory/informatory_01.jpg",
+          "name": "Public Telephone",
+          "description": "This sign indicates the availability of Telephone near road.",
+          "hover_text": "Public Telephone: This sign indicates the availability of Telephone near road.",
+          "tooltip": {
+            "title": "Public Telephone",
+            "description": "This sign indicates the availability of Telephone near road.",
+            "category": "informatory"
+          }
+        },
+        {
+          "id": 2,
+          "image": "road_signs_paired_from_source/informatory/informatory_02.jpg",
+          "name": "Petrol Pump",
+          "description": "This informatory sign indicates that there is a Petrol Pump ahead.",
+          "hover_text": "Petrol Pump: This informatory sign indicates that there is a Petrol Pump ahead.",
+          "tooltip": {
+            "title": "Petrol Pump",
+            "description": "This informatory sign indicates that there is a Petrol Pump ahead.",
+            "category": "informatory"
+          }
+        },
+        {
+          "id": 3,
+          "image": "road_signs_paired_from_source/informatory/informatory_03.jpg",
+          "name": "Hospital",
+          "description": "This sign indicates that there is Hospital nearby.",
+          "hover_text": "Hospital: This sign indicates that there is Hospital nearby.",
+          "tooltip": {
+            "title": "Hospital",
+            "description": "This sign indicates that there is Hospital nearby.",
+            "category": "informatory"
+          }
+        },
+        {
+          "id": 4,
+          "image": "road_signs_paired_from_source/informatory/informatory_04.jpg",
+          "name": "First Aid Post",
+          "description": "This sign shows that there is a First Aid facility nearby which is very useful in case of emergency or accidents.",
+          "hover_text": "First Aid Post: This sign shows that there is a First Aid facility nearby which is very useful in case of emergency or accidents.",
+          "tooltip": {
+            "title": "First Aid Post",
+            "description": "This sign shows that there is a First Aid facility nearby which is very useful in case of emergency or accidents.",
+            "category": "informatory"
+          }
+        },
+        {
+          "id": 5,
+          "image": "road_signs_paired_from_source/informatory/informatory_05.jpg",
+          "name": "Eating Place",
+          "description": "This sign indicates that there is an eating-place in the vicinity.",
+          "hover_text": "Eating Place: This sign indicates that there is an eating-place in the vicinity.",
+          "tooltip": {
+            "title": "Eating Place",
+            "description": "This sign indicates that there is an eating-place in the vicinity.",
+            "category": "informatory"
+          }
+        },
+        {
+          "id": 6,
+          "image": "road_signs_paired_from_source/informatory/informatory_06.jpg",
+          "name": "Light Refreshment",
+          "description": "This sign indicates there is facility of Light refreshment nearby on the road.",
+          "hover_text": "Light Refreshment: This sign indicates there is facility of Light refreshment nearby on the road.",
+          "tooltip": {
+            "title": "Light Refreshment",
+            "description": "This sign indicates there is facility of Light refreshment nearby on the road.",
+            "category": "informatory"
+          }
+        },
+        {
+          "id": 7,
+          "image": "road_signs_paired_from_source/informatory/informatory_07.jpg",
+          "name": "Resting Place",
+          "description": "This sign is erected near motel, lodge or any other facility for resting on the road.",
+          "hover_text": "Resting Place: This sign is erected near motel, lodge or any other facility for resting on the road.",
+          "tooltip": {
+            "title": "Resting Place",
+            "description": "This sign is erected near motel, lodge or any other facility for resting on the road.",
+            "category": "informatory"
+          }
+        },
+        {
+          "id": 8,
+          "image": "road_signs_paired_from_source/informatory/informatory_08.jpg",
+          "name": "No Thorough Road",
+          "description": "This sign is erected at the entry of such roads from which no exit is available.",
+          "hover_text": "No Thorough Road: This sign is erected at the entry of such roads from which no exit is available.",
+          "tooltip": {
+            "title": "No Thorough Road",
+            "description": "This sign is erected at the entry of such roads from which no exit is available.",
+            "category": "informatory"
+          }
+        },
+        {
+          "id": 9,
+          "image": "road_signs_paired_from_source/informatory/informatory_09.jpg",
+          "name": "No Thorough Side Road",
+          "description": "This sign indicates that there is no through side road avialbale on the main road.",
+          "hover_text": "No Thorough Side Road: This sign indicates that there is no through side road avialbale on the main road.",
+          "tooltip": {
+            "title": "No Thorough Side Road",
+            "description": "This sign indicates that there is no through side road avialbale on the main road.",
+            "category": "informatory"
+          }
+        },
+        {
+          "id": 10,
+          "image": "road_signs_paired_from_source/informatory/informatory_10.jpg",
+          "name": "Park this Side",
+          "description": "This sign is erected at destination telling exactly where to park your vehicles.",
+          "hover_text": "Park this Side: This sign is erected at destination telling exactly where to park your vehicles.",
+          "tooltip": {
+            "title": "Park this Side",
+            "description": "This sign is erected at destination telling exactly where to park your vehicles.",
+            "category": "informatory"
+          }
+        },
+        {
+          "id": 11,
+          "image": "road_signs_paired_from_source/informatory/informatory_11.jpg",
+          "name": "Parking Both sides",
+          "description": "This sign is erected at destination telling exactly where to park your vehicles. This sign indicates that vehicles can be parked on both sides.",
+          "hover_text": "Parking Both sides: This sign is erected at destination telling exactly where to park your vehicles. This sign indicates that vehicles can be parked on both sides.",
+          "tooltip": {
+            "title": "Parking Both sides",
+            "description": "This sign is erected at destination telling exactly where to park your vehicles. This sign indicates that vehicles can be parked on both sides.",
+            "category": "informatory"
+          }
+        },
+        {
+          "id": 12,
+          "image": "road_signs_paired_from_source/informatory/informatory_12.jpg",
+          "name": "Parking Scooters & Motorcycles",
+          "description": "This sign is erected at destination, which is meant for parking of scooters and motorcycles.",
+          "hover_text": "Parking Scooters & Motorcycles: This sign is erected at destination, which is meant for parking of scooters and motorcycles.",
+          "tooltip": {
+            "title": "Parking Scooters & Motorcycles",
+            "description": "This sign is erected at destination, which is meant for parking of scooters and motorcycles.",
+            "category": "informatory"
+          }
+        },
+        {
+          "id": 13,
+          "image": "road_signs_paired_from_source/informatory/informatory_13.jpg",
+          "name": "Parking Lot Cycles",
+          "description": "This particular sign indicates that this parking is meant for cycles.",
+          "hover_text": "Parking Lot Cycles: This particular sign indicates that this parking is meant for cycles.",
+          "tooltip": {
+            "title": "Parking Lot Cycles",
+            "description": "This particular sign indicates that this parking is meant for cycles.",
+            "category": "informatory"
+          }
+        },
+        {
+          "id": 14,
+          "image": "road_signs_paired_from_source/informatory/informatory_14.jpg",
+          "name": "Taxi Stand",
+          "description": "This sign is erected at destination which is meant for parking taxis only.",
+          "hover_text": "Taxi Stand: This sign is erected at destination which is meant for parking taxis only.",
+          "tooltip": {
+            "title": "Taxi Stand",
+            "description": "This sign is erected at destination which is meant for parking taxis only.",
+            "category": "informatory"
+          }
+        },
+        {
+          "id": 15,
+          "image": "road_signs_paired_from_source/informatory/informatory_15.jpg",
+          "name": "Auto Rickshaw Stand",
+          "description": "This sign is erected at destination, which is meant for parking Auto rickshaws.",
+          "hover_text": "Auto Rickshaw Stand: This sign is erected at destination, which is meant for parking Auto rickshaws.",
+          "tooltip": {
+            "title": "Auto Rickshaw Stand",
+            "description": "This sign is erected at destination, which is meant for parking Auto rickshaws.",
+            "category": "informatory"
+          }
+        },
+        {
+          "id": 16,
+          "image": "road_signs_paired_from_source/informatory/informatory_16.jpg",
+          "name": "Cycle Rickshaw Stand",
+          "description": "This sign is erected at destination, which is meant for parking Cycle rickshaws.",
+          "hover_text": "Cycle Rickshaw Stand: This sign is erected at destination, which is meant for parking Cycle rickshaws.",
+          "tooltip": {
+            "title": "Cycle Rickshaw Stand",
+            "description": "This sign is erected at destination, which is meant for parking Cycle rickshaws.",
+            "category": "informatory"
+          }
+        },
+        {
+          "id": 17,
+          "image": "road_signs_paired_from_source/informatory/informatory_17.jpg",
+          "name": "Flood Gauge",
+          "description": "This sign is erected on highways/roads near river, canal, lake etc. This sign indicates the level of water. It also cautions the danger level of the water.",
+          "hover_text": "Flood Gauge: This sign is erected on highways/roads near river, canal, lake etc. This sign indicates the level of water. It also cautions the danger level of the water.",
+          "tooltip": {
+            "title": "Flood Gauge",
+            "description": "This sign is erected on highways/roads near river, canal, lake etc. This sign indicates the level of water. It also cautions the danger level of the water.",
+            "category": "informatory"
+          }
+        },
+        {
+          "id": 18,
+          "image": "road_signs_paired_from_source/informatory/informatory_18.jpg",
+          "name": "Destination Sign",
+          "description": "This sign indicates the direction and distance to various destinations falling on that particular road. These signs are generally installed before intersections.",
+          "hover_text": "Destination Sign: This sign indicates the direction and distance to various destinations falling on that particular road. These signs are generally installed before intersections.",
+          "tooltip": {
+            "title": "Destination Sign",
+            "description": "This sign indicates the direction and distance to various destinations falling on that particular road. These signs are generally installed before intersections.",
+            "category": "informatory"
+          }
+        },
+        {
+          "id": 19,
+          "image": "road_signs_paired_from_source/informatory/informatory_19.jpg",
+          "name": "Direction Sign",
+          "description": "This sign shows the direction and distance of the destination/place written on it.",
+          "hover_text": "Direction Sign: This sign shows the direction and distance of the destination/place written on it.",
+          "tooltip": {
+            "title": "Direction Sign",
+            "description": "This sign shows the direction and distance of the destination/place written on it.",
+            "category": "informatory"
+          }
+        }
+      ]
+    }
+  }
+}

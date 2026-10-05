@@ -1,0 +1,127 @@
+@import "tailwindcss";
+@import "../styles/theme.css";
+
+::selection {
+  background: rgba(0, 123, 79, 0.26);
+  color: #fff;
+}
+
+body {
+  background: var(--rs-color-bg);
+  color: var(--rs-color-text);
+  font-family: var(--font-geist-sans);
+  overflow-x: hidden;
+}
+
+main {
+  min-height: calc(100vh - 320px);
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+  20%, 40%, 60%, 80% { transform: translateX(10px); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(100px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes buzz {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-in-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.4s ease-out;
+}
+
+.animate-buzz {
+  animation: buzz 0.5s ease-in-out;
+}
+
+.animate-blink {
+  animation: blink 1s ease-in-out infinite;
+}
+
+.certificate-export,
+.certificate-export * ,
+.certificate-export *::before,
+.certificate-export *::after {
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* CRITICAL: Override ALL colors to RGB to prevent oklab/lab parsing errors in html2canvas */
+.certificate-export,
+.certificate-export *,
+.certificate-export *::before,
+.certificate-export *::after {
+  /* Force all colors to RGB - prevents oklab parsing */
+  color: rgb(0, 0, 0) !important;
+  background-color: rgb(255, 255, 255) !important;
+  border-color: rgb(0, 0, 0) !important;
+}
+
+/* Preserve green colors for certificate (using RGB) */
+.certificate-export .text-green-800,
+.certificate-export .text-green-900 { color: rgb(22, 101, 52) !important; }
+.certificate-export .text-green-600 { color: rgb(22, 163, 74) !important; }
+.certificate-export .text-green-700 { color: rgb(21, 128, 61) !important; }
+.certificate-export .text-gray-500 { color: rgb(107, 114, 128) !important; }
+.certificate-export .text-gray-600 { color: rgb(75, 85, 99) !important; }
+.certificate-export .text-gray-700 { color: rgb(55, 65, 81) !important; }
+.certificate-export .text-gray-800 { color: rgb(31, 41, 55) !important; }
+.certificate-export .bg-white { background-color: rgb(255, 255, 255) !important; }
+.certificate-export .border-green-200 { border-color: rgb(187, 247, 208) !important; }
+.certificate-export .border-green-600 { border-color: rgb(22, 163, 74) !important; }
+
+@media print {
+  .certificate-preview-page {
+    padding: 0 !important;
+  }
+
+  .certificate-preview-page * {
+    visibility: hidden;
+  }
+
+  .certificate-preview-page .printable-certificate,
+  .certificate-preview-page .printable-certificate * {
+    visibility: visible;
+  }
+
+  .certificate-preview-page .printable-certificate {
+    position: absolute;
+    inset: 0;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 1200px;
+    background: #ffffff !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .certificate-preview-page .printable-certificate .certificate-export {
+    box-shadow: none !important;
+  }
+}

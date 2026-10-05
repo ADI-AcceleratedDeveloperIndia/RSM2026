@@ -1,0 +1,17 @@
+{
+  "crons": [
+    {
+      "path": "/api/admin/daily-report/cron",
+      "schedule": "59 23 * * *"
+    }
+  ]
+}
+
+
+
+
+
+
+
+
+

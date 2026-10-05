@@ -1,0 +1,10 @@
+MONGODB_URI=mongodb+srv://accelerateddeveloperindia_db_user:udGIs3RLzkFKzR88@rsm2026.m79iaow.mongodb.net/?appName=RSM2026
+
+NEXTAUTH_SECRET=BvXDSWo2hpZkRqUFbW/fOY0jlva0IN9MGrrbjAGt8So=
+
+NEXTAUTH_URL=https://your-app-name.vercel.app
+
+APP_ORIGIN=https://your-app-name.vercel.app
+
+CERT_HMAC_SECRET=ia4tnGwsH6WAa+GDdj1sJqr7GTlOH4PJUIrIEhWYsek=
+

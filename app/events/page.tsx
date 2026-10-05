@@ -1,0 +1,427 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useTranslation } from "react-i18next";
+import { Loader2, CalendarCheck, CheckCircle2, MapPin, Calendar, Clock } from "lucide-react";
+
+const DISTRICTS = [
+  "Adilabad",
+  "Bhadradri Kothagudem",
+  "Hyderabad",
+  "Jagtial",
+  "Jangaon",
+  "Jayashankar Bhupalpally",
+  "Jogulamba Gadwal",
+  "Kamareddy",
+  "Karimnagar",
+  "Khammam",
+  "Kumuram Bheem Asifabad",
+  "Mahabubabad",
+  "Mahabubnagar",
+  "Mancherial",
+  "Medak",
+  "Medchal–Malkajgiri",
+  "Mulugu",
+  "Nagarkurnool",
+  "Nalgonda",
+  "Narayanpet",
+  "Nirmal",
+  "Nizamabad",
+  "Peddapalli",
+  "Rajanna Sircilla",
+  "Ranga Reddy",
+  "Sangareddy",
+  "Siddipet",
+  "Suryapet",
+  "Vikarabad",
+  "Wanaparthy",
+  "Warangal",
+  "Hanumakonda",
+  "Yadadri Bhuvanagiri",
+];
+
+type Event = {
+  referenceId: string;
+  title: string;
+  date: string;
+  location: string;
+  organizerName: string;
+  institution: string;
+  approved: boolean;
+  groupPhoto?: string;
+  youtubeVideos?: string[];
+  createdAt: string;
+};
+
+export default function EventsPage() {
+  const { t, i18n } = useTranslation("common");
+  const { t: tc } = useTranslation("content");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [referenceId, setReferenceId] = useState<string | null>(null);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loadingEvents, setLoadingEvents] = useState(true);
+  const [organizerId, setOrganizerId] = useState("");
+  const [formData, setFormData] = useState({
+    title: "",
+    organizerId: "",
+    date: "",
+    location: "Karimnagar",
+    eventType: "statewide" as "statewide" | "regional",
+    eventContext: "online" as "online" | "offline", // Event context: online (on website) or offline (physical)
+    district: "",
+  });
+
+  useEffect(() => {
+    fetch("/api/events/list")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.events) {
+          setEvents(data.events);
+        }
+        setLoadingEvents(false);
+      })
+      .catch(() => {
+        setLoadingEvents(false);
+      });
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setSuccess(false);
+    setReferenceId(null);
+
+    try {
+      const response = await fetch("/api/events/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          organizerId: organizerId || formData.organizerId,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setSuccess(true);
+        setReferenceId(data.referenceId);
+        setFormData({
+          title: "",
+          organizerId: "",
+          date: "",
+          location: "",
+          eventType: "statewide",
+          eventContext: "online",
+          district: "",
+        });
+        setOrganizerId("");
+        // Refresh events list
+        fetch("/api/events/list")
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.events) setEvents(data.events);
+          });
+      } else {
+        alert(data.error || "Failed to create event");
+      }
+    } catch (error) {
+      alert("Failed to create event. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="rs-container py-14 space-y-8">
+      <div className="rs-card p-8 bg-gradient-to-br from-emerald-50 to-white flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div className="space-y-2">
+          <span className="rs-chip flex items-center gap-2">
+            <CalendarCheck className="h-4 w-4" /> {t("events")}
+          </span>
+          <h1 className="text-3xl font-semibold text-emerald-900">
+            {i18n.language === "te"
+              ? "రోడ్ సేఫ్టీ ఈవెంట్‌లు - కరీంనగర్"
+              : "Road Safety Events - Karimnagar"}
+          </h1>
+          <p className="text-slate-600 max-w-2xl">
+            {i18n.language === "te"
+              ? "కరీంనగర్ జిల్లాలో జరిగే రోడ్ సేఫ్టీ ఈవెంట్‌లను చూడండి. మీ ఈవెంట్‌ను లాగ్ చేయడానికి ఆర్గనైజర్ ID అవసరం."
+              : "Browse approved road safety events in Karimnagar district. Organizer ID required to create events."}
+          </p>
+        </div>
+      </div>
+
+      {/* Events List */}
+      <div className="space-y-6">
+        <h2 className="text-2xl font-semibold text-emerald-900">
+          {i18n.language === "te" ? "ఆమోదించబడిన ఈవెంట్‌లు" : "Approved Events"}
+        </h2>
+        {loadingEvents ? (
+          <div className="text-center py-8 text-slate-600">Loading events...</div>
+        ) : events.length === 0 ? (
+          <div className="text-center py-8 text-slate-600">
+            {i18n.language === "te"
+              ? "ఇంకా ఈవెంట్‌లు లేవు"
+              : "No events yet"}
+          </div>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {events.map((event) => (
+              <div 
+                key={event.referenceId} 
+                className="rs-card p-6 space-y-4 hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => window.location.href = `/events/${event.referenceId}`}
+              >
+                <div className="space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="text-lg font-semibold text-emerald-900 leading-tight">{event.title}</h3>
+                    {event.approved ? (
+                      <CheckCircle2 className="h-5 w-5 text-emerald-600 flex-shrink-0" />
+                    ) : (
+                      <Clock className="h-5 w-5 text-yellow-600 flex-shrink-0" />
+                    )}
+                  </div>
+                  <p className="text-sm text-emerald-700 font-medium">{event.organizerName}</p>
+                  <p className="text-xs text-slate-600">{event.institution}</p>
+                </div>
+                <div className="space-y-2 text-sm text-slate-600">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-emerald-600" />
+                    <span>{event.location}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-emerald-600" />
+                    <span>{new Date(event.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                  </div>
+                </div>
+                {(event.groupPhoto || (event.youtubeVideos && event.youtubeVideos.length > 0)) && (
+                  <div className="pt-2 border-t border-emerald-100">
+                    <p className="text-xs text-emerald-600">
+                      {i18n.language === "te" ? "మీడియా అందుబాటులో ఉంది" : "Media available"}
+                    </p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Create Event Form - Only for approved organizers */}
+      <div className="max-w-3xl mx-auto space-y-6">
+        <div className="rs-card p-8 bg-gradient-to-br from-amber-50 to-white">
+          <div className="space-y-2">
+            <h2 className="text-2xl font-semibold text-emerald-900">
+              {i18n.language === "te" ? "మీ రోడ్ సేఫ్టీ ఈవెంట్‌ను లాగ్ చేయండి" : "Log Your Road Safety Event"}
+            </h2>
+            <p className="text-slate-600">
+              {i18n.language === "te"
+                ? "మీ సంస్థ యొక్క రోడ్ సేఫ్టీ మాస్ కార్యకలాపాలను సమర్పించండి. ఆమోదించబడిన ప్రతి ఎంట్రీ ఒక రిఫరెన్స్ ID ను ఉత్పత్తి చేస్తుంది."
+                : "Submit your institution's Road Safety Month activities. Every approved entry generates a reference ID. You must be an approved organizer."}
+            </p>
+          </div>
+        </div>
+
+        <div className="rs-card p-8">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="organizerId" className="text-sm font-semibold text-emerald-900">
+                {i18n.language === "te" ? "ఆర్గనైజర్ ID" : "Organizer ID"} *
+              </Label>
+              <Input
+                id="organizerId"
+                value={organizerId || formData.organizerId}
+                onChange={(e) => {
+                  setOrganizerId(e.target.value);
+                  setFormData({ ...formData, organizerId: e.target.value });
+                }}
+                placeholder="KRMR-RSM-2026-PDL-RHL-ORGANIZER-00001"
+                required
+                className="h-11 rounded-lg border border-emerald-200"
+              />
+              <p className="text-xs text-slate-500">
+                {i18n.language === "te"
+                  ? "మీ ఫైనల్ ఆర్గనైజర్ ID ను నమోదు చేయండి"
+                  : "Enter your Final Organizer ID from organizer registration"}
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="title" className="text-sm font-semibold text-emerald-900">
+                {tc("eventTitle") || "Event Title"} *
+              </Label>
+              <Input
+                id="title"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                required
+                className="h-11 rounded-lg border border-emerald-200"
+              />
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="date" className="text-sm font-semibold text-emerald-900">
+                  {tc("eventDate") || "Event Date"} *
+                </Label>
+                <Input
+                  id="date"
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                  required
+                  className="h-11 rounded-lg border border-emerald-200"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="location" className="text-sm font-semibold text-emerald-900">
+                  {tc("location") || "Location"}
+                </Label>
+                <Input
+                  id="location"
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  placeholder={i18n.language === "te" ? "స్థానం (ఐచ్ఛికం)" : "Location (Optional)"}
+                  className="h-11 rounded-lg border border-emerald-200"
+                />
+                <p className="text-xs text-slate-500">
+                  {i18n.language === "te"
+                    ? "మీరు ఏదైనా స్థానం నమోదు చేయవచ్చు"
+                    : "You can enter any location"}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="eventType" className="text-sm font-semibold text-emerald-900">
+                {i18n.language === "te" ? "ఈవెంట్ రకం *" : "Event Type *"}
+              </Label>
+              <select
+                id="eventType"
+                value={formData.eventType}
+                onChange={(e) => {
+                  const newEventType = e.target.value as "statewide" | "regional";
+                  setFormData({ 
+                    ...formData, 
+                    eventType: newEventType,
+                    district: newEventType === "regional" ? "" : "" // Reset district when changing event type
+                  });
+                }}
+                required
+                className="h-11 w-full rounded-lg border border-emerald-200 px-3 text-sm focus:border-emerald-500 focus:outline-none"
+              >
+                <option value="statewide">
+                  {i18n.language === "te" ? "రాష్ట్రవ్యాప్త ఈవెంట్" : "Statewide Event"}
+                </option>
+                <option value="regional">
+                  {i18n.language === "te" ? "ప్రాంతీయ ఈవెంట్" : "Regional Event"}
+                </option>
+              </select>
+              <p className="text-xs text-slate-500">
+                {i18n.language === "te"
+                  ? "రాష్ట్రవ్యాప్త: అన్ని జిల్లాలలో | ప్రాంతీయ: ఒక జిల్లా/కాలేజీలో"
+                  : "Statewide: Across all districts | Regional: In one district/college"}
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="eventContext" className="text-sm font-semibold text-emerald-900">
+                {i18n.language === "te" ? "ఈవెంట్ సందర్భం *" : "Event Context *"}
+              </Label>
+              <select
+                id="eventContext"
+                value={formData.eventContext}
+                onChange={(e) => setFormData({ ...formData, eventContext: e.target.value as "online" | "offline" })}
+                required
+                className="h-11 w-full rounded-lg border border-emerald-200 px-3 text-sm focus:border-emerald-500 focus:outline-none"
+              >
+                <option value="online">
+                  {i18n.language === "te" ? "ఆన్లైన్ ఈవెంట్ (వెబ్‌సైట్‌లో)" : "Online Event (on website)"}
+                </option>
+                <option value="offline">
+                  {i18n.language === "te" ? "ఆఫ్‌లైన్ ఈవెంట్ (భౌతిక)" : "Offline Event (physical)"}
+                </option>
+              </select>
+              <p className="text-xs text-slate-500">
+                {i18n.language === "te"
+                  ? "ఆన్లైన్: వెబ్‌సైట్‌లో జరుగుతుంది | ఆఫ్‌లైన్: భౌతిక స్థలంలో జరుగుతుంది"
+                  : "Online: Happens on website | Offline: Physical event at a location"}
+              </p>
+            </div>
+
+            {formData.eventType === "regional" && (
+              <div className="space-y-2">
+                <Label htmlFor="district" className="text-sm font-semibold text-emerald-900">
+                  {i18n.language === "te" ? "జిల్లా *" : "District *"}
+                </Label>
+                <select
+                  id="district"
+                  value={formData.district}
+                  onChange={(e) => setFormData({ ...formData, district: e.target.value })}
+                  required
+                  className="h-11 w-full rounded-lg border border-emerald-200 px-3 text-sm focus:border-emerald-500 focus:outline-none"
+                >
+                  <option value="">{i18n.language === "te" ? "జిల్లాను ఎంచుకోండి" : "Select District"}</option>
+                  {DISTRICTS.map((district) => (
+                    <option key={district} value={district}>
+                      {district}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-slate-500">
+                  {i18n.language === "te"
+                    ? "ప్రాంతీయ ఈవెంట్ కోసం జిల్లా తప్పనిసరి"
+                    : "District is required for regional events"}
+                </p>
+              </div>
+            )}
+
+            <Button type="submit" className="rs-btn-primary w-full justify-center" disabled={loading}>
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" /> {tc("submitting") || "Submitting..."}
+                </>
+              ) : (
+                tc("submitEvent") || "Submit Event"
+              )}
+            </Button>
+
+            {success && (
+              <div className="p-6 bg-emerald-50 border border-emerald-100 rounded-lg space-y-2">
+                <p className="text-emerald-800 font-semibold flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5" />{" "}
+                  {i18n.language === "te"
+                    ? "ఈవెంట్ విజయవంతంగా లాగ్ చేయబడింది!"
+                    : "Event logged successfully!"}
+                </p>
+                {referenceId && (
+                  <div className="space-y-2">
+                    <p className="text-sm text-emerald-900">
+                      {i18n.language === "te" ? "రిఫరెన్స్ ID" : "Reference ID"}:{" "}
+                      <span className="font-mono font-semibold">{referenceId}</span>
+                    </p>
+                    <p className="text-xs text-emerald-700">
+                      {i18n.language === "te" 
+                        ? `ఈవెంట్ రకం: ${formData.eventType === "statewide" ? "రాష్ట్రవ్యాప్త" : "ప్రాంతీయ"} | సందర్భం: ${formData.eventContext === "online" ? "ఆన్లైన్" : "ఆఫ్‌లైన్"}`
+                        : `Event Type: ${formData.eventType === "statewide" ? "Statewide Event" : "Regional Event"} | Context: ${formData.eventContext === "online" ? "Online" : "Offline"}`}
+                    </p>
+                  </div>
+                )}
+                <p className="text-xs text-emerald-800">
+                  {i18n.language === "te"
+                    ? "ఈ ID ని పాల్గొనేవారు తమ సర్టిఫికేట్‌లను ఉత్పత్తి చేయడానికి ఉపయోగించవచ్చు. ఈవెంట్ అడ్మిన్ ఆమోదం తర్వాత ప్రదర్శించబడుతుంది."
+                    : "Participants can use this ID to generate certificates. Event will be visible after admin approval."}
+                </p>
+              </div>
+            )}
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
