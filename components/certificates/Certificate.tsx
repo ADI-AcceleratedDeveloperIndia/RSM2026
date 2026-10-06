@@ -175,7 +175,7 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data }, ref)
         <div className="relative px-10 pt-12 pb-16 md:px-16 md:pt-16 md:pb-20" style={{ minHeight: "810px" }}>
           {/* Header */}
           <div className="flex flex-col items-start justify-between gap-4 border-b border-green-200 pb-6 md:flex-row">
-            <div className="flex items-center justify-start gap-2" style={{ maxWidth: "380px" }}>
+            <div className="flex items-center justify-start gap-3.5" style={{ maxWidth: "460px" }}>
               <img
                 src="/assets/logo/state-government-emblem.svg"
                 alt="State Government Transport Department"
@@ -184,6 +184,24 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data }, ref)
                 className="h-20 w-20 object-contain flex-shrink-0"
                 style={{ display: "block" }}
               />
+              <div className="flex flex-col justify-center text-left">
+                <span className={`${inter.className} text-xs font-bold tracking-widest text-green-900 uppercase`}>
+                  Government Transport Department
+                </span>
+                <span className={`${inter.className} text-[11px] font-medium text-gray-600`}>
+                  National Road Safety Month 2027
+                </span>
+                {data.institution ? (
+                  <div className="mt-1 flex items-center gap-1.5 border-t border-green-200 pt-1">
+                    <span className={`${inter.className} text-[9px] font-bold tracking-wider text-green-800 uppercase`}>
+                      Partner Institution:
+                    </span>
+                    <span className={`${inter.className} text-xs font-bold text-green-950 truncate max-w-[260px]`}>
+                      {data.institution}
+                    </span>
+                  </div>
+                ) : null}
+              </div>
             </div>
 
             <div className="flex items-center gap-3 text-center" style={{ flex: 1, justifyContent: "flex-end" }}>
@@ -228,8 +246,19 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data }, ref)
             </div>
           </div>
 
-          {/* Title */}
+          {/* Title & Institutional Heading */}
           <div className="mt-10 text-center">
+            {data.institution ? (
+              <div className="mb-4 inline-flex flex-col items-center justify-center">
+                <span className={`${inter.className} text-xs font-bold uppercase tracking-[0.25em] text-emerald-800 bg-emerald-100/80 px-4 py-1 rounded-full border border-emerald-300 shadow-2xs`}>
+                  Organised in Joint Collaboration with
+                </span>
+                <h2 className={`${playfair.className} mt-2 text-2xl md:text-3xl font-extrabold text-emerald-950 tracking-wide border-b-2 border-emerald-600 pb-1.5 px-8 max-w-3xl`}>
+                  {data.institution}
+                </h2>
+              </div>
+            ) : null}
+
             <h1
               className={`${playfair.className} text-3xl md:text-4xl font-semibold text-green-900 uppercase tracking-wide`}
             >
