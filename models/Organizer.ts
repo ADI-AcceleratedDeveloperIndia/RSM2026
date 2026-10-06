@@ -13,6 +13,7 @@ const OrganizerSchema = new Schema({
     enum: ["pending", "approved", "rejected"], 
     default: "pending" 
   },
+  passwordHash: { type: String },
   approvedBy: { type: String },
   approvedAt: { type: Date },
   createdAt: { type: Date, default: Date.now },

@@ -19,6 +19,7 @@ export default function OrganizerPage() {
     phone: "",
     institution: "",
     designation: "",
+    password: "",
   });
   const [temporaryId, setTemporaryId] = useState<string | null>(null);
   const [checkId, setCheckId] = useState("");
@@ -376,6 +377,26 @@ export default function OrganizerPage() {
           </p>
         </div>
 
+        {/* Organizer Login Banner */}
+        <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-sm font-bold text-emerald-950">
+              {i18n.language === "te" ? "ఇప్పటికే నమోదైన ఆర్గనైజర్లా?" : "Already Registered as an Organizer?"}
+            </h2>
+            <p className="text-xs text-emerald-800">
+              {i18n.language === "te"
+                ? "మీ ఆర్గనైజర్ డ్యాష్‌బోర్డ్, ఈవెంట్‌లు మరియు సర్టిఫికెట్ల కోసం లాగిన్ అవ్వండి."
+                : "Sign in directly to access your personal dashboard, manage events, and track participants."}
+            </p>
+          </div>
+          <a
+            href="/organizer/login"
+            className="inline-flex items-center justify-center px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-700 text-white hover:bg-emerald-800 transition shadow-sm whitespace-nowrap"
+          >
+            {i18n.language === "te" ? "ఆర్గనైజర్ లాగిన్ →" : "Organizer Sign In →"}
+          </a>
+        </div>
+
         <div className="flex gap-4 mb-6">
           <Button
             variant={mode === "register" ? "default" : "outline"}
@@ -439,6 +460,25 @@ export default function OrganizerPage() {
                       setFormData({ ...formData, email: e.target.value })
                     }
                   />
+                </div>
+                <div>
+                  <Label htmlFor="password">
+                    {i18n.language === "te" ? "పాస్‌వర్డ్ (లాగిన్ కోసం)" : "Account Password (for Sign In)"}
+                  </Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••••••"
+                    value={formData.password}
+                    onChange={(e) =>
+                      setFormData({ ...formData, password: e.target.value })
+                    }
+                  />
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    {i18n.language === "te"
+                      ? "మీరు తర్వాత మీ Organizer ID మరియు ఈ పాస్‌వర్డ్ తో లాగిన్ అవ్వవచ్చు."
+                      : "Create a password to easily sign in to your Organizer Dashboard."}
+                  </p>
                 </div>
                 <div>
                   <Label htmlFor="phone">

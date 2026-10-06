@@ -81,12 +81,12 @@ export async function GET() {
         actions: a.total,
         hazards: h.total,
         resolvedHazards: h.resolved,
-        score: sc?.overallScore || 65,
+        score: sc?.overallScore || 0,
         pillars: sc?.pillarScores || {
-          education: 18,
-          engineering: 15,
-          enforcement: 16,
-          emergency: 14,
+          education: 0,
+          engineering: 0,
+          enforcement: 0,
+          emergency: 0,
         },
       };
     });
@@ -97,24 +97,16 @@ export async function GET() {
   } catch (error) {
     console.error("Safety intelligence error:", error);
 
-    // Provide high-fidelity fallback intelligence report
-    const fallbackMetrics = TELANGANA_DISTRICTS.slice(0, 10).map((d, i) => ({
-      district: d.name,
-      participants: 120 + i * 15,
-      events: 4 + (i % 3),
-      actions: 6 + (i % 4),
-      hazards: 8 + (i % 5),
-      resolvedHazards: 3 + (i % 2),
-      score: 72 + (i % 15),
-      pillars: {
-        education: 20,
-        engineering: 12 + (i % 5),
-        enforcement: 18,
-        emergency: 14,
-      },
-    }));
-
-    const fallbackReport = generateSafetyIntelligence(fallbackMetrics);
-    return NextResponse.json(fallbackReport);
+    // Provide clean real-time empty intelligence report
+    return NextResponse.json({
+      overallRiskLevel: "Low",
+      intelligenceIndex: 100,
+      totalAnomalies: 0,
+      criticalAlerts: 0,
+      anomalies: [],
+      recommendations: [],
+      pillarBalanceAlerts: [],
+      generatedAt: new Date().toISOString(),
+    });
   }
 }

@@ -157,7 +157,7 @@ export default function ActionsPage() {
         <Card className="border-slate-200">
           <CardContent className="p-4">
             <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Active Districts</p>
-            <p className="text-3xl font-bold text-slate-900 mt-2">33</p>
+            <p className="text-3xl font-bold text-slate-900 mt-2">{DISTRICT_NAMES.length}</p>
             <p className="text-xs text-slate-500 mt-1">Across the state</p>
           </CardContent>
         </Card>

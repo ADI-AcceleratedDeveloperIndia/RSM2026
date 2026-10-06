@@ -88,7 +88,7 @@ export default function DistrictDetailPage({
             </div>
             <h1 className="text-3xl sm:text-4xl font-bold text-white">{scorecard.districtName} District</h1>
             <p className="text-xs sm:text-sm text-slate-300">
-              Rank #{scorecard.rank || 1} of 33 Districts • Computed live from field evidence & verified impact
+              Rank #{scorecard.rank || 1} • Computed live from field evidence & verified impact
             </p>
           </div>
 

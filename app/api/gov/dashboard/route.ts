@@ -7,6 +7,9 @@ import QuizAttempt from "@/models/QuizAttempt";
 import SimStat from "@/models/SimStat";
 import Club from "@/models/Club";
 import ParentsPledge from "@/models/ParentsPledge";
+import Action from "@/models/Action";
+import Hazard from "@/models/Hazard";
+import Institution from "@/models/Institution";
 
 export async function GET(request: Request) {
   try {
@@ -17,7 +20,7 @@ export async function GET(request: Request) {
     // Build district filter
     const districtFilter = district ? { district } : {};
     
-    // Parallel queries
+    // Parallel queries across all active models
     const [
       totalCertificates,
       totalEvents,
@@ -27,7 +30,12 @@ export async function GET(request: Request) {
       totalSimPlays,
       totalClubs,
       totalPledges,
-      // 4E breakdown from certificates by activityType
+      totalActionsCompleted,
+      totalHazardsReported,
+      totalInstitutions,
+      actionsToVerify,
+      hazardsToAssign,
+      // 4E breakdown from certificates and actions
       certificatesByActivity
     ] = await Promise.all([
       Certificate.countDocuments(districtFilter),
@@ -38,6 +46,11 @@ export async function GET(request: Request) {
       SimStat.countDocuments(),
       Club.countDocuments(districtFilter),
       ParentsPledge.countDocuments(districtFilter),
+      Action.countDocuments({ status: "completed", ...districtFilter }),
+      Hazard.countDocuments(districtFilter),
+      Institution.countDocuments(districtFilter),
+      Action.countDocuments({ status: "completed", verified: false, ...districtFilter }),
+      Hazard.countDocuments({ status: "reported", ...districtFilter }),
       Certificate.aggregate([
         ...(district ? [{ $match: { district } }] : []),
         { $group: { _id: "$activityType", count: { $sum: 1 } } }
@@ -75,16 +88,16 @@ export async function GET(request: Request) {
     return NextResponse.json({
       kpis: {
         totalParticipants: totalCertificates,
-        actionsCompleted: 0,  // Will be populated when Action model is active
-        hazardsReported: 0,   // Will be populated when Hazard model is active
-        institutionsActive: totalClubs,
+        actionsCompleted: totalActionsCompleted,
+        hazardsReported: totalHazardsReported,
+        institutionsActive: totalInstitutions > 0 ? totalInstitutions : totalClubs,
         certificatesIssued: totalCertificates,
         eventsConducted: totalEvents,
       },
       fourEBreakdown,
       pending: {
-        actionsToVerify: 0,
-        hazardsToAssign: 0,
+        actionsToVerify,
+        hazardsToAssign,
         organizersToApprove: pendingOrganizers,
       },
       topDistricts: districtStats.map((d: { _id: string; participants: number; avgScore: number }, i: number) => ({
@@ -102,35 +115,29 @@ export async function GET(request: Request) {
       }
     });
   } catch (error) {
-    console.warn("Gov dashboard using fallback metrics:", error);
+    console.error("Gov dashboard real-time data error:", error);
     return NextResponse.json({
       kpis: {
-        totalParticipants: 245890,
-        actionsCompleted: 1420,
-        hazardsReported: 3450,
-        institutionsActive: 1245,
-        certificatesIssued: 180430,
-        eventsConducted: 4500,
+        totalParticipants: 0,
+        actionsCompleted: 0,
+        hazardsReported: 0,
+        institutionsActive: 0,
+        certificatesIssued: 0,
+        eventsConducted: 0,
       },
-      fourEBreakdown: { education: 45, engineering: 25, enforcement: 20, emergency: 10 },
+      fourEBreakdown: { education: 0, engineering: 0, enforcement: 0, emergency: 0 },
       pending: {
-        actionsToVerify: 124,
-        hazardsToAssign: 45,
-        organizersToApprove: 12,
+        actionsToVerify: 0,
+        hazardsToAssign: 0,
+        organizersToApprove: 0,
       },
-      topDistricts: [
-        { rank: 1, district: "Hyderabad", participants: 42100, avgScore: 92 },
-        { rank: 2, district: "Karimnagar", participants: 28400, avgScore: 88 },
-        { rank: 3, district: "Warangal", participants: 24600, avgScore: 85 },
-        { rank: 4, district: "Medchal-Malkajgiri", participants: 21900, avgScore: 82 },
-        { rank: 5, district: "Nizamabad", participants: 18300, avgScore: 79 },
-      ],
+      topDistricts: [],
       totals: {
-        organizers: 240,
-        quizAttempts: 95400,
-        simPlays: 68200,
-        clubs: 1245,
-        pledges: 34200,
+        organizers: 0,
+        quizAttempts: 0,
+        simPlays: 0,
+        clubs: 0,
+        pledges: 0,
       }
     });
   }

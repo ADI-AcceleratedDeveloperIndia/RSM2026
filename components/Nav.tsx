@@ -324,6 +324,17 @@ export default function Nav() {
 
           {/* Right Header Action Controls */}
           <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+            {/* Organizer Hub Login */}
+            <Link
+              href="/organizer/login"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200 transition-colors shadow-sm"
+              title="Institutional Road Safety Organizers Portal"
+            >
+              <Users className="h-3.5 w-3.5 text-emerald-700" />
+              <span className="hidden sm:inline">Organizer Hub</span>
+              <span className="sm:hidden">Org</span>
+            </Link>
+
             {/* Government Mission Control Portal */}
             <Link
               href="/gov"
@@ -497,6 +508,16 @@ export default function Nav() {
               >
                 <Award className="h-4 w-4 text-emerald-600" />
                 <span>{t("certificates") || "Certificates"}</span>
+              </Link>
+
+              {/* Organizer Portal */}
+              <Link
+                href="/organizer/login"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition bg-emerald-50 text-emerald-900 border border-emerald-200 hover:bg-emerald-100 mt-1"
+              >
+                <Users className="h-4 w-4 text-emerald-600" />
+                <span>👥 Organizer Mission Hub</span>
               </Link>
 
               {/* Government Mission Control */}

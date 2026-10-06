@@ -5,7 +5,7 @@ import AdminUser from "@/models/AdminUser";
 
 const DEFAULT_OFFICERS = [
   {
-    _id: "usr_mock_001",
+    _id: "usr_gov_001",
     email: "admin@rsm2027.gov.in",
     fullName: "RSM 2027 Administrator",
     role: "superadmin",
@@ -14,7 +14,7 @@ const DEFAULT_OFFICERS = [
     permissions: ["all"],
   },
   {
-    _id: "usr_mock_002",
+    _id: "usr_gov_002",
     email: "commissioner.transport@stategov.in",
     fullName: "Transport Commissioner, State Government",
     role: "state_admin",
@@ -23,7 +23,7 @@ const DEFAULT_OFFICERS = [
     permissions: ["state_reports", "policy_approvals", "interventions"],
   },
   {
-    _id: "usr_mock_003",
+    _id: "usr_gov_003",
     email: "dto.hyderabad@stategov.in",
     fullName: "District Road Transport Authority Head, Hyderabad (Head of Transport)",
     role: "district_admin",
@@ -32,7 +32,7 @@ const DEFAULT_OFFICERS = [
     permissions: ["district_verification", "hazard_dispatch"],
   },
   {
-    _id: "usr_mock_004",
+    _id: "usr_gov_004",
     email: "dto.karimnagar@stategov.in",
     fullName: "District Road Transport Authority Head, Karimnagar (Head of Transport)",
     role: "district_admin",
@@ -41,7 +41,7 @@ const DEFAULT_OFFICERS = [
     permissions: ["district_verification", "hazard_dispatch"],
   },
   {
-    _id: "usr_mock_005",
+    _id: "usr_gov_005",
     email: "dto.warangal@stategov.in",
     fullName: "District Road Transport Authority Head, Warangal (Head of Transport)",
     role: "district_admin",
@@ -50,7 +50,7 @@ const DEFAULT_OFFICERS = [
     permissions: ["district_verification", "hazard_dispatch"],
   },
   {
-    _id: "usr_mock_006",
+    _id: "usr_gov_006",
     email: "verifier.central@stategov.in",
     fullName: "District Transport Nodal Field Verifier",
     role: "verifier",

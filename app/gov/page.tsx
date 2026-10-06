@@ -27,12 +27,12 @@ export default function GovDashboard() {
                             (apiData.fourEBreakdown?.emergency || 0) || 1;
             setData({
               kpis: [
-                { label: "Total Participants", value: (apiData.kpis.totalParticipants || 0).toLocaleString(), icon: Users, trend: "+12%" },
-                { label: "Actions Completed", value: (apiData.kpis.actionsCompleted || 0).toLocaleString(), icon: CheckCircle, trend: "+5%" },
-                { label: "Hazards Reported", value: (apiData.kpis.hazardsReported || 0).toLocaleString(), icon: AlertTriangle, trend: "-2%" },
-                { label: "Institutions Active", value: (apiData.kpis.institutionsActive || 0).toLocaleString(), icon: Building, trend: "+8%" },
-                { label: "Certificates Issued", value: (apiData.kpis.certificatesIssued || 0).toLocaleString(), icon: Award, trend: "+15%" },
-                { label: "Events Conducted", value: (apiData.kpis.eventsConducted || 0).toLocaleString(), icon: Calendar, trend: "+20%" },
+                { label: "Total Participants", value: (apiData.kpis.totalParticipants || 0).toLocaleString(), icon: Users, trend: "Live" },
+                { label: "Actions Completed", value: (apiData.kpis.actionsCompleted || 0).toLocaleString(), icon: CheckCircle, trend: "Live" },
+                { label: "Hazards Reported", value: (apiData.kpis.hazardsReported || 0).toLocaleString(), icon: AlertTriangle, trend: "Live" },
+                { label: "Institutions Active", value: (apiData.kpis.institutionsActive || 0).toLocaleString(), icon: Building, trend: "Live" },
+                { label: "Certificates Issued", value: (apiData.kpis.certificatesIssued || 0).toLocaleString(), icon: Award, trend: "Live" },
+                { label: "Events Conducted", value: (apiData.kpis.eventsConducted || 0).toLocaleString(), icon: Calendar, trend: "Live" },
               ],
               fourE: {
                 education: Math.round(((apiData.fourEBreakdown?.education || 0) / total4E) * 100),
@@ -49,57 +49,39 @@ export default function GovDashboard() {
                 ? apiData.topDistricts.map((d: any) => ({
                     rank: d.rank,
                     name: d.district,
-                    score: d.avgScore || 85,
-                    grade: d.avgScore >= 80 ? "A" : d.avgScore >= 60 ? "B" : "C",
+                    score: d.avgScore || 0,
+                    grade: d.avgScore >= 80 ? "A" : d.avgScore >= 60 ? "B" : d.avgScore >= 40 ? "C" : "D",
                   }))
-                : [
-                    { rank: 1, name: "Hyderabad", score: 92, grade: "A+" },
-                    { rank: 2, name: "Karimnagar", score: 88, grade: "A" },
-                    { rank: 3, name: "Warangal", score: 85, grade: "A" },
-                    { rank: 4, name: "Medchal-Malkajgiri", score: 82, grade: "B+" },
-                    { rank: 5, name: "Nizamabad", score: 79, grade: "B" },
-                  ],
+                : [],
               recentActivity: [
-                { id: 1, text: "Campaign events recorded across districts", time: "Just now" },
-                { id: 2, text: "Parent safety pledges collected in institutions", time: "1 hour ago" },
-                { id: 3, text: "Interactive simulations cleared by students", time: "2 hours ago" },
+                { id: 1, text: "Platform initialized for Road Safety Month 2027", time: "Active" },
               ]
             });
             return;
           }
         }
       } catch (err) {
-        console.warn("Using fallback dashboard data:", err);
+        console.warn("Using real-time zero fallback dashboard data:", err);
       }
       
-      // Fallback
+      // Clean zeroed real-time fallback
       setData({
         kpis: [
-          { label: "Total Participants", value: "245,890", icon: Users, trend: "+12%" },
-          { label: "Actions Completed", value: "1,200", icon: CheckCircle, trend: "+5%" },
-          { label: "Hazards Reported", value: "3,450", icon: AlertTriangle, trend: "-2%" },
-          { label: "Institutions Active", value: "1,245", icon: Building, trend: "+8%" },
-          { label: "Certificates Issued", value: "180,430", icon: Award, trend: "+15%" },
-          { label: "Events Conducted", value: "4,500", icon: Calendar, trend: "+20%" },
+          { label: "Total Participants", value: "0", icon: Users, trend: "Live" },
+          { label: "Actions Completed", value: "0", icon: CheckCircle, trend: "Live" },
+          { label: "Hazards Reported", value: "0", icon: AlertTriangle, trend: "Live" },
+          { label: "Institutions Active", value: "0", icon: Building, trend: "Live" },
+          { label: "Certificates Issued", value: "0", icon: Award, trend: "Live" },
+          { label: "Events Conducted", value: "0", icon: Calendar, trend: "Live" },
         ],
-        fourE: { education: 45, engineering: 25, enforcement: 20, emergency: 10 },
+        fourE: { education: 0, engineering: 0, enforcement: 0, emergency: 0 },
         pendingActions: [
-          { label: "actions to verify", value: 124 },
-          { label: "hazards to assign", value: 45 },
-          { label: "organizers to approve", value: 12 },
+          { label: "actions to verify", value: 0 },
+          { label: "hazards to assign", value: 0 },
+          { label: "organizers to approve", value: 0 },
         ],
-        topDistricts: [
-          { rank: 1, name: "Hyderabad", score: 92, grade: "A+" },
-          { rank: 2, name: "Karimnagar", score: 88, grade: "A" },
-          { rank: 3, name: "Warangal", score: 85, grade: "A" },
-          { rank: 4, name: "Medchal-Malkajgiri", score: 82, grade: "B+" },
-          { rank: 5, name: "Nizamabad", score: 79, grade: "B" },
-        ],
-        recentActivity: [
-          { id: 1, text: "Hazard #402 resolved in Hyderabad", time: "10 mins ago" },
-          { id: 2, text: "New Institution 'JNTU' registered", time: "1 hour ago" },
-          { id: 3, text: "Mass pledge event completed in Medchal", time: "2 hours ago" },
-        ]
+        topDistricts: [],
+        recentActivity: []
       });
       // Fetch intelligence report
       try {
@@ -229,7 +211,7 @@ export default function GovDashboard() {
 
             <div className="flex items-center justify-between pt-2 border-t border-indigo-800/50 text-xs">
               <span className="text-indigo-300">
-                {intelligence.totalAnomalies} active anomalies detected across 33 revenue districts
+                {intelligence.totalAnomalies} active anomalies detected across state revenue districts
               </span>
               <Link
                 href="/gov/4e"
