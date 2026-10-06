@@ -270,13 +270,18 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data }, ref)
             <p className={`${playfair.className} mt-4 text-3xl md:text-4xl font-semibold text-green-900`}>
               {data.fullName}
             </p>
-            {data.institution && (
-              <p className={`${inter.className} mt-2 text-base text-gray-700 font-medium`}>
-                {data.institution}
-              </p>
-            )}
-            <p className={`${inter.className} mt-2 text-base text-gray-600`}>
-              {data.district && `District: ${data.district}`}
+            {data.institution ? (
+              <div className="mt-3.5 inline-flex items-center justify-center gap-2 px-6 py-2 rounded-full bg-emerald-50 border border-emerald-200 shadow-sm max-w-2xl mx-auto">
+                <span className={`${inter.className} text-xs font-bold uppercase tracking-wider text-emerald-800`}>
+                  Representing Organisation / Institution:
+                </span>
+                <span className={`${playfair.className} text-base md:text-lg font-bold text-emerald-950`}>
+                  {data.institution}
+                </span>
+              </div>
+            ) : null}
+            <p className={`${inter.className} mt-2.5 text-sm text-gray-600`}>
+              {data.district && `District Jurisdiction: ${data.district}`}
             </p>
           </div>
 

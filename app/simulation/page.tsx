@@ -10,7 +10,7 @@ import HelmetPrototype from "./HelmetPrototype";
 import TripleRidingSimulation from "./TripleRidingSimulation";
 import DrunkDriveSimulation from "./DrunkDriveSimulation";
 import OverspeedSimulation from "./OverspeedSimulation";
-import { BrainCircuit, Sparkles, ShieldCheck, WineOff, Trophy, ArrowRight, Gauge } from "lucide-react";
+import { BrainCircuit, Sparkles, ShieldCheck, WineOff, Trophy, ArrowRight, Gauge, Check, Users } from "lucide-react";
 
 export default function SimulationPage() {
   const { t, i18n } = useTranslation("common");
@@ -18,6 +18,7 @@ export default function SimulationPage() {
   const router = useRouter();
   const [completedSims, setCompletedSims] = useState<Set<string>>(new Set());
   const [allCompleted, setAllCompleted] = useState(false);
+  const [activeTab, setActiveTab] = useState("helmet");
 
   useEffect(() => {
     // Check sessionStorage for completed simulations
@@ -58,139 +59,193 @@ export default function SimulationPage() {
   };
   
   return (
-    <div className="rs-container py-12 space-y-12">
-      <div className="rs-card p-8 bg-gradient-to-br from-emerald-50 to-white flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-        <div className="space-y-4">
-          <span className="rs-chip flex items-center gap-2">
-            <BrainCircuit className="h-4 w-4" /> {tc("simulationLab")}
+    <div className="rs-container py-6 sm:py-12 space-y-8 sm:space-y-12">
+      {/* Header Banner */}
+      <div className="rs-card p-6 sm:p-8 bg-gradient-to-br from-emerald-50 via-teal-50/30 to-white flex flex-col md:flex-row md:items-center md:justify-between gap-6 border-2 border-emerald-100 rounded-3xl">
+        <div className="space-y-3">
+          <span className="rs-chip flex items-center gap-2 w-fit">
+            <BrainCircuit className="h-4 w-4" /> {tc("simulationLab") || "Gamified Simulation Lab"}
           </span>
-          <h1 className="text-3xl font-semibold text-emerald-900">{tc("spotTheViolationFixIt") || "Spot the Violation → Fix It!"}</h1>
-          <p className="text-slate-600 max-w-2xl">
-            {tc("dragAndDropLearning") || "Drag-and-drop micro learning challenges that help you identify and correct common road safety violations. Complete all 4 simulations to generate your certificate."}
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-emerald-950 tracking-tight">
+            Spot the Violation → Fix It!
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
+            {tc("dragAndDropLearning") || "Interactive micro-challenges designed for students & youth. Identify lethal road violations and apply the scientific fix to generate your certified state credential."}
           </p>
         </div>
-        <div className="rounded-2xl bg-white border border-emerald-100 p-5 shadow-sm text-sm text-emerald-700 space-y-3">
-          <p className="font-semibold flex items-center gap-2"><Sparkles className="h-4 w-4" /> {tc("progress") || "Progress"}</p>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span>{i18n.language === "te" ? "పూర్తి చేసిన సిమ్యులేషన్‌లు" : "Completed Simulations"}</span>
-              <span className="font-bold text-emerald-900">{completedSims.size} / 4</span>
-            </div>
-            <div className="w-full bg-emerald-100 rounded-full h-2">
-              <div 
-                className="bg-emerald-600 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${(completedSims.size / 4) * 100}%` }}
-              />
-            </div>
+
+        {/* Progress Pill Card */}
+        <div className="rounded-2xl bg-white border border-emerald-100 p-4 sm:p-5 shadow-sm text-sm text-emerald-800 space-y-2.5 shrink-0 min-w-[240px]">
+          <div className="flex items-center justify-between">
+            <span className="font-bold flex items-center gap-1.5 text-xs text-slate-700">
+              <Sparkles className="h-4 w-4 text-emerald-600" />
+              <span>Lab Completion</span>
+            </span>
+            <span className="font-black text-sm text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+              {completedSims.size} / 4 Done
+            </span>
           </div>
+          
+          <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+            <div 
+              className="bg-emerald-600 h-2.5 rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${(completedSims.size / 4) * 100}%` }}
+            />
+          </div>
+
+          <p className="text-[11px] text-slate-500 text-center font-medium">
+            {completedSims.size === 4 
+              ? "🎉 Ready for Official Certificate!"
+              : `Complete ${4 - completedSims.size} more scenario${4 - completedSims.size > 1 ? "s" : ""}`}
+          </p>
         </div>
       </div>
 
-      <Card className="max-w-4xl mx-auto shadow-none border-none">
-        <CardHeader className="text-center">
-          <CardTitle>{tc("interactiveRoadSafetySimulations") || "Interactive Road Safety Simulations"}</CardTitle>
-          <CardDescription>
-            {tc("chooseViolationScenario") || "Choose a violation scenario and drag the suggested solutions onto the violation to transform the scene into a safe one."}
+      {/* Main Simulation Tabs Engine */}
+      <Card className="max-w-4xl mx-auto shadow-none border-none bg-transparent">
+        <CardHeader className="text-center px-2 pb-4">
+          <CardTitle className="text-xl sm:text-2xl font-bold text-slate-900">
+            Interactive Safety Scenarios
+          </CardTitle>
+          <CardDescription className="text-xs sm:text-sm text-slate-500">
+            Select a violation below. Tap the corrective tool to inspect or tap to rectify.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="helmet" className="w-full">
-            <div className="space-y-4">
-              <TabsList className="grid w-full grid-cols-4 gap-2 bg-transparent p-0">
+
+        <CardContent className="px-0 sm:px-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            {/* Mobile-First Responsive Violation Switcher */}
+            <div className="space-y-3 mb-6">
+              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-2 bg-transparent p-0 h-auto">
+                {/* 1. Helmet */}
                 <TabsTrigger
                   value="helmet"
-                  className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-lg flex items-center justify-center gap-2 rounded-lg border-2 border-emerald-200 bg-white px-3 py-3 text-sm font-semibold text-emerald-700 transition-all hover:border-emerald-400 hover:bg-emerald-50"
+                  className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-md flex items-center justify-between rounded-2xl border-2 border-emerald-100 bg-white px-3 py-3 text-xs font-bold text-slate-700 transition-all hover:border-emerald-300 min-h-[48px]"
                 >
-                  <ShieldCheck className="h-5 w-5" />
-                  <span className="hidden sm:inline">Violation 1</span>
-                  <span className="sm:hidden">V1</span>
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="h-4 w-4 shrink-0" />
+                    <span>1. Helmet</span>
+                  </div>
+                  {completedSims.has("helmet") && (
+                    <span className="h-5 w-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] shrink-0">
+                      ✓
+                    </span>
+                  )}
                 </TabsTrigger>
+
+                {/* 2. Triple Riding */}
                 <TabsTrigger
                   value="triple"
-                  className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-lg flex items-center justify-center gap-2 rounded-lg border-2 border-emerald-200 bg-white px-3 py-3 text-sm font-semibold text-emerald-700 transition-all hover:border-emerald-400 hover:bg-emerald-50"
+                  className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-md flex items-center justify-between rounded-2xl border-2 border-emerald-100 bg-white px-3 py-3 text-xs font-bold text-slate-700 transition-all hover:border-emerald-300 min-h-[48px]"
                 >
-                  <ShieldCheck className="h-5 w-5" />
-                  <span className="hidden sm:inline">Violation 2</span>
-                  <span className="sm:hidden">V2</span>
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4 shrink-0" />
+                    <span>2. Overload</span>
+                  </div>
+                  {completedSims.has("triple") && (
+                    <span className="h-5 w-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] shrink-0">
+                      ✓
+                    </span>
+                  )}
                 </TabsTrigger>
+
+                {/* 3. Drunk Driving */}
                 <TabsTrigger
                   value="drunk"
-                  className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-lg flex items-center justify-center gap-2 rounded-lg border-2 border-emerald-200 bg-white px-3 py-3 text-sm font-semibold text-emerald-700 transition-all hover:border-emerald-400 hover:bg-emerald-50"
+                  className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-md flex items-center justify-between rounded-2xl border-2 border-emerald-100 bg-white px-3 py-3 text-xs font-bold text-slate-700 transition-all hover:border-emerald-300 min-h-[48px]"
                 >
-                  <WineOff className="h-5 w-5" />
-                  <span className="hidden sm:inline">Violation 3</span>
-                  <span className="sm:hidden">V3</span>
+                  <div className="flex items-center gap-2">
+                    <WineOff className="h-4 w-4 shrink-0" />
+                    <span>3. DUI / Alcohol</span>
+                  </div>
+                  {completedSims.has("drunk") && (
+                    <span className="h-5 w-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] shrink-0">
+                      ✓
+                    </span>
+                  )}
                 </TabsTrigger>
+
+                {/* 4. Overspeeding */}
                 <TabsTrigger
                   value="overspeed"
-                  className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-lg flex items-center justify-center gap-2 rounded-lg border-2 border-emerald-200 bg-white px-3 py-3 text-sm font-semibold text-emerald-700 transition-all hover:border-emerald-400 hover:bg-emerald-50"
+                  className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-md flex items-center justify-between rounded-2xl border-2 border-emerald-100 bg-white px-3 py-3 text-xs font-bold text-slate-700 transition-all hover:border-emerald-300 min-h-[48px]"
                 >
-                  <Gauge className="h-5 w-5" />
-                  <span className="hidden sm:inline">Violation 4</span>
-                  <span className="sm:hidden">V4</span>
+                  <div className="flex items-center gap-2">
+                    <Gauge className="h-4 w-4 shrink-0" />
+                    <span>4. Speed</span>
+                  </div>
+                  {completedSims.has("overspeed") && (
+                    <span className="h-5 w-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] shrink-0">
+                      ✓
+                    </span>
+                  )}
                 </TabsTrigger>
               </TabsList>
-              <p className="text-xs text-slate-500 text-center">{tc("tapViolationToSwitch") || "Tap a violation above to switch the scenario."}</p>
             </div>
 
-            <TabsContent value="helmet" className="mt-6">
+            {/* Tab Scenarios */}
+            <TabsContent value="helmet" className="mt-2 focus-visible:outline-none">
               <HelmetPrototype onComplete={() => handleSimComplete("helmet")} />
             </TabsContent>
 
-            <TabsContent value="triple" className="mt-6">
+            <TabsContent value="triple" className="mt-2 focus-visible:outline-none">
               <TripleRidingSimulation onComplete={() => handleSimComplete("triple")} />
             </TabsContent>
 
-            <TabsContent value="drunk" className="mt-6">
+            <TabsContent value="drunk" className="mt-2 focus-visible:outline-none">
               <DrunkDriveSimulation onComplete={() => handleSimComplete("drunk")} />
             </TabsContent>
 
-            <TabsContent value="overspeed" className="mt-6">
+            <TabsContent value="overspeed" className="mt-2 focus-visible:outline-none">
               <OverspeedSimulation onComplete={() => handleSimComplete("overspeed")} />
             </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
 
+      {/* Completion Banner */}
       {allCompleted && (
-        <Card className="max-w-4xl mx-auto bg-emerald-50 border-emerald-200">
-          <CardContent className="py-8 text-center space-y-4">
-            <Trophy className="h-16 w-16 text-yellow-500 mx-auto" />
-            <p className="text-2xl font-bold text-emerald-900">
-              {i18n.language === "te" ? "అన్ని సిమ్యులేషన్‌లు పూర్తయ్యాయి!" : "All Simulations Complete!"}
+        <Card className="max-w-4xl mx-auto bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white border-none shadow-2xl rounded-3xl animate-in fade-in duration-300">
+          <CardContent className="py-8 px-6 text-center space-y-4">
+            <div className="h-16 w-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto shadow-inner">
+              <Trophy className="h-9 w-9 text-yellow-300" />
+            </div>
+            <h3 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
+              Simulation Lab Successfully Completed!
+            </h3>
+            <p className="text-sm sm:text-base text-emerald-100 max-w-xl mx-auto">
+              You have rectified all 4 critical road safety violations (4/4). Your knowledge is verified under the State Road Safety Action Framework.
             </p>
-            <p className="text-lg text-slate-600">
-              {i18n.language === "te"
-                ? "మీరు 4 సిమ్యులేషన్‌లలో విజయవంతమయ్యారు (4/4)"
-                : "You've successfully completed all 4 simulations (4/4)"}
-            </p>
-            <Button onClick={handleContinueToCertificate} className="rs-btn-primary gap-2 text-base px-8 py-6">
-              <Trophy className="h-5 w-5" />
-              {i18n.language === "te" ? "సర్టిఫికేట్ సృష్టించండి" : "Generate Certificate"}
-              <ArrowRight className="h-5 w-5" />
-            </Button>
+            <div className="pt-2">
+              <Button
+                onClick={handleContinueToCertificate}
+                className="bg-white text-emerald-900 hover:bg-emerald-50 font-black text-sm h-12 px-8 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+              >
+                <span>Generate Official Certificate</span>
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
 
-      <div className="rs-card p-6">
-        <h3 className="text-lg font-semibold text-emerald-900 mb-3">{tc("moreScenariosArrivingSoon") || "More scenarios arriving soon"}</h3>
-        <div className="grid md:grid-cols-2 gap-3 text-sm text-slate-600">
-          <span>• {tc("scenarioWrongSideBike") || "Wrong-side bike riding"}</span>
-          <span>• {tc("scenarioSignalJumping") || "Signal jumping (bike)"}</span>
-          <span>• {tc("scenarioDrunkRiding") || "Drunk riding (bike)"}</span>
-          <span>• {tc("scenarioGiveWayAmbulance") || "Give way to ambulance (car)"}</span>
-          <span>• {tc("scenarioBlockedZebra") || "Blocked zebra crossing (car)"}</span>
-          <span>• {tc("scenarioParkingFootpath") || "Parking on footpath (car)"}</span>
-          <span>• {tc("scenarioOverspeedSchoolZone") || "Overspeed in school zone (car)"}</span>
-          <span>• {tc("scenarioTailgating") || "Tailgating (car)"}</span>
-          <span>• {tc("scenarioJaywalking") || "Jaywalking (pedestrian)"}</span>
-          <span>• {tc("scenarioPhoneWhileCrossing") || "Using phone while crossing"}</span>
-          <span>• {tc("scenarioCrossingDuringGreen") || "Crossing during green"}</span>
-          <span>• {tc("scenarioWalkingOnRoad") || "Walking on road instead of footpath"}</span>
-          <span>• {tc("scenarioWrongSideAuto") || "Wrong-side auto driving"}</span>
-          <span>• {tc("scenarioBlockingFireTruck") || "Blocking fire truck (vehicles)"}</span>
-          <span>• {tc("scenarioZigZagOvertaking") || "Zig-zag/rash overtaking (bike)"}</span>
+      {/* Forthcoming Scenarios Info */}
+      <div className="rs-card p-6 rounded-3xl border border-slate-200">
+        <h3 className="text-base font-bold text-slate-800 mb-2 flex items-center gap-2">
+          <span>Upcoming National Curriculum Scenarios</span>
+        </h3>
+        <p className="text-xs text-slate-500 mb-4">
+          Additional practical interactive scenarios expanding to colleges and commercial drivers:
+        </p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-slate-600">
+          <span className="p-2 rounded-lg bg-slate-50 border border-slate-100">• Wrong-side driving</span>
+          <span className="p-2 rounded-lg bg-slate-50 border border-slate-100">• Traffic signal jumping</span>
+          <span className="p-2 rounded-lg bg-slate-50 border border-slate-100">• Giving way to 108 Ambulance</span>
+          <span className="p-2 rounded-lg bg-slate-50 border border-slate-100">• Pedestrian zebra crossing</span>
+          <span className="p-2 rounded-lg bg-slate-50 border border-slate-100">• School zone deceleration</span>
+          <span className="p-2 rounded-lg bg-slate-50 border border-slate-100">• High-beam dazzle hazard</span>
+          <span className="p-2 rounded-lg bg-slate-50 border border-slate-100">• Phone distraction while riding</span>
+          <span className="p-2 rounded-lg bg-slate-50 border border-slate-100">• Blind spot lane switching</span>
         </div>
       </div>
     </div>

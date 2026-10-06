@@ -6,7 +6,7 @@ import {
   Shield, Users, UserPlus, Sliders, Database, CheckCircle2,
   AlertTriangle, RefreshCw, Lock, Mail, MapPin, Building,
   Key, Save, Cpu, Sparkles, Check, FileSpreadsheet, UploadCloud,
-  Download, Trash2, Plus, Search, FileUp
+  Download, Trash2, Plus, Search, FileUp, Share2, Hash
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
@@ -88,10 +88,37 @@ export default function GovSettingsPage() {
     emergencyWeight: 25,
   });
 
+  // Social Media Sharing & Hashtags state
+  const [socialHashtagsInput, setSocialHashtagsInput] = useState(
+    "#RoadSafetyMonth2027 #SadakSurakshaJeevanRaksha #StateTransport #SafeRoadsSaveLives #ZeroAccidents2027"
+  );
+  const [socialShareMessageInput, setSocialShareMessageInput] = useState(
+    "I am proud to receive the official Road Safety Certificate from the Government Transport Department! Let us commit to responsible road behaviour and zero accidents."
+  );
+  const [savingSocial, setSavingSocial] = useState(false);
+
   useEffect(() => {
     fetchOfficers();
     fetchSetupDistricts();
+    fetchSocialConfig();
   }, []);
+
+  const fetchSocialConfig = async () => {
+    try {
+      const res = await fetch("/api/config/social");
+      const data = await res.json();
+      if (data.success) {
+        if (Array.isArray(data.socialHashtags) && data.socialHashtags.length > 0) {
+          setSocialHashtagsInput(data.socialHashtags.join(" "));
+        }
+        if (data.socialShareMessage) {
+          setSocialShareMessageInput(data.socialShareMessage);
+        }
+      }
+    } catch (err) {
+      console.error("Error loading social config:", err);
+    }
+  };
 
   const fetchSetupDistricts = async () => {
     try {
@@ -364,10 +391,31 @@ export default function GovSettingsPage() {
     }
   };
 
-  const handleSaveCampaign = (e: React.FormEvent) => {
+  const handleSaveCampaign = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3000);
+    setSavingSocial(true);
+    try {
+      const res = await fetch("/api/config/social", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          socialHashtags: socialHashtagsInput,
+          socialShareMessage: socialShareMessageInput,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 3500);
+      } else {
+        alert(data.error || "Failed to save campaign settings");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Network error saving campaign parameters");
+    } finally {
+      setSavingSocial(false);
+    }
   };
 
   const getRoleBadge = (role: string) => {
@@ -1069,10 +1117,108 @@ export default function GovSettingsPage() {
                 </label>
               </div>
 
+              {/* Card: Social Media Hashtags & Viral Sharing Parameters */}
+              <div className="border-t border-slate-200 pt-5 mt-5">
+                <div className="mb-3">
+                  <div className="flex items-center gap-2">
+                    <Share2 size={18} className="text-indigo-600" />
+                    <h3 className="font-bold text-slate-900 text-sm">
+                      Official Social Media Hashtags & Citizen Sharing Configuration
+                    </h3>
+                    <Badge className="bg-indigo-100 text-indigo-800 border-indigo-200 text-[10px]">
+                      Viral Campaign
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Define the statutory campaign hashtags and default captions automatically pre-filled when citizens, students, and organizations share their official certificates to Instagram (Post & Story), WhatsApp (Status & Chat), LinkedIn, X (Twitter), and Facebook.
+                  </p>
+                </div>
+
+                <div className="space-y-4 bg-slate-50/70 p-4 rounded-xl border border-slate-200">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                      <Hash size={14} className="text-indigo-600" />
+                      Official Campaign Hashtags (Space or Comma Separated) *
+                    </Label>
+                    <Input
+                      value={socialHashtagsInput}
+                      onChange={(e) => setSocialHashtagsInput(e.target.value)}
+                      placeholder="#RoadSafetyMonth2027 #SadakSurakshaJeevanRaksha #StateTransport #SafeRoadsSaveLives #ZeroAccidents2027"
+                      className="bg-white font-mono text-xs"
+                      required
+                    />
+                    <p className="text-[11px] text-slate-500">
+                      Enforced on all certificate share links for unified state-wide tracking.
+                    </p>
+                    {/* Live Hashtag Badges */}
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {socialHashtagsInput
+                        .split(/[\s,]+/)
+                        .filter((t) => t.trim().length > 0)
+                        .map((tag, idx) => (
+                          <span
+                            key={idx}
+                            className="inline-flex items-center text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 px-2.5 py-0.5 rounded-full font-mono"
+                          >
+                            {tag.startsWith("#") ? tag : `#${tag}`}
+                          </span>
+                        ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-slate-700">
+                      Default Social Post Caption / Citation Text *
+                    </Label>
+                    <textarea
+                      value={socialShareMessageInput}
+                      onChange={(e) => setSocialShareMessageInput(e.target.value)}
+                      rows={3}
+                      className="w-full text-xs rounded-md border border-slate-200 bg-white p-2.5 focus:border-indigo-500 focus:outline-none leading-relaxed"
+                      placeholder="I am proud to receive the official Road Safety Certificate from the Government Transport Department! Let us commit to responsible road behaviour and zero accidents."
+                      required
+                    />
+                    <p className="text-[11px] text-slate-500">
+                      Prefilled when participants click WhatsApp, Instagram, LinkedIn, Facebook, or X buttons.
+                    </p>
+                  </div>
+
+                  {/* Social Media Live Preview */}
+                  <div className="p-3 bg-white border border-slate-200 rounded-lg space-y-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                      Live Citizen Post Preview (How it appears on Social Media)
+                    </span>
+                    <div className="p-2.5 bg-slate-50 rounded-md border border-slate-100 text-xs text-slate-800 space-y-1.5">
+                      <p className="leading-relaxed whitespace-pre-wrap">{socialShareMessageInput}</p>
+                      <p className="font-semibold text-indigo-600 font-mono text-[11px]">
+                        {socialHashtagsInput
+                          .split(/[\s,]+/)
+                          .filter((t) => t.trim().length > 0)
+                          .map((t) => (t.startsWith("#") ? t : `#${t}`))
+                          .join(" ")}
+                      </p>
+                      <div className="text-[10px] text-slate-400 border-t border-slate-200 pt-1">
+                        🔗 https://rsm2027.gov.in/certificates/preview?certId=KRMR-RSM-2027-RTA-DTO-PAR-00001
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className="flex justify-end pt-4">
-                <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2">
+                <Button
+                  type="submit"
+                  disabled={savingSocial}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2"
+                >
                   <Save size={16} />
-                  <span>{saveSuccess ? "Changes Saved Successfully!" : "Save Policy Directives"}</span>
+                  <span>
+                    {savingSocial
+                      ? "Saving Directives & Hashtags..."
+                      : saveSuccess
+                      ? "Directives & Hashtags Saved Successfully!"
+                      : "Save Campaign & Social Directives"}
+                  </span>
                 </Button>
               </div>
             </CardContent>

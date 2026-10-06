@@ -180,14 +180,13 @@ export function generateTemporaryOrganizerId(): string {
   return `TEMP-ORG-${timestamp}-${random}`;
 }
 
-export function generateFinalOrganizerId(organizerNumber: number): string {
+export function generateFinalOrganizerId(organizerNumber: number, districtCode?: string): string {
   if (organizerNumber < 1 || organizerNumber > 100000) {
     throw new Error("Organizer number must be between 1 and 100000");
   }
   const orgNum = organizerNumber.toString().padStart(5, "0");
-  // Use default district code (KRMR) for organizers
-  const DEFAULT_DISTRICT_CODE = "KRMR";
-  return `${DEFAULT_DISTRICT_CODE}-${PROGRAM_CODE}-${YEAR}-${OFFICER_CODE_1}-${OFFICER_CODE_2}-ORGANIZER-${orgNum}`;
+  const dCode = districtCode || "KRMR";
+  return `${dCode}-${PROGRAM_CODE}-${YEAR}-${OFFICER_CODE_1}-${OFFICER_CODE_2}-ORGANIZER-${orgNum}`;
 }
 
 // Simple reference ID generator for activity completion tracking

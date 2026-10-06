@@ -72,6 +72,7 @@ const generateSchema = z.object({
   eventName: z.string().optional(),
   referenceId: z.string().optional(), // Event Reference ID
   organizerId: z.string().optional(), // Organizer ID (for Scenario 5)
+  institution: z.string().optional(), // School, College, or Organization Name
 }).refine((data) => {
   // District is required UNLESS it's a statewide event (TGSG-*)
   const isStatewideEvent = data.referenceId?.startsWith("TGSG-");
@@ -198,6 +199,7 @@ function CertificateGenerateContent() {
       eventName: "",
       referenceId: referenceFromQuery || "",
       organizerId: "",
+      institution: "",
     },
   });
 
@@ -319,7 +321,7 @@ function CertificateGenerateContent() {
         body: JSON.stringify({
           type: apiType,
           fullName: data.fullName,
-          institution: "",
+          institution: data.institution || "",
           score: typeof score === "number" ? score : (score ? parseInt(String(score)) : 0),
           total: typeof total === "number" ? total : (total ? parseInt(String(total)) : 100),
           activityType: activityData.activityType || "online",
@@ -355,6 +357,7 @@ function CertificateGenerateContent() {
       params.set("certId", result.certificateId);
       params.set("type", data.certificateType);
       params.set("name", data.fullName);
+      if (data.institution) params.set("institution", data.institution);
       if (data.district) params.set("district", data.district);
       params.set("date", data.issueDate);
       if (data.email) params.set("email", data.email);
@@ -538,6 +541,11 @@ function CertificateGenerateContent() {
                           if (data.event.title) {
                             setValue("eventName", data.event.title);
                           }
+
+                          // Auto-populate host institution from event data
+                          if (data.event.institution) {
+                            setValue("institution", data.event.institution);
+                          }
                           
                           // Re-validate district field after setting value
                           await trigger("district");
@@ -637,6 +645,22 @@ function CertificateGenerateContent() {
               )}
               {errors.district && <p className="text-xs text-red-600">{errors.district.message}</p>}
             </div>
+          </div>
+
+          {/* School / College / Organization Name */}
+          <div className="space-y-2">
+            <Label htmlFor="institution" className="text-sm font-semibold text-emerald-900">
+              School / College / Organisation Name {hasEventIdEntered && <span className="text-xs font-normal text-slate-500">(Auto-filled from Event ID)</span>}
+            </Label>
+            <Input
+              id="institution"
+              placeholder="e.g. Delhi Public School / CBIT Hyderabad / Tech Mahindra CSR / Rotary Club"
+              className="h-11 rounded-lg border border-emerald-200"
+              {...register("institution")}
+            />
+            <p className="text-xs text-slate-500">
+              Your institution name will be prominently printed on your official Government certificate.
+            </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-5">

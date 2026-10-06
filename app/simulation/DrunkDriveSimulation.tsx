@@ -2,226 +2,209 @@
 
 import { useState, useRef, useCallback } from "react";
 import DraggableItems from "./DraggableItems";
-
-const BASE_DIMENSIONS = { width: 500, height: 500 };
-const TARGET_HITBOX = {
-  x: 220,
-  y: 180,
-  width: 160,
-  height: 140,
-};
-const MENTOR_SIZE = { width: 120, height: 120 };
+import { CheckCircle2, Sparkles, ShieldCheck, ArrowRight, Hand, Car } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface DrunkDriveSimulationProps {
   onComplete?: () => void;
 }
 
 export default function DrunkDriveSimulation({ onComplete }: DrunkDriveSimulationProps) {
+  const [selectedTool, setSelectedTool] = useState<string | null>(null);
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
-  const [dragOffset, setDragOffset] = useState<[number, number]>([0, 0]);
   const [mentorPosition, setMentorPosition] = useState<[number, number] | null>(null);
+  const [isCompleted, setIsCompleted] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showSoberVideo, setShowSoberVideo] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(false);
+
   const canvasRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const handleDragStart = useCallback((e: React.PointerEvent, itemType: string) => {
+  const applyCorrection = useCallback(() => {
     if (isCompleted) return;
-    e.preventDefault();
-    e.stopPropagation();
+    setIsCompleted(true);
+    setShowSoberVideo(true);
+    setShowSuccess(true);
+    if (onComplete) onComplete();
+
+    // Play sober video if available
+    setTimeout(() => {
+      if (videoRef.current) {
+        videoRef.current.play().catch(() => {});
+      }
+    }, 100);
+  }, [isCompleted, onComplete]);
+
+  // Touch/Mouse Drag handlers
+  const handleDragStart = useCallback((e: React.PointerEvent, itemType: string) => {
+    if (isCompleted || itemType !== "non-drunk") return;
+    setSelectedTool(itemType);
     setDraggedItem(itemType);
 
     const canvasRect = canvasRef.current?.getBoundingClientRect();
     if (canvasRect) {
-      const startX = e.clientX - canvasRect.left;
-      const startY = e.clientY - canvasRect.top;
-
-      // Create position for any item type, but only non-drunk will work
-      if (!mentorPosition) {
-        setMentorPosition([startX - MENTOR_SIZE.width / 2, startY - MENTOR_SIZE.height / 2]);
-        setDragOffset([MENTOR_SIZE.width / 2, MENTOR_SIZE.height / 2]);
-      } else if (mentorPosition) {
-        setDragOffset([
-          e.clientX - canvasRect.left - mentorPosition[0],
-          e.clientY - canvasRect.top - mentorPosition[1],
-        ]);
-      }
+      setMentorPosition([
+        e.clientX - canvasRect.left - 40,
+        e.clientY - canvasRect.top - 40,
+      ]);
     }
-  }, [isCompleted, mentorPosition]);
+  }, [isCompleted]);
 
   const handleDrag = useCallback((e: React.PointerEvent) => {
     if (!draggedItem || !canvasRef.current || isCompleted) return;
     e.preventDefault();
-    e.stopPropagation();
-
     const rect = canvasRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left - dragOffset[0];
-    const y = e.clientY - rect.top - dragOffset[1];
-    setMentorPosition([x, y]);
-  }, [draggedItem, dragOffset, isCompleted]);
+    setMentorPosition([
+      e.clientX - rect.left - 40,
+      e.clientY - rect.top - 40,
+    ]);
+  }, [draggedItem, isCompleted]);
 
-  const handleDragEnd = useCallback(async () => {
+  const handleDragEnd = useCallback(() => {
     if (!draggedItem || isCompleted) {
       setDraggedItem(null);
       return;
     }
 
-    if (!mentorPosition) {
-      setDraggedItem(null);
-      return;
-    }
+    if (canvasRef.current && mentorPosition) {
+      const rect = canvasRef.current.getBoundingClientRect();
+      const pctX = (mentorPosition[0] / rect.width) * 100;
+      const pctY = (mentorPosition[1] / rect.height) * 100;
 
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) {
-      setDraggedItem(null);
-      return;
-    }
-
-    const scaleX = rect.width / BASE_DIMENSIONS.width;
-    const scaleY = rect.height / BASE_DIMENSIONS.height;
-
-    const mentorLeft = mentorPosition[0];
-    const mentorRight = mentorPosition[0] + MENTOR_SIZE.width;
-    const mentorTop = mentorPosition[1];
-    const mentorBottom = mentorPosition[1] + MENTOR_SIZE.height;
-
-    const targetLeft = TARGET_HITBOX.x * scaleX;
-    const targetRight = (TARGET_HITBOX.x + TARGET_HITBOX.width) * scaleX;
-    const targetTop = TARGET_HITBOX.y * scaleY;
-    const targetBottom = (TARGET_HITBOX.y + TARGET_HITBOX.height) * scaleY;
-
-    const overlaps = !(mentorRight < targetLeft || mentorLeft > targetRight || mentorBottom < targetTop || mentorTop > targetBottom);
-
-    // Only accept non-drunk item, not others
-    if (overlaps && draggedItem === "non-drunk") {
-      setShowSoberVideo(true);
-      setShowSuccess(true);
-      setIsCompleted(true);
-
-      setTimeout(() => {
-        if (videoRef.current) {
-          videoRef.current.play().catch(() => {
-            /* ignore autoplay failures */
-          });
-        }
-      }, 120);
-
-      try {
-        const response = await fetch("/api/sim/complete", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            sceneId: "car_drunk_drive_prototype",
-            success: true,
-            attempts: 1,
-            seconds: 0,
-          }),
-        });
-        const payload = await response.json();
-      } catch {
-        // non-blocking logging failure
-      }
-      
-      // Call onComplete callback
-      if (onComplete) {
-        onComplete();
+      // Hitbox: Driver area (25% to 80% X, 20% to 75% Y)
+      if (pctX >= 25 && pctX <= 80 && pctY >= 20 && pctY <= 75) {
+        applyCorrection();
       }
     }
-
     setDraggedItem(null);
-  }, [draggedItem, isCompleted, mentorPosition]);
+    setMentorPosition(null);
+  }, [draggedItem, mentorPosition, isCompleted, applyCorrection]);
 
   return (
-    <div className="w-full max-w-5xl mx-auto">
-      {/* Instructions - No title revealing the violation */}
-      <div className="mb-6 text-center">
-        <p className="text-gray-700">
-          Drag the correct item from the sidebar onto the scene to fix the violation.
-        </p>
-      </div>
+    <div className="flex flex-col lg:flex-row gap-6 items-start justify-center max-w-4xl mx-auto">
+      {/* Simulation Interactive Scene */}
+      <div className="flex-1 w-full flex flex-col items-center">
+        <div
+          ref={canvasRef}
+          onPointerMove={handleDrag}
+          onPointerUp={handleDragEnd}
+          className="w-full max-w-md aspect-square bg-slate-900 rounded-3xl overflow-hidden relative shadow-xl border-4 border-emerald-100 touch-none select-none"
+        >
+          {/* Main Visual Media: Video or Static Image */}
+          {showSoberVideo ? (
+            <video
+              ref={videoRef}
+              src="/media/simulation%20media/drunkndrive/sober.mp4"
+              className="w-full h-full object-cover"
+              playsInline
+              muted
+              autoPlay
+              loop
+            />
+          ) : (
+            <img
+              src="/media/simulation%20media/drunkndrive/drunkndrive.png"
+              alt="Drunk Driving Violation"
+              className="w-full h-full object-cover transition-opacity duration-300"
+              draggable={false}
+            />
+          )}
 
-      <div ref={containerRef} className="flex flex-col lg:flex-row gap-4 items-stretch">
-        <div className="flex-1 order-1 lg:order-none w-full">
-          <div
-            ref={canvasRef}
-            className="relative border-2 border-gray-300 rounded-lg bg-white overflow-hidden h-[360px] sm:h-[420px] lg:h-[500px]"
-            style={{ backgroundColor: "#ffffff" }}
-            onPointerMove={handleDrag}
-            onPointerUp={handleDragEnd}
-            onPointerLeave={handleDragEnd}
-          >
-            <div className="absolute inset-0 bg-white" style={{ zIndex: 0 }} />
-
-            {!showSoberVideo ? (
-              <img
-                src="/media/simulation%20media/drunkndrive/drunkanddrive.png"
-                alt="Drunk driving scene"
-                className="absolute inset-0 w-full h-full object-contain"
-                style={{ zIndex: 1, backgroundColor: "#ffffff" }}
-                draggable={false}
-              />
-            ) : (
-              <video
-                ref={videoRef}
-                className="absolute inset-0 w-full h-full object-contain"
-                style={{ zIndex: 1, backgroundColor: "#ffffff" }}
-                autoPlay
-                loop
-                muted
-                playsInline
-                controls
-              >
-                <source src="/media/simulation%20media/drunkndrive/sober%20driving.mp4" type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-            )}
-
-            {/* Draggable Item - When being dragged */}
-            {mentorPosition && !isCompleted && draggedItem && (
-              <div
-                className="absolute cursor-move touch-none select-none"
-                style={{
-                  left: `${mentorPosition[0]}px`,
-                  top: `${mentorPosition[1]}px`,
-                  width: `${MENTOR_SIZE.width}px`,
-                  height: `${MENTOR_SIZE.height}px`,
-                  zIndex: 50,
-                  opacity: 1,
-                  transform: "scale(1.1)",
-                  transition: "none",
-                  pointerEvents: "none",
-                }}
-              >
-                <img
-                  src={
-                    draggedItem === "helmet"
-                      ? "/media/simulation%20media/helmet%20wearing/helmet.png"
-                      : draggedItem === "discipline"
-                      ? "/media/simulation%20media/triple%20riding/discipline.png"
-                      : draggedItem === "speedometer"
-                      ? "/media/simulation%20media/overspeed/drag%20speedometer.png"
-                      : "/media/simulation%20media/drunkndrive/soberman.png"
-                  }
-                  alt={draggedItem}
-                  className="w-full h-full object-contain"
-                  draggable={false}
-                />
+          {/* Interactive Tap-to-Fix Target Zone */}
+          {!isCompleted && selectedTool === "non-drunk" && (
+            <div
+              onClick={applyCorrection}
+              role="button"
+              tabIndex={0}
+              className="absolute top-[40%] left-[50%] -translate-x-1/2 w-32 h-32 rounded-full border-4 border-dashed border-emerald-400 bg-emerald-500/20 backdrop-blur-xs flex flex-col items-center justify-center cursor-pointer animate-pulse z-20 hover:scale-105 transition-transform"
+            >
+              <div className="bg-emerald-600 text-white rounded-full p-2.5 shadow-lg">
+                <Car className="h-6 w-6" />
               </div>
-            )}
+              <span className="text-[11px] font-black text-white bg-slate-900/80 px-2 py-0.5 rounded-full mt-1.5 shadow">
+                Tap to Handover Keys
+              </span>
+            </div>
+          )}
+
+          {/* Draggable Sober Driver Floating Icon */}
+          {draggedItem === "non-drunk" && mentorPosition && (
+            <div
+              style={{
+                left: `${mentorPosition[0]}px`,
+                top: `${mentorPosition[1]}px`,
+              }}
+              className="absolute w-20 h-20 pointer-events-none z-30 transition-transform -translate-x-1/2 -translate-y-1/2"
+            >
+              <img
+                src="/media/simulation%20media/drunkndrive/soberman.png"
+                alt="Sober Driver"
+                className="w-full h-full object-contain drop-shadow-xl"
+              />
+            </div>
+          )}
+
+          {/* Scenario Status Tag */}
+          <div className="absolute top-3 left-3 z-10">
+            <span
+              className={`text-xs font-bold px-3 py-1 rounded-full border shadow-sm ${
+                isCompleted
+                  ? "bg-emerald-600 text-white border-emerald-500"
+                  : "bg-red-600 text-white border-red-500 animate-pulse"
+              }`}
+            >
+              {isCompleted ? "✓ Sober Designated Driver Assigned" : "⚠️ Violation: Driving Under the Influence (DUI)"}
+            </span>
           </div>
         </div>
 
-        {/* Right Sidebar - All Draggable Items */}
-        <DraggableItems onDragStart={handleDragStart} isCompleted={isCompleted} correctItemType="non-drunk" />
+        {/* Mobile Prompt / Direct Quick Fix Button */}
+        {!isCompleted && selectedTool === "non-drunk" && (
+          <div className="w-full max-w-md mt-3 flex items-center justify-between gap-3 p-3 bg-emerald-50 border border-emerald-200 rounded-2xl animate-in fade-in">
+            <div className="text-xs text-emerald-900 font-semibold flex items-center gap-2">
+              <Hand className="h-4 w-4 text-emerald-600 shrink-0" />
+              <span>Sober Driver Selected! Tap scene to handover keys:</span>
+            </div>
+            <Button
+              size="sm"
+              onClick={applyCorrection}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm shrink-0"
+            >
+              Assign Sober Driver
+            </Button>
+          </div>
+        )}
+
+        {/* Success Educational Takeaway Banner */}
+        {showSuccess && (
+          <div className="w-full max-w-md mt-4 p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-300 text-emerald-900 shadow-md animate-in slide-in-from-bottom-2 duration-200">
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-emerald-600 text-white rounded-xl shadow-sm shrink-0">
+                <CheckCircle2 className="h-5 w-5" />
+              </div>
+              <div className="space-y-1 flex-1">
+                <h4 className="text-sm font-bold text-emerald-950">
+                  Zero Alcohol Policy: Section 185, Motor Vehicles Act
+                </h4>
+                <p className="text-xs text-emerald-800 leading-relaxed">
+                  Alcohol slows brain reaction times by <strong>4x</strong> and impairs depth perception. Never drive intoxicated — always designate a sober driver or use public transit.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {showSuccess && (
-        <div className="mt-6 p-4 bg-green-100 border-2 border-green-400 text-green-800 rounded-lg text-center animate-fade-in">
-          <p className="text-lg font-bold">✅ Choose Sober Drives. Friends don&apos;t let friends drive drunk.</p>
-        </div>
-      )}
+      {/* Toolbox Panel */}
+      <DraggableItems
+        onDragStart={handleDragStart}
+        onSelectItem={(type) => {
+          setSelectedTool(type);
+        }}
+        selectedItem={selectedTool}
+        isCompleted={isCompleted}
+        correctItemType="non-drunk"
+      />
     </div>
   );
 }

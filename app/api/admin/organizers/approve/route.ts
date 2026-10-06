@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import connectDB from "@/lib/db";
 import Organizer from "@/models/Organizer";
-import { generateFinalOrganizerId } from "@/lib/reference";
+import { generateFinalOrganizerId, getDistrictCode } from "@/lib/reference";
 
 const approveSchema = z.object({
   temporaryId: z.string().min(1),
@@ -13,6 +15,11 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const validated = approveSchema.parse(body);
+
+    const session = await getServerSession(authOptions);
+    const userRole = (session?.user as any)?.role || "district_admin";
+    const userDistrict = (session?.user as any)?.district;
+    const userEmail = session?.user?.email || "dto.official@stategov.in";
 
     await connectDB();
 
@@ -25,6 +32,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Role-based authorization:
+    // If user is a district_admin, ensure they only manage organizers from their district (if district is defined)
+    if (userRole === "district_admin" && userDistrict && organizer.districtCode) {
+      const orgDistCode = organizer.districtCode.toUpperCase();
+      const userDistCode = getDistrictCode(userDistrict).toUpperCase();
+      if (orgDistCode !== userDistCode && !userDistrict.toLowerCase().includes(organizer.districtCode.toLowerCase())) {
+        return NextResponse.json(
+          { error: `Unauthorized: DTO ${userDistrict} can only approve organizers registered in ${userDistrict}.` },
+          { status: 403 }
+        );
+      }
+    }
+
     if (validated.action === "approve") {
       // Get next organizer number
       const lastOrganizer = await Organizer.findOne({ status: "approved" })
@@ -32,7 +52,6 @@ export async function POST(request: NextRequest) {
       
       let organizerNumber = 1;
       if (lastOrganizer && lastOrganizer.finalId) {
-        // Extract number from finalId: KRMR-RSM-2027-RTA-DTO-ORGANIZER-00001
         const match = lastOrganizer.finalId.match(/ORGANIZER-(\d+)$/);
         if (match) {
           organizerNumber = parseInt(match[1], 10) + 1;
@@ -46,12 +65,13 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const finalId = generateFinalOrganizerId(organizerNumber);
+      const districtCode = organizer.districtCode || (userDistrict ? getDistrictCode(userDistrict) : "HYDR");
+      const finalId = generateFinalOrganizerId(organizerNumber, districtCode);
 
       organizer.status = "approved";
       organizer.finalId = finalId;
       organizer.approvedAt = new Date();
-      organizer.approvedBy = "admin"; // TODO: Get from session
+      organizer.approvedBy = `${userRole}:${userEmail}`;
       organizer.updatedAt = new Date();
 
       await organizer.save();
@@ -66,12 +86,14 @@ export async function POST(request: NextRequest) {
           email: organizer.email,
           institution: organizer.institution,
           status: organizer.status,
+          approvedBy: organizer.approvedBy,
         },
       });
     } else {
       // Reject
       organizer.status = "rejected";
       organizer.updatedAt = new Date();
+      organizer.approvedBy = `${userRole}:${userEmail}`;
 
       await organizer.save();
 
@@ -82,6 +104,7 @@ export async function POST(request: NextRequest) {
           fullName: organizer.fullName,
           email: organizer.email,
           status: organizer.status,
+          approvedBy: organizer.approvedBy,
         },
       });
     }
@@ -96,13 +119,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
-
-
-
-
-
-
-
-
-

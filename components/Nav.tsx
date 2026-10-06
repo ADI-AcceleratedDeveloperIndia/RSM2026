@@ -23,17 +23,24 @@ import {
   Building2,
   CalendarDays,
   Award,
-  ArrowRight
+  ArrowRight,
+  Wrench,
+  Shield,
+  Siren
 } from "lucide-react";
 
 export default function Nav() {
   const pathname = usePathname();
   const { t, i18n } = useTranslation("common");
   const [isOpen, setIsOpen] = useState(false);
+  const [fourEDropdownOpen, setFourEDropdownOpen] = useState(false);
   const [activityDropdownOpen, setActivityDropdownOpen] = useState(false);
+  const [mobileFourEOpen, setMobileFourEOpen] = useState(false);
   const [mobileActivityOpen, setMobileActivityOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  
+  const fourERef = useRef<HTMLDivElement>(null);
+  const activityRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -44,7 +51,10 @@ export default function Nav() {
   // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (fourERef.current && !fourERef.current.contains(event.target as Node)) {
+        setFourEDropdownOpen(false);
+      }
+      if (activityRef.current && !activityRef.current.contains(event.target as Node)) {
         setActivityDropdownOpen(false);
       }
     };
@@ -58,6 +68,38 @@ export default function Nav() {
   };
 
   const isTe = i18n.language === "te";
+
+  // 4E Framework Pillars
+  const fourEItems = [
+    {
+      href: "/4e#education",
+      label: isTe ? "1. విద్య (Education)" : "1. Education",
+      sublabel: isTe ? "పాఠశాలలు & క్విజ్ ల్యాబ్‌లు" : "Awareness, Quizzes & Sims",
+      icon: GraduationCap,
+      color: "text-blue-600 bg-blue-50",
+    },
+    {
+      href: "/4e#engineering",
+      label: isTe ? "2. ఇంజనీరింగ్ (Engineering)" : "2. Engineering",
+      sublabel: isTe ? "గుంతలు, సైన్లు & బ్లాక్‌స్పాట్స్" : "Potholes, Signage & Hazards",
+      icon: Wrench,
+      color: "text-amber-600 bg-amber-50",
+    },
+    {
+      href: "/4e#enforcement",
+      label: isTe ? "3. అమలు (Enforcement)" : "3. Enforcement",
+      sublabel: isTe ? "హెల్మెట్, డ్రైవింగ్ తనిఖీలు" : "Helmet & Speed Compliance",
+      icon: Shield,
+      color: "text-rose-600 bg-rose-50",
+    },
+    {
+      href: "/4e#emergency",
+      label: isTe ? "4. అత్యవసర రక్షణ (Emergency)" : "4. Emergency Care",
+      sublabel: isTe ? "గోల్డెన్ అవర్ & ప్రథమ చికిత్స" : "Golden Hour & First Aid",
+      icon: Siren,
+      color: "text-emerald-600 bg-emerald-50",
+    },
+  ];
 
   // Sub-items for the Activity Menu
   const activityItems = [
@@ -112,6 +154,8 @@ export default function Nav() {
       isSpecial: true,
     },
   ];
+
+  const isFourEActive = pathname === "/4e" || pathname.startsWith("/4e/") || pathname.startsWith("/gov/4e");
 
   const isActivityActive = [
     "/activity",
@@ -185,9 +229,75 @@ export default function Nav() {
               <span>{t("home") || "Home"}</span>
             </Link>
 
-            {/* 2. ACTIVITY (Dropdown containing all previous modules) */}
+            {/* 2. 4E FRAMEWORK (MORT&H PILLARS) */}
             <div
-              ref={dropdownRef}
+              ref={fourERef}
+              className="relative"
+              onMouseEnter={() => setFourEDropdownOpen(true)}
+              onMouseLeave={() => setFourEDropdownOpen(false)}
+            >
+              <Link
+                href="/4e"
+                onClick={() => setFourEDropdownOpen((prev) => !prev)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                  isFourEActive
+                    ? "bg-indigo-600 text-white shadow-sm"
+                    : "text-slate-600 hover:bg-indigo-50 hover:text-indigo-800"
+                }`}
+              >
+                <Target className="h-3.5 w-3.5" />
+                <span>4E Framework</span>
+                <ChevronDown
+                  className={`h-3 w-3 transition-transform duration-200 ${
+                    fourEDropdownOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </Link>
+
+              {/* 4E Dropdown Menu */}
+              {fourEDropdownOpen && (
+                <div className="absolute left-0 top-full pt-2 w-72 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                  <div className="bg-white rounded-2xl border border-indigo-100 shadow-xl shadow-indigo-950/10 p-2 space-y-1">
+                    <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                      MoRTH National 4E Pillars
+                    </div>
+                    {fourEItems.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setFourEDropdownOpen(false)}
+                          className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 transition-all text-slate-700"
+                        >
+                          <div className={`p-1.5 rounded-lg ${item.color}`}>
+                            <Icon className="h-4 w-4" />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-xs font-medium text-slate-900">{item.label}</span>
+                            <span className="text-[10px] text-slate-500">{item.sublabel}</span>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                    <div className="pt-1.5 border-t border-slate-100">
+                      <Link
+                        href="/4e"
+                        onClick={() => setFourEDropdownOpen(false)}
+                        className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-indigo-700 hover:bg-indigo-50 transition-colors"
+                      >
+                        <span>View 4E State Framework →</span>
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 3. ACTIVITY (Dropdown) */}
+            <div
+              ref={activityRef}
               className="relative"
               onMouseEnter={() => setActivityDropdownOpen(true)}
               onMouseLeave={() => setActivityDropdownOpen(false)}
@@ -256,7 +366,7 @@ export default function Nav() {
               )}
             </div>
 
-            {/* 3. NEW FEATURE: Actions */}
+            {/* 4. Actions */}
             <Link
               href="/actions"
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
@@ -269,7 +379,7 @@ export default function Nav() {
               <span>{t("actions") || "Actions"}</span>
             </Link>
 
-            {/* 4. NEW FEATURE: Hazards */}
+            {/* 5. Hazards */}
             <Link
               href="/hazards"
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
@@ -280,19 +390,6 @@ export default function Nav() {
             >
               <AlertTriangle className="h-3.5 w-3.5" />
               <span>{t("hazards") || "Hazards"}</span>
-            </Link>
-
-            {/* 5. NEW FEATURE: Institutions */}
-            <Link
-              href="/institution"
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                pathname.startsWith("/institution")
-                  ? "bg-emerald-600 text-white shadow-sm"
-                  : "text-slate-600 hover:bg-emerald-50 hover:text-emerald-800"
-              }`}
-            >
-              <Building2 className="h-3.5 w-3.5" />
-              <span>{t("institutions") || "Institutions"}</span>
             </Link>
 
             {/* 6. Events */}
@@ -308,7 +405,7 @@ export default function Nav() {
               <span>{t("events") || "Events"}</span>
             </Link>
 
-            {/* 7. Certificates (Main top-level item) */}
+            {/* 7. Certificates */}
             <Link
               href="/certificates"
               className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all ${
@@ -372,7 +469,7 @@ export default function Nav() {
 
             {/* Mobile Hamburger Button */}
             <button
-              className="lg:hidden inline-flex h-10 w-10 items-center justify-center rounded-full border border-emerald-200 text-emerald-800 shadow-sm hover:bg-emerald-50"
+              className="lg:hidden inline-flex h-11 w-11 items-center justify-center rounded-full border border-emerald-200 text-emerald-800 shadow-sm hover:bg-emerald-50 active:scale-95 transition-transform"
               onClick={() => setIsOpen(!isOpen)}
               aria-label={t("toggleMenu") || "Toggle menu"}
             >
@@ -384,12 +481,12 @@ export default function Nav() {
         {/* Mobile Navigation Drawer */}
         {isOpen && (
           <div className="lg:hidden pb-4 pt-2">
-            <div className="grid gap-2 rounded-2xl border border-emerald-100 bg-white/95 p-4 shadow-xl shadow-emerald-900/10">
+            <div className="grid gap-2.5 rounded-2xl border border-emerald-100 bg-white/95 p-4 shadow-xl shadow-emerald-900/10">
               {/* Home */}
               <Link
                 href="/"
                 onClick={() => setIsOpen(false)}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
+                className={`flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition min-h-[48px] ${
                   pathname === "/" ? "bg-emerald-600 text-white" : "text-slate-700 hover:bg-emerald-50"
                 }`}
               >
@@ -397,11 +494,57 @@ export default function Nav() {
                 <span>{t("home") || "Home"}</span>
               </Link>
 
+              {/* 4E Framework Mobile Accordion */}
+              <div className="border border-indigo-100 rounded-xl overflow-hidden">
+                <button
+                  onClick={() => setMobileFourEOpen(!mobileFourEOpen)}
+                  className={`w-full flex items-center justify-between px-3.5 py-3 text-sm font-semibold transition min-h-[48px] ${
+                    isFourEActive ? "bg-indigo-50 text-indigo-900" : "text-slate-800 bg-indigo-50/40"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Target className="h-4 w-4 text-indigo-600" />
+                    <span>4E Framework ({fourEItems.length} Pillars)</span>
+                  </div>
+                  <ChevronDown
+                    className={`h-4 w-4 text-slate-500 transition-transform ${
+                      mobileFourEOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+                {mobileFourEOpen && (
+                  <div className="p-2 space-y-1 bg-white border-t border-indigo-100">
+                    {fourEItems.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setIsOpen(false)}
+                          className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-medium text-slate-700 hover:bg-indigo-50 transition min-h-[44px]"
+                        >
+                          <Icon className="h-4 w-4 text-indigo-600 shrink-0" />
+                          <span>{item.label}</span>
+                          <span className="text-[10px] text-slate-400 ml-auto">{item.sublabel.split(",")[0]}</span>
+                        </Link>
+                      );
+                    })}
+                    <Link
+                      href="/4e"
+                      onClick={() => setIsOpen(false)}
+                      className="block text-center py-2.5 text-xs font-bold text-indigo-700 hover:underline min-h-[44px]"
+                    >
+                      View 4E State Hub →
+                    </Link>
+                  </div>
+                )}
+              </div>
+
               {/* Activity Section Header / Accordion */}
               <div className="border border-slate-200 rounded-xl overflow-hidden">
                 <button
                   onClick={() => setMobileActivityOpen(!mobileActivityOpen)}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-semibold transition ${
+                  className={`w-full flex items-center justify-between px-3.5 py-3 text-sm font-semibold transition min-h-[48px] ${
                     isActivityActive ? "bg-emerald-50 text-emerald-800" : "text-slate-800 bg-slate-50"
                   }`}
                 >
@@ -425,7 +568,7 @@ export default function Nav() {
                           key={item.href}
                           href={item.href}
                           onClick={() => setIsOpen(false)}
-                          className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition ${
+                          className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-medium transition min-h-[44px] ${
                             active
                               ? "bg-emerald-600 text-white"
                               : "text-slate-700 hover:bg-slate-50"
@@ -440,7 +583,7 @@ export default function Nav() {
                     <Link
                       href="/activities"
                       onClick={() => setIsOpen(false)}
-                      className="block text-center py-2 text-xs font-semibold text-emerald-700 hover:underline"
+                      className="block text-center py-2.5 text-xs font-semibold text-emerald-700 hover:underline min-h-[44px]"
                     >
                       {isTe ? "అన్ని కార్యక్రమాల పేజీ →" : "View All Activities Hub →"}
                     </Link>
@@ -452,7 +595,7 @@ export default function Nav() {
               <Link
                 href="/actions"
                 onClick={() => setIsOpen(false)}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
+                className={`flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition min-h-[48px] ${
                   pathname.startsWith("/actions") ? "bg-emerald-600 text-white" : "text-slate-700 hover:bg-emerald-50"
                 }`}
               >
@@ -464,7 +607,7 @@ export default function Nav() {
               <Link
                 href="/hazards"
                 onClick={() => setIsOpen(false)}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
+                className={`flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition min-h-[48px] ${
                   pathname.startsWith("/hazards") ? "bg-amber-600 text-white" : "text-slate-700 hover:bg-amber-50"
                 }`}
               >
@@ -472,23 +615,11 @@ export default function Nav() {
                 <span>{t("hazards") || "Hazards"}</span>
               </Link>
 
-              {/* Institutions */}
-              <Link
-                href="/institution"
-                onClick={() => setIsOpen(false)}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
-                  pathname.startsWith("/institution") ? "bg-emerald-600 text-white" : "text-slate-700 hover:bg-emerald-50"
-                }`}
-              >
-                <Building2 className="h-4 w-4" />
-                <span>{t("institutions") || "Institutions"}</span>
-              </Link>
-
               {/* Events */}
               <Link
                 href="/events"
                 onClick={() => setIsOpen(false)}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
+                className={`flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition min-h-[48px] ${
                   pathname.startsWith("/events") ? "bg-emerald-600 text-white" : "text-slate-700 hover:bg-emerald-50"
                 }`}
               >
@@ -500,7 +631,7 @@ export default function Nav() {
               <Link
                 href="/certificates"
                 onClick={() => setIsOpen(false)}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold transition border ${
+                className={`flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-bold transition border min-h-[48px] ${
                   pathname.startsWith("/certificates")
                     ? "bg-emerald-700 text-white border-emerald-600"
                     : "bg-emerald-50 text-emerald-800 border-emerald-200"
@@ -510,21 +641,21 @@ export default function Nav() {
                 <span>{t("certificates") || "Certificates"}</span>
               </Link>
 
-              {/* Organizer Portal */}
+              {/* Organizer Portal (Mobile High-Contrast Button) */}
               <Link
                 href="/organizer/login"
                 onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition bg-emerald-50 text-emerald-900 border border-emerald-200 hover:bg-emerald-100 mt-1"
+                className="flex items-center gap-3 rounded-xl px-3.5 py-3.5 text-sm font-semibold transition bg-emerald-50 text-emerald-900 border border-emerald-200 hover:bg-emerald-100 min-h-[48px] mt-1"
               >
                 <Users className="h-4 w-4 text-emerald-600" />
                 <span>👥 Organizer Mission Hub</span>
               </Link>
 
-              {/* Government Mission Control */}
+              {/* Government Mission Control (Mobile High-Contrast Button) */}
               <Link
                 href="/gov"
                 onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition bg-indigo-50 text-indigo-900 border border-indigo-200 hover:bg-indigo-100 mt-1"
+                className="flex items-center gap-3 rounded-xl px-3.5 py-3.5 text-sm font-semibold transition bg-indigo-50 text-indigo-900 border border-indigo-200 hover:bg-indigo-100 min-h-[48px] mt-1"
               >
                 <ShieldCheck className="h-4 w-4 text-indigo-600" />
                 <span>🏛️ Government Mission Control</span>
