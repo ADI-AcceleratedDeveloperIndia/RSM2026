@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "run-p dev:server dev:open",
-    "dev:server": "next dev -p 4000",
+    "dev:server": "next dev --webpack -p 4000",
     "dev:open": "wait-on http://localhost:4000 && open http://localhost:4000",
     "build": "next build",
     "start": "next start",
