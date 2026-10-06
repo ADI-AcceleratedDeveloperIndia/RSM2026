@@ -65,47 +65,47 @@ const CERTIFICATE_TYPES: Record<
 > = {
   ORG: {
     title: "Organiser Appreciation Certificate",
-    subtitle: "Honouring outstanding leadership during Telangana Road Safety Month 2026",
+    subtitle: "Honouring outstanding leadership during National Road Safety Month 2027",
     body: "In recognition of exemplary efforts in planning, conducting, and promoting impactful road safety initiatives that created lasting awareness within the community.",
   },
   PAR: {
     title: "Participant Certificate",
-    subtitle: "Acknowledging active participation in Telangana Road Safety Month 2026",
-    body: "Awarded for enthusiastic involvement in awareness drives, workshops, and activities that championed safer roads for all citizens of Telangana.",
+    subtitle: "Acknowledging active participation in National Road Safety Month 2027",
+    body: "Awarded for enthusiastic involvement in awareness drives, workshops, and activities that championed safer roads for all citizens.",
   },
   MERIT: {
     title: "Merit Certificate",
-    subtitle: "Celebrating excellence in Telangana Road Safety Month activities",
+    subtitle: "Celebrating excellence in National Road Safety Month 2027 activities",
     body: "Presented for outstanding performance, demonstrating deep understanding of traffic regulations, safe driving behaviours, and citizen responsibilities.",
   },
   QUIZ: {
     title: "Quiz Merit Certificate",
-    subtitle: "Celebrating excellence in the Telangana Road Safety Knowledge Quiz",
+    subtitle: "Celebrating excellence in the Road Safety Knowledge Quiz 2027",
     body: "Presented for outstanding performance in the Road Safety Quiz, demonstrating deep understanding of traffic regulations, safe driving behaviours, and citizen responsibilities.",
   },
   SIM: {
     title: "Simulation Completion Certificate",
-    subtitle: "Recognising successful completion of interactive road safety simulations",
+    subtitle: "Recognising successful completion of interactive road safety simulations 2027",
     body: "Awarded for hands-on learning and demonstration of best practices in simulated traffic scenarios, reinforcing disciplined road usage.",
   },
   VOL: {
     title: "Volunteer Certificate",
-    subtitle: "Honouring dedicated service during Telangana Road Safety Month 2026",
+    subtitle: "Honouring dedicated service during National Road Safety Month 2027",
     body: "Presented in appreciation of voluntary contributions, community outreach, and unwavering support in spreading road safety awareness.",
   },
   SCH: {
     title: "School Contributor Certificate",
-    subtitle: "Recognising schools that championed Road Safety Month initiatives",
+    subtitle: "Recognising schools that championed Road Safety Month 2027 initiatives",
     body: "Awarded for organising road safety programmes, awareness sessions, and student-driven campaigns that fostered a culture of safety within the institution.",
   },
   COL: {
     title: "College Coordinator Certificate",
-    subtitle: "Appreciating leadership in collegiate road safety initiatives",
+    subtitle: "Appreciating leadership in collegiate road safety initiatives 2027",
     body: "Presented to coordinators who mobilised student communities, led campaigns, and ensured the success of Road Safety Month engagements on campus.",
   },
   TOPPER: {
     title: "Topper Certificate",
-    subtitle: "Celebrating top performance in Telangana Road Safety Month activities",
+    subtitle: "Celebrating top performance in Road Safety Month 2027 activities",
     body: "Awarded to top-performing individuals who excelled with outstanding scores, demonstrating exceptional mastery and understanding of road safety principles and best practices.",
   },
 };
@@ -123,35 +123,25 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data }, ref)
   // - Only regional event IDs (district codes like KRMR-*) should show regional person
   // - Check event reference ID prefix to ensure TGSG never shows regional person
   const eventRefId = data.eventReferenceId || data.referenceId || "";
-  const isTGSGEvent = eventRefId.startsWith("TGSG-");
-  const isRegionalEvent = data.eventType === "regional" && !isTGSGEvent; // Regional AND not TGSG
-  const isStatewideEvent = data.eventType === "statewide" || isTGSGEvent; // Explicitly statewide OR TGSG prefix
-  const isKarimnagar = data.district?.toLowerCase() === "karimnagar";
-  
-  // Only show regional person if it's a regional event (NOT statewide/TGSG)
-  const showPadalaRahul = isRegionalEvent && !isStatewideEvent && isKarimnagar;
-  const showPlaceholder = isRegionalEvent && !isStatewideEvent && !isKarimnagar;
+  const isStatewideEvent = data.eventType === "statewide" || eventRefId.startsWith("STGV-") || eventRefId.startsWith("TGSG-");
+  const isRegionalEvent = data.eventType === "regional" || (!isStatewideEvent && data.district);
+  const showDistrictRTAHead = Boolean(isRegionalEvent);
 
-  // Padala Rahul details (from padala-rahul-details.json)
-  const padalaRahulDetails = {
-    photo: "/assets/leadership/Karimnagarrtamemberpadalarahul.webp",
-    name: "Sri Padala Rahul Garu",
-    title: "Regional Transport Authority Member, Karimnagar",
+  // District Road Transport Authority Head details
+  const districtRTAHeadDetails = {
+    photo: "/assets/leadership/district-rta-head-placeholder.svg",
+    name: "District Road Transport Authority Head",
+    title: data.district ? `Head of Transport & RTA, ${data.district}` : "District RTA Head",
   };
 
   // Preload images for better html2canvas compatibility
   useEffect(() => {
     const imageUrls = [
-      "/assets/logo/Telangana-LOGO.png",
-      "/assets/logo/roadsafetymonth2026logo.png",
-      "/assets/leadership/CM.png",
-      "/assets/minister/Sri-Ponnam-Prabhakar.jpg",
-      "/assets/signatures/minister%20ponnam%20prabhakar%20sign.jpg",
+      "/assets/logo/state-government-emblem.svg",
+      "/assets/leadership/chief-minister-placeholder.svg",
+      "/assets/leadership/transport-minister-placeholder.svg",
+      "/assets/leadership/district-rta-head-placeholder.svg",
     ];
-    
-    if (showPadalaRahul) {
-      imageUrls.push(padalaRahulDetails.photo);
-    }
 
     const loadPromises = imageUrls.map((url) => {
       return new Promise<void>((resolve) => {
@@ -165,7 +155,7 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data }, ref)
     Promise.all(loadPromises).then(() => {
       setImagesLoaded(true);
     });
-  }, [showPadalaRahul]);
+  }, [showDistrictRTAHead]);
 
   return (
     <div
@@ -187,19 +177,11 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data }, ref)
           <div className="flex flex-col items-start justify-between gap-4 border-b border-green-200 pb-6 md:flex-row">
             <div className="flex items-center justify-start gap-2" style={{ maxWidth: "380px" }}>
               <img
-                src="/assets/logo/Telangana-LOGO.png"
-                alt="Government of Telangana"
-                width={80}
-                height={80}
+                src="/assets/logo/state-government-emblem.svg"
+                alt="State Government Transport Department"
+                width={85}
+                height={85}
                 className="h-20 w-20 object-contain flex-shrink-0"
-                style={{ display: "block" }}
-              />
-              <img
-                src="/assets/logo/roadsafetymonth2026logo.png"
-                alt="Telangana Road Safety Month 2026"
-                width={140}
-                height={90}
-                className="h-20 w-auto object-contain flex-shrink-0"
                 style={{ display: "block" }}
               />
             </div>
@@ -207,25 +189,19 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data }, ref)
             <div className="flex items-center gap-3 text-center" style={{ flex: 1, justifyContent: "flex-end" }}>
               {[
                 {
-                  photo: "/assets/leadership/CM.png",
-                  name: "Sri Anumula Revanth Reddy Garu",
+                  photo: "/assets/leadership/chief-minister-placeholder.svg",
+                  name: "[Chief Minister]",
                   title: "Hon'ble Chief Minister",
                 },
                 {
-                  photo: "/assets/minister/Sri-Ponnam-Prabhakar.jpg",
-                  name: "Sri Ponnam Prabhakar Garu",
-                  title: "Hon'ble Minister for Transport & BC Welfare",
+                  photo: "/assets/leadership/transport-minister-placeholder.svg",
+                  name: "[Minister for Transport]",
+                  title: "Hon'ble Transport Minister",
                 },
-                // Regional authority: Show Padala Rahul for Karimnagar, placeholder for other districts
-                showPadalaRahul && {
-                  photo: padalaRahulDetails.photo,
-                  name: padalaRahulDetails.name,
-                  title: padalaRahulDetails.title,
-                },
-                showPlaceholder && {
-                  photo: null, // No photo for placeholder
-                  name: "Regional Authority",
-                  title: `${data.district} District`,
+                showDistrictRTAHead && {
+                  photo: districtRTAHeadDetails.photo,
+                  name: districtRTAHeadDetails.name,
+                  title: districtRTAHeadDetails.title,
                 },
               ]
                 .filter(Boolean)
@@ -233,26 +209,17 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data }, ref)
                   const item = leader as { photo: string | null; name: string; title: string };
                   return (
                     <div key={`${item.name}-${index}`} className="flex flex-col items-center justify-start text-center" style={{ width: "160px", minHeight: "140px" }}>
-                      {item.photo ? (
-                        <div
-                          className="relative h-20 w-20 overflow-hidden rounded-full border-4 border-green-600"
-                          style={{ boxShadow: "0 12px 30px rgba(0, 64, 32, 0.25)" }}
-                        >
-                          <img 
-                            src={item.photo} 
-                            alt={item.name} 
-                            className="object-cover"
-                            style={{ width: "100%", height: "100%", display: "block" }}
-                          />
-                        </div>
-                      ) : (
-                        <div
-                          className="relative h-20 w-20 overflow-hidden rounded-full border-4 border-dashed border-gray-400 bg-gray-100 flex items-center justify-center"
-                          style={{ boxShadow: "0 12px 30px rgba(0, 0, 0, 0.1)" }}
-                        >
-                          <span className="text-gray-400 text-xs">Photo</span>
-                        </div>
-                      )}
+                      <div
+                        className="relative h-20 w-20 overflow-hidden rounded-full border-4 border-green-600 bg-white"
+                        style={{ boxShadow: "0 12px 30px rgba(0, 64, 32, 0.25)" }}
+                      >
+                        <img 
+                          src={item.photo || "/assets/leadership/placeholder.svg"} 
+                          alt={item.name} 
+                          className="object-cover"
+                          style={{ width: "100%", height: "100%", display: "block" }}
+                        />
+                      </div>
                       <p className={`${inter.className} mt-2 text-xs font-semibold text-green-800`} style={{ lineHeight: "1.3", wordWrap: "break-word", maxWidth: "140px" }}>{item.name}</p>
                       <p className={`${inter.className} text-[10px] text-gray-600 mt-1`} style={{ lineHeight: "1.3", wordWrap: "break-word", maxWidth: "140px" }}>{item.title}</p>
                     </div>
@@ -282,11 +249,11 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data }, ref)
                 // 5. Offline with regional event ID
                 
                 if (participationContext === "online" && !eventType) {
-                  return "Online Event - Road Safety Month - Telangana";
+                  return "Online Event - Road Safety Month 2027";
                 } else if (eventType === "statewide") {
-                  return "Statewide Event - Road Safety Month - Telangana";
+                  return "Statewide Event - Road Safety Month 2027";
                 } else if (eventType === "regional") {
-                  return "Regional Event - Road Safety Month - Telangana";
+                  return "Regional Event - Road Safety Month 2027";
                 } else {
                   // Fallback to static subtitle from config
                   return config.subtitle;
@@ -360,20 +327,15 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data }, ref)
             </div>
 
             <div className="flex flex-col items-center space-y-1">
-              <img
-                src="/assets/signatures/minister%20ponnam%20prabhakar%20sign.jpg"
-                alt="Minister Signature"
-                width={120}
-                height={50}
-                className="h-10 w-auto object-contain mb-2"
-                style={{ display: "block" }}
-              />
-              <div className="mt-3 space-y-1">
+              <div className="h-10 border-b border-gray-400 flex items-center justify-center px-4 mb-2">
+                <span className="font-serif italic text-sm text-slate-800">[Authorised Digital Signature]</span>
+              </div>
+              <div className="mt-2 space-y-1 text-center">
                 <p className={`${inter.className} font-semibold text-gray-800 text-sm`}>
-                  Sri Ponnam Prabhakar Garu
+                  [Minister for Transport]
                 </p>
                 <p className={`${inter.className} text-xs text-gray-600`}>
-                  Hon&apos;ble Minister for Transport & BC Welfare
+                  Transport Department, State Government
                 </p>
               </div>
             </div>
@@ -388,7 +350,7 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(({ data }, ref)
           </div>
 
           <div className={`${inter.className} mt-8 text-center text-sm text-gray-600`}>
-            Issued by the Transport Department, Government of Telangana
+            Issued by the Transport Department, State Government
           </div>
         </div>
       </div>

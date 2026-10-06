@@ -48,53 +48,11 @@ export async function GET(request: NextRequest) {
     // No QR code
     const qrDataUrl = "";
 
-    // Load assets (in production, these should be stored securely)
-    const cmPhotoPath = join(process.cwd(), "public", "assets", "leadership", "CM.png");
-    const ministerPhotoPath = join(process.cwd(), "public", "assets", "minister", "Sri-Ponnam-Prabhakar.jpg");
-    const emblemPath = join(process.cwd(), "public", "assets", "seals", "telangana-emblem.png");
-    const ministerSigPath = join(process.cwd(), "public", "assets", "signatures", "minister.png");
-    
-    // Regional authority logic: 
-    // - TGSG-* (statewide) should NEVER show regional person
-    // - Only regional event IDs (district codes like KRMR-*) should show regional person
-    // - Check event reference ID prefix to ensure TGSG never shows regional person
+    // Regional authority logic:
     const eventRefId = (certificate as any).eventReferenceId || "";
-    const isTGSGEvent = eventRefId.startsWith("TGSG-");
-    const isRegionalEvent = eventType === "regional" && !isTGSGEvent; // Regional AND not TGSG
-    const isStatewideEvent = eventType === "statewide" || isTGSGEvent; // Explicitly statewide OR TGSG prefix
-    const isKarimnagar = (certificate as any).district?.toLowerCase() === "karimnagar";
-    
-    // Only show regional person if it's a regional event (NOT statewide/TGSG)
-    const showPadalaRahul = isRegionalEvent && !isStatewideEvent && isKarimnagar;
-    const showPlaceholder = isRegionalEvent && !isStatewideEvent && !isKarimnagar;
-    const regionalPhotoPath = join(process.cwd(), "public", "assets", "leadership", "Karimnagarrtamemberpadalarahul.webp");
-
-    let cmPhoto = "";
-    let ministerPhoto = "";
-    let emblem = "";
-    let ministerSig = "";
-    let regionalPhoto = "";
-
-    try {
-      if (existsSync(cmPhotoPath)) {
-        cmPhoto = readFileSync(cmPhotoPath, "base64");
-      }
-      if (existsSync(ministerPhotoPath)) {
-        ministerPhoto = readFileSync(ministerPhotoPath, "base64");
-      }
-      if (existsSync(emblemPath)) {
-        emblem = readFileSync(emblemPath, "base64");
-      }
-      if (existsSync(ministerSigPath)) {
-        ministerSig = readFileSync(ministerSigPath, "base64");
-      }
-      // Load Padala Rahul photo only for Karimnagar regional events
-      if (showPadalaRahul && existsSync(regionalPhotoPath)) {
-        regionalPhoto = readFileSync(regionalPhotoPath, "base64");
-      }
-    } catch (err) {
-      console.warn("Asset loading error:", err);
-    }
+    const isStatewideEvent = eventType === "statewide" || eventRefId.startsWith("STGV-") || eventRefId.startsWith("TGSG-");
+    const isRegionalEvent = eventType === "regional" || (!isStatewideEvent && Boolean((certificate as any).district));
+    const showDistrictRTAHead = isRegionalEvent;
 
     // Pass eventType and participationContext to template function
     const certificateWithContext = {
@@ -106,13 +64,7 @@ export async function GET(request: NextRequest) {
     const html = generateCertificateHTML({
       certificate: certificateWithContext,
       qrDataUrl,
-      cmPhoto: cmPhoto ? `data:image/png;base64,${cmPhoto}` : "",
-      ministerPhoto: ministerPhoto ? `data:image/jpeg;base64,${ministerPhoto}` : "",
-      emblem: emblem ? `data:image/png;base64,${emblem}` : "",
-      ministerSig: ministerSig ? `data:image/png;base64,${ministerSig}` : "",
-      regionalPhoto: regionalPhoto ? `data:image/webp;base64,${regionalPhoto}` : "",
-      showPadalaRahul: showPadalaRahul,
-      showPlaceholder: isRegionalEvent && !isKarimnagar,
+      showDistrictRTAHead,
     });
 
     // Set timeout for PDF generation (30 seconds max)
@@ -263,26 +215,14 @@ export async function GET(request: NextRequest) {
 function generateCertificateHTML({
   certificate,
   qrDataUrl,
-  cmPhoto,
-  ministerPhoto,
-  emblem,
-  ministerSig,
-  regionalPhoto,
-  showPadalaRahul,
-  showPlaceholder,
+  showDistrictRTAHead,
 }: {
   certificate: any;
   qrDataUrl: string;
-  cmPhoto: string;
-  ministerPhoto: string;
-  emblem: string;
-  ministerSig: string;
-  regionalPhoto: string;
-  showPadalaRahul: boolean;
-  showPlaceholder: boolean;
+  showDistrictRTAHead: boolean;
 }) {
-  const ministerName = process.env.MINISTER_NAME || "Ponnam Prabhakar";
-  const ministerTitle = process.env.MINISTER_TITLE || "Hon'ble Cabinet Minister";
+  const ministerName = "[Minister for Transport]";
+  const ministerTitle = "Transport Department, State Government";
 
   // Determine certificate type based on score (>=80% = Topper, 60-79% = Merit, <60% = Participant)
   let displayType = certificate.type?.toLowerCase() || "participant";
@@ -303,8 +243,8 @@ function generateCertificateHTML({
                      certificate.eventType === "statewide" ? "statewide" : null);
   const participationContext = certificate.participationContext || null;
   
-  // Note: showPadalaRahul and showPlaceholder are passed as parameters to this function
-  // They are already calculated in the calling function based on event type and district
+  // Note: showDistrictRTAHead is passed as parameter to this function
+  // based on event type and district
 
   return `
     <!DOCTYPE html>
@@ -397,14 +337,18 @@ function generateCertificateHTML({
       </style>
     </head>
     <body>
-      <img src="${emblem}" class="watermark" alt="Telangana Emblem" />
-      
       <div class="header">
         <div class="photo-blocks">
-          ${cmPhoto ? `<img src="${cmPhoto}" class="portrait" alt="Chief Minister" />` : ""}
-          ${ministerPhoto ? `<img src="${ministerPhoto}" class="portrait" alt="Minister" />` : ""}
-          ${showPadalaRahul && regionalPhoto ? `<img src="${regionalPhoto}" class="portrait" alt="Regional RTA Member" />` : ""}
-          ${showPlaceholder ? `<div class="portrait" style="background: #f3f4f6; border: 2px dashed #9ca3af; display: flex; align-items: center; justify-content: center; color: #6b7280; font-size: 12px;">Photo</div>` : ""}
+          <div class="portrait" style="background: #ecfdf5; border: 3px solid #059669; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: #047857; font-weight: bold; text-align: center; padding: 4px;">
+            <span>Hon'ble</span><span>Chief Minister</span>
+          </div>
+          <div class="portrait" style="background: #eff6ff; border: 3px solid #2563eb; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: #1d4ed8; font-weight: bold; text-align: center; padding: 4px;">
+            <span>Hon'ble</span><span>Transport Minister</span>
+          </div>
+          ${showDistrictRTAHead ? `
+          <div class="portrait" style="background: #f8fafc; border: 3px solid #475569; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 9px; color: #1e293b; font-weight: bold; text-align: center; padding: 4px;">
+            <span>District</span><span>RTA Head</span>
+          </div>` : ""}
         </div>
         <div></div>
       </div>
@@ -412,12 +356,12 @@ function generateCertificateHTML({
       <div class="title">CERTIFICATE OF ${typeLabels[displayType]?.toUpperCase() || "PARTICIPATION"}</div>
       <div class="subtitle">
         ${participationContext === "online" && !eventType 
-          ? "Online Event - Road Safety Month - Telangana"
+          ? "Online Event - National Road Safety Month 2027 - State Government"
           : eventType === "statewide"
-          ? "Statewide Event - Road Safety Month - Telangana"
+          ? "Statewide Event - National Road Safety Month 2027 - State Government"
           : eventType === "regional"
-          ? "Regional Event - Road Safety Month - Telangana"
-          : "Road Safety Month - Telangana"}
+          ? "Regional Event - National Road Safety Month 2027 - State Government"
+          : "National Road Safety Month 2027 - State Government"}
       </div>
 
       <div class="content">
@@ -442,10 +386,16 @@ function generateCertificateHTML({
 
       <div class="signatures">
         <div class="signature-block">
-          <img src="${ministerSig}" class="signature-img" alt="Minister Signature" />
+          <div style="font-family: serif; font-size: 15px; color: #1e3a8a; font-style: italic; margin-bottom: 8px;">[Authorised Digital Signature]</div>
           <div class="signature-name">${ministerName}</div>
           <div class="signature-title">${ministerTitle}</div>
         </div>
+        ${showDistrictRTAHead ? `
+        <div class="signature-block">
+          <div style="font-family: serif; font-size: 15px; color: #1e3a8a; font-style: italic; margin-bottom: 8px;">[Authorised Digital Signature]</div>
+          <div class="signature-name">District Road Transport Authority Head</div>
+          <div class="signature-title">Regional Transport Authority, ${certificate.district || 'District Headquarters'}</div>
+        </div>` : ""}
       </div>
 
       

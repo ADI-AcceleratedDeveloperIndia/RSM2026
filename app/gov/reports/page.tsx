@@ -174,7 +174,7 @@ export default function GovReportsPage() {
                   onChange={(e) => setGenScope(e.target.value)}
                   className="w-full border border-slate-300 rounded-md text-xs p-2 bg-white mt-1 h-9"
                 >
-                  <option value="statewide">Statewide (All 33 Telangana Districts)</option>
+                  <option value="statewide">Statewide (All 33 Districts)</option>
                   <option value="district">Single District Focus</option>
                 </select>
               </div>

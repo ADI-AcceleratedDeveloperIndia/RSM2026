@@ -3,8 +3,8 @@ import { Schema, model, models } from "mongoose";
 const DistrictSchema = new Schema({
   code: { type: String, required: true, unique: true, index: true },  // e.g., "HYDR"
   name: { type: String, required: true },                              // e.g., "Hyderabad"
-  state: { type: String, required: true, default: "Telangana", index: true },
-  stateCode: { type: String, required: true, default: "TG" },
+  state: { type: String, required: true, default: "State Government", index: true },
+  stateCode: { type: String, required: true, default: "SG" },
   population: { type: Number },
   area: { type: Number },  // sq km
   headquarters: { type: String },

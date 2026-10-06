@@ -79,16 +79,18 @@ export default function Home() {
   };
   const leadershipProfiles = [
     {
-      title: tc("honChiefMinister"),
-      name: tc("chiefMinisterName"),
-      image: "/assets/leadership/CM.png",
-      alt: tc("chiefMinisterAlt"),
+      title: "Hon'ble Chief Minister",
+      name: "[Chief Minister]",
+      image: "/assets/leadership/chief-minister-placeholder.svg",
+      alt: "Hon'ble Chief Minister",
+      isMinister: false,
     },
     {
-      title: tc("honTransportMinister"),
-      name: tc("transportMinisterName"),
-      image: "/assets/minister/Sri-Ponnam-Prabhakar.jpg",
-      alt: tc("transportMinisterAlt"),
+      title: "Hon'ble Transport Minister",
+      name: "[Minister for Transport]",
+      image: "/assets/leadership/transport-minister-placeholder.svg",
+      alt: "Hon'ble Transport Minister",
+      isMinister: true,
     },
   ];
   
@@ -154,7 +156,7 @@ export default function Home() {
             <div className="flex-1 space-y-4 text-white">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rs-chip" style={{ background: "rgba(255,255,255,0.2)", color: "#ffffff" }}>
-                  {tc("governmentOfTelangana")}
+                  State Government • Transport Department
                 </span>
                 <span className="rs-chip" style={{ background: "rgba(99, 102, 241, 0.35)", color: "#ffffff", border: "1px solid rgba(165, 180, 252, 0.4)" }}>
                   RSM 2027 • National Action & Impact Platform
@@ -251,7 +253,7 @@ export default function Home() {
                 
                 <div className="grid w-full max-w-md grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2" style={{ position: 'relative', zIndex: 10 }}>
                   {leadershipProfiles.map((leader, index) => {
-                    const isMinister = leader.image.includes("Sri-Ponnam-Prabhakar");
+                    const isMinister = (leader as any).isMinister;
                     return (
                       <div
                         key={leader.name}
@@ -405,7 +407,7 @@ export default function Home() {
                 </button>
                 <div className="relative h-40 w-40 rounded-full overflow-hidden border-4 border-emerald-200 shadow-lg">
                   <img
-                    src="/assets/minister/Sri-Ponnam-Prabhakar.jpg"
+                    src="/assets/leadership/transport-minister-placeholder.svg"
                     alt={tc("transportMinisterAlt")}
                     className="h-full w-full object-cover"
                   />

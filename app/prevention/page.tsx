@@ -80,7 +80,7 @@ const PREVENTION_SECTIONS: PreventionSection[] = [
       {
         prompt: "Do you keep tyre tread depth above the wear indicator?",
         reinforcement:
-          "Healthy tread clears water, keeping aquaplaning and skids away during Telangana’s sudden showers.",
+          "Healthy tread clears water, keeping aquaplaning and skids away during sudden rain showers.",
       },
     ],
   },

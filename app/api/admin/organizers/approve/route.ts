@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
       
       let organizerNumber = 1;
       if (lastOrganizer && lastOrganizer.finalId) {
-        // Extract number from finalId: KRMR-RSM-2026-PDL-RHL-ORGANIZER-00001
+        // Extract number from finalId: KRMR-RSM-2027-RTA-DTO-ORGANIZER-00001
         const match = lastOrganizer.finalId.match(/ORGANIZER-(\d+)$/);
         if (match) {
           organizerNumber = parseInt(match[1], 10) + 1;

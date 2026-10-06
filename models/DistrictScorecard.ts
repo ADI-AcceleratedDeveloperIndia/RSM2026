@@ -3,7 +3,7 @@ import { Schema, model, models } from "mongoose";
 const DistrictScorecardSchema = new Schema({
   districtCode: { type: String, required: true, index: true },
   districtName: { type: String, required: true },
-  state: { type: String, default: "Telangana" },
+  state: { type: String, default: "State Government" },
   year: { type: Number, default: 2027 },
   month: { type: Number, default: 1 },
   

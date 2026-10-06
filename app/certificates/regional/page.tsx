@@ -84,8 +84,8 @@ export default function RegionalCertificatesPage() {
           </h1>
           <p className="text-slate-600 max-w-2xl">
             {i18n.language === "te"
-              ? "కరీంనగర్ జిల్లా రోడ్ సేఫ్టీ మాస్ కార్యక్రమాలలో పాల్గొన్నవారికి అధికారిక సర్టిఫికేట్‌లు. ఈ సర్టిఫికేట్‌లు ప్రాంతీయ రవాణా అధికారి (RTA) సంతకంతో జారీ చేయబడతాయి."
-              : "Official certificates for participants in Karimnagar district Road Safety Month events. These certificates are issued with the Regional Transport Authority (RTA) member signature."}
+              ? "జిల్లా రోడ్ సేఫ్టీ కార్యక్రమాలలో పాల్గొన్నవారికి అధికారిక సర్టిఫికేట్‌లు. ఈ సర్టిఫికేట్‌లు జిల్లా రవాణా ప్రాధికార సంస్థ (RTA) అధిపతి ఆమోదంతో జారీ చేయబడతాయి."
+              : "Official certificates for participants in district Road Safety Month events. These certificates are issued under the authority of the District Road Transport Authority Head."}
           </p>
         </div>
       </div>
@@ -174,7 +174,7 @@ export default function RegionalCertificatesPage() {
                 value={formData.organizerReferenceId}
                 onChange={(e) => setFormData({ ...formData, organizerReferenceId: e.target.value })}
                 className="h-11 rounded-lg border border-emerald-200 font-mono text-xs"
-                placeholder="KRMR-RSM-2026-PDL-RHL-EVT-00001"
+                placeholder="KRMR-RSM-2027-RTA-DTO-EVT-00001"
               />
               <p className="text-xs text-slate-500">
                 {i18n.language === "te"
@@ -210,13 +210,13 @@ export default function RegionalCertificatesPage() {
                 </li>
                 <li>
                   {i18n.language === "te"
-                    ? "మంత్రి మరియు ప్రధాన కార్యదర్శి సంతకాలు"
-                    : "Minister and Principal Secretary signatures"}
+                    ? "అధికారిక డిజిటల్ సంతకాలు"
+                    : "Authorised digital signatures"}
                 </li>
                 <li>
                   {i18n.language === "te"
-                    ? "తెలంగాణ ఎంబ్లెమ్"
-                    : "Telangana Emblem"}
+                    ? "రాష్ట్ర ప్రభుత్వం ఎంబ్లెమ్"
+                    : "State Government Emblem"}
                 </li>
                 <li>
                   {i18n.language === "te"

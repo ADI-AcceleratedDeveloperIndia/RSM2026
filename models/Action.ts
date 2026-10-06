@@ -39,7 +39,7 @@ const ActionSchema = new Schema({
   submittedByRole: { type: String },
   institutionId: { type: String, index: true },
   district: { type: String, required: true, index: true },
-  state: { type: String, default: "Telangana" },
+  state: { type: String, default: "State Government" },
   
   // What
   targetDate: { type: Date },

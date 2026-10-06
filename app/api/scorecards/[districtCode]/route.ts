@@ -28,7 +28,7 @@ export async function GET(
       scorecard = {
         districtCode: code,
         districtName: name,
-        state: "Telangana",
+        state: "State Government",
         year: 2027,
         month: 1,
         overallScore: 78,

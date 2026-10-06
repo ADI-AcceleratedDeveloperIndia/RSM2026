@@ -62,14 +62,14 @@ export async function POST(request: Request) {
     const completedActions = (actCounts.completed || 0) + (actCounts.verified || 0);
     const verifiedActions = actCounts.verified || 0;
 
-    const reportCode = scope === "district" && districtName ? getDistrictCode(districtName) : "TG";
+    const reportCode = scope === "district" && districtName ? getDistrictCode(districtName) : "SG";
     const reportId = generateReportId(reportCode);
 
     const title = scope === "district"
       ? `${districtName} District Road Safety Month 2027 — Impact & Action Report`
-      : `Telangana Statewide Road Safety Month 2027 — Official Government Impact Dossier`;
+      : `Statewide Road Safety Month 2027 — Official Government Impact Dossier`;
 
-    const executiveSummary = `This executive report documents the outcomes of Road Safety Month 2027 across ${scope === "district" ? districtName : "Telangana State"}. During the campaign period, a total of ${totalCertificates.toLocaleString()} participants engaged through official educational assessments and mass safety pledges. Across the 4E pillars, ${completedActions.toLocaleString()} concrete safety actions were executed, and ${resolvedHazards.toLocaleString()} road hazards were rectified with photographic evidence, reflecting a rectification rate of ${rectificationRate}%. A total of ${totalInstitutions.toLocaleString()} educational institutions established active Road Safety Clubs.`;
+    const executiveSummary = `This executive report documents the outcomes of Road Safety Month 2027 across ${scope === "district" ? districtName : "the State"}. During the campaign period, a total of ${totalCertificates.toLocaleString()} participants engaged through official educational assessments and mass safety pledges. Across the 4E pillars, ${completedActions.toLocaleString()} concrete safety actions were executed, and ${resolvedHazards.toLocaleString()} road hazards were rectified with photographic evidence, reflecting a rectification rate of ${rectificationRate}%. A total of ${totalInstitutions.toLocaleString()} educational institutions established active Road Safety Clubs.`;
 
     const report = await GovernmentReport.create({
       reportId,

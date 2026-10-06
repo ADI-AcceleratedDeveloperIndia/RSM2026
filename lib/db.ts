@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const MONGODB_URI: string = process.env.MONGODB_URI || "mongodb://localhost:27017/telangana-road-safety";
+const MONGODB_URI: string = process.env.MONGODB_URI || "mongodb://localhost:27017/rsm2027";
 
 interface MongooseCache {
   conn: typeof mongoose | null;

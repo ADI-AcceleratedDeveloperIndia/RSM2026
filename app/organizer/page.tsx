@@ -549,7 +549,7 @@ export default function OrganizerPage() {
                   <Input
                     value={eventCheckId}
                     onChange={(e) => setEventCheckId(e.target.value)}
-                    placeholder="KRMR-RSM-2026-PDL-RHL-ORGANIZER-00001"
+                    placeholder="KRMR-RSM-2027-RTA-DTO-ORGANIZER-00001"
                     className="mt-2"
                   />
                   <p className="text-xs text-slate-500 mt-1">

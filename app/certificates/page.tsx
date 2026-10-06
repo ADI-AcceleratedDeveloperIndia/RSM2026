@@ -162,7 +162,7 @@ export default function CertificatesPage() {
             </span>
             <h1 className="text-3xl font-semibold text-emerald-900">{t("certificates")}</h1>
             <p className="text-slate-600 max-w-2xl">
-              {tc("certificatesDescription") || "Telangana Road Safety Month issues official certificates in eight categories. Each template carries the Telangana emblem, minister signature, dynamic personalisation, and a verification-ready reference ID."}
+              {tc("certificatesDescription") || "National Road Safety Month 2027 issues official certificates in eight categories. Each template carries the State Government emblem, authorised signature, dynamic personalisation, and a verification-ready reference ID."}
             </p>
           </div>
         </div>
@@ -246,7 +246,7 @@ export default function CertificatesPage() {
               id="eventRef"
               value={eventRef}
               onChange={(e) => setEventRef(e.target.value)}
-              placeholder="KRMR-RSM-2026-PDL-RHL-EVT-00001"
+              placeholder="KRMR-RSM-2027-RTA-DTO-EVT-00001"
               required
               className="font-mono text-xs"
             />
@@ -260,7 +260,7 @@ export default function CertificatesPage() {
               id="organizerId"
               value={organizerId}
               onChange={(e) => setOrganizerId(e.target.value)}
-              placeholder="KRMR-RSM-2026-PDL-RHL-ORGANIZER-00001"
+              placeholder="KRMR-RSM-2027-RTA-DTO-ORGANIZER-00001"
               required
               className="font-mono text-xs"
             />

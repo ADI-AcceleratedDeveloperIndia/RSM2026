@@ -12,7 +12,7 @@ const InterventionSchema = new Schema({
   },
   hazardId: { type: String, index: true },
   district: { type: String, required: true, index: true },
-  state: { type: String, default: "Telangana" },
+  state: { type: String, default: "State Government" },
   department: {
     type: String,
     enum: ["roads_and_buildings", "traffic_police", "municipal_corporation", "nhai", "transport_dept", "health_emergency", "other"],

@@ -381,8 +381,8 @@ function CertificateGenerateContent() {
         </span>
         <h1 className="text-3xl font-semibold text-emerald-900">Generate Certificate</h1>
         <p className="text-slate-600 max-w-2xl">
-          Fill in the details below to preview and download an official Telangana Road Safety Month certificate with the
-          Telangana emblem, minister signature, and your personalised information.
+          Fill in the details below to preview and download an official Road Safety Month certificate with the
+          State Government emblem, authorised signature, and your personalised information.
         </p>
       </div>
 
@@ -493,7 +493,7 @@ function CertificateGenerateContent() {
               </Label>
               <Input
                 id="eventReferenceId"
-                placeholder="KRMR-RSM-2026-PDL-RHL-EVT-00001"
+                placeholder="KRMR-RSM-2027-RTA-DTO-EVT-00001"
                 className="h-11 rounded-lg border border-emerald-200 font-mono text-xs"
                 disabled={hasEventId === null && isFromActivity ? true : false}
                 {...register("referenceId", { 
@@ -508,8 +508,8 @@ function CertificateGenerateContent() {
                       if (response.ok) {
                         const data = await response.json();
                         if (data.event) {
-                          // Check if it's a statewide event (TGSG-*)
-                          const isStatewide = eventId.startsWith("TGSG-");
+                          // Check if it's a statewide event (STGV-* or TGSG-*)
+                          const isStatewide = eventId.startsWith("STGV-") || eventId.startsWith("TGSG-");
                           
                           // Auto-populate district from event data
                           // For statewide events: district is optional (clear if not in event data)
@@ -571,7 +571,7 @@ function CertificateGenerateContent() {
               </Label>
               <Input
                 id="organizerId"
-                placeholder="KRMR-RSM-2026-PDL-RHL-ORGANIZER-00001"
+                placeholder="KRMR-RSM-2027-RTA-DTO-ORGANIZER-00001"
                 className="h-11 rounded-lg border border-emerald-200 font-mono text-xs"
                 {...register("organizerId", {
                   required: (selectedType === "ORG" || selectedType === "VOL" || selectedType === "SCH" || selectedType === "COL") && watch("referenceId") ? "Organizer ID is required when Event ID is provided" : false

@@ -11,7 +11,7 @@ const GovernmentReportSchema = new Schema({
   },
   districtCode: { type: String },
   districtName: { type: String },
-  state: { type: String, default: "Telangana" },
+  state: { type: String, default: "State Government" },
   year: { type: Number, default: 2027 },
   generatedBy: { type: String, default: "Mission Control Engine" },
   

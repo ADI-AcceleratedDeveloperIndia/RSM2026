@@ -80,7 +80,7 @@ export default function DistrictDetailPage({
                 {scorecard.districtCode}
               </span>
               <span className="text-xs text-slate-300">
-                {scorecard.state || "Telangana"} State
+                {scorecard.state || "State Government"}
               </span>
               <span className="text-xs px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
                 Road Safety Month 2027

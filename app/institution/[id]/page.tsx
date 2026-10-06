@@ -83,7 +83,7 @@ export default function InstitutionProfilePage({
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">{institution.name}</h1>
             <p className="text-sm text-slate-500 flex items-center gap-1.5">
-              <MapPin className="h-4 w-4 text-slate-400" /> {institution.district} District • {institution.address || "Telangana"}
+              <MapPin className="h-4 w-4 text-slate-400" /> {institution.district} District • {institution.address || "State Government"}
             </p>
           </div>
 

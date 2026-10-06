@@ -1,21 +1,21 @@
 // Fixed Reference ID Format: 
-// Online Statewide: TGSG-RSM-2026-PDL-RHL-EVT-ON-00001 (TGSG = Telangana State Government)
-// Offline Statewide: TGSG-RSM-2026-PDL-RHL-EVT-OF-00001
-// Online Regional: KRMR-RSM-2026-PDL-RHL-EVT-ON-00001 (KRMR = Karimnagar district code)
-// Offline Regional: KRMR-RSM-2026-PDL-RHL-EVT-OF-00001
-// First 4 letters: TGSG for statewide, District code for regional
-// RSM = Road Safety Month (hardcoded)
-// 2026 = Year (hardcoded)
-// PDL = Officer code (Padala Rahul)
-// RHL = Officer code (Rahul)
+// Online Statewide: STGV-RSM-2027-RTA-DTO-EVT-ON-00001 (STGV = State Government)
+// Offline Statewide: STGV-RSM-2027-RTA-DTO-EVT-OF-00001
+// Online Regional: KRMR-RSM-2027-RTA-DTO-EVT-ON-00001 (KRMR = District code)
+// Offline Regional: KRMR-RSM-2027-RTA-DTO-EVT-OF-00001
+// First 4 letters: STGV for statewide, District code for regional
+// RSM = Road Safety Month
+// 2027 = Year
+// RTA = Regional Transport Authority
+// DTO = District Transport Officer / RTA Head
 // EVT-ON-00001 or EVT-OF-00001 = Event ID with participation context (5 digits, 00001 to 100000)
 // ON = Online Event, OF = Offline Event
 
-const STATEWIDE_CODE = "TGSG"; // Telangana State Government
+const STATEWIDE_CODE = "STGV"; // State Government
 const PROGRAM_CODE = "RSM";
-const YEAR = "2026";
-const OFFICER_CODE_1 = "PDL"; // Padala
-const OFFICER_CODE_2 = "RHL"; // Rahul
+const YEAR = "2027";
+const OFFICER_CODE_1 = "RTA"; // Regional Transport Authority
+const OFFICER_CODE_2 = "DTO"; // District Transport Officer / RTA Head
 
 // District name to code mapping
 const DISTRICT_CODE_MAP: Record<string, string> = {

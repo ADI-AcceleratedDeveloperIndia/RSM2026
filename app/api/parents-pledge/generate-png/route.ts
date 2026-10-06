@@ -149,7 +149,7 @@ function generatePledgeHTML(pledge: any) {
     </div>
     
     <div class="footer">
-      Government of Telangana - Road Safety Month 2026
+      State Government - Road Safety Month 2027
     </div>
   </div>
 </body>

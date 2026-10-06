@@ -68,7 +68,7 @@ export default function InstitutionsDirectoryPage() {
             </div>
             <h1 className="text-3xl sm:text-4xl font-bold text-slate-900">Institutions & Road Safety Clubs</h1>
             <p className="text-slate-600 max-w-2xl text-sm sm:text-base">
-              Educational institutions and universities leading road safety campaigns, safety pledges, and verified community interventions across Telangana.
+              Educational institutions and universities leading road safety campaigns, safety pledges, and verified community interventions across all districts.
             </p>
           </div>
           <Link href="/institution/register" className="shrink-0">

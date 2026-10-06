@@ -5,7 +5,7 @@ import { TELANGANA_DISTRICTS } from "../lib/districts";
 async function seedDistricts() {
   await connectDB();
 
-  console.log("Seeding Telangana Districts...");
+  console.log("Seeding State Districts...");
   let createdCount = 0;
   let updatedCount = 0;
 

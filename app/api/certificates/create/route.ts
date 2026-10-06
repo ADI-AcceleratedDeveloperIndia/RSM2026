@@ -157,7 +157,7 @@ export async function POST(request: NextRequest) {
     const userIpHash = hashIp(ip);
 
     // Generate certificate with random number (avoids race conditions)
-    // Format: KRMR-RSM-2026-PDL-RHL-TYPE-XXXXX (where XXXXX is random 5-digit number)
+    // Format: {PREFIX}-RSM-2027-RTA-DTO-TYPE-XXXXX (where XXXXX is random 5-digit number)
     let certificate;
     let certificateId: string | null = null;
     let attempts = 0;
@@ -166,7 +166,7 @@ export async function POST(request: NextRequest) {
     while (attempts < maxAttempts) {
       try {
         // Generate certificate ID with random number (no need to query database)
-        // Pass eventType and eventReferenceId to use correct prefix (TGSG for statewide, district code for regional)
+        // Pass eventType and eventReferenceId to use correct prefix (STGV for statewide, district code for regional)
         // Use finalDistrict (already extracted from event if available)
         certificateId = generateCertificateNumber(
           validated.type, 
@@ -178,8 +178,8 @@ export async function POST(request: NextRequest) {
         ); // No number = random
         
         // Extract the certificate number from the certificateId for storage
-        // Format: {PREFIX}-RSM-2026-PDL-RHL-{TYPE}-{CONTEXT}-{NUMBER}
-        // Example: KRMR-RSM-2026-PDL-RHL-PARTICIPANT-ON-45231
+        // Format: {PREFIX}-RSM-2027-RTA-DTO-{TYPE}-{CONTEXT}-{NUMBER}
+        // Example: KRMR-RSM-2027-RTA-DTO-PARTICIPANT-ON-45231
         const certNumMatch = certificateId.match(/-(ON|OF)-(\d{5})$/);
         const certificateNumber = certNumMatch ? parseInt(certNumMatch[2]) : Math.floor(Math.random() * 90000) + 10000;
         

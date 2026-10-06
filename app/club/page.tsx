@@ -46,7 +46,7 @@ const DISTRICTS = [
 
 const TELUGU_CONTENT = `క్లబ్
 
-తెలంగాణ రాష్ట్రంలో ప్రతి పాఠశాల రోడ్డు భద్రతపై అవగాహన పెంచే బాధ్యత వహించాలని ప్రభుత్వం కోరుతోంది.
+రాష్ట్రంలో ప్రతి పాఠశాల రోడ్డు భద్రతపై అవగాహన పెంచే బాధ్యత వహించాలని రాష్ట్ర ప్రభుత్వం కోరుతోంది.
 ఈ క్లబ్ ద్వారా విద్యార్థులు, తల్లిదండ్రులు మరియు సమాజంలో
 రోడ్డు భద్రతా నియమాలపై అవగాహన కల్పించవచ్చు.
 
@@ -55,7 +55,7 @@ const TELUGU_CONTENT = `క్లబ్
 
 const ENGLISH_CONTENT = `Road Safety Club
 
-The Government of Telangana encourages every school to take responsibility for raising road safety awareness.
+The State Government encourages every school to take responsibility for raising road safety awareness.
 Through this Club, schools can create awareness about road safety rules among students, parents, and the community.
 
 Schools can join this Club using their Organizer ID and become partners in road safety programs.`;
@@ -211,7 +211,7 @@ export default function ClubPage() {
                     id="organizerId"
                     value={formData.organizerId}
                     onChange={(e) => setFormData({ ...formData, organizerId: e.target.value })}
-                    placeholder="KRMR-RSM-2026-PDL-RHL-ORGANIZER-00001"
+                    placeholder="KRMR-RSM-2027-RTA-DTO-ORGANIZER-00001"
                     required
                     className="h-11 font-mono text-xs"
                   />

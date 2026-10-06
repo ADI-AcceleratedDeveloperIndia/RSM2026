@@ -13,27 +13,27 @@ export const REGIONAL_AUTHORITIES: Record<string, RegionalAuthority> = {
   karimnagar: {
     code: "karimnagar",
     district: "Karimnagar",
-    officerName: "Sri Padala Rahul Garu",
-    officerTitle: "Regional Transport Authority Member, Karimnagar",
-    photo: "/assets/leadership/Karimnagarrtamemberpadalarahul.webp",
+    officerName: "District Road Transport Authority Head",
+    officerTitle: "District Transport Officer (DTO) / RTA Head, Karimnagar",
+    photo: "/assets/leadership/district-rta-head-placeholder.svg",
     description:
-      "Leads district-wide enforcement and awareness drives focusing on student community road safety pledges and compliance.",
+      "Leads district-wide transport administration, enforcement, and road safety compliance.",
   },
   hyderabad: {
     code: "hyderabad",
     district: "Hyderabad",
-    officerName: "Regional Transport Officer",
-    officerTitle: "Regional Transport Authority, Hyderabad",
-    photo: "/assets/logo/Telangana-LOGO.png",
-    description: "Capital district administration and urban road safety coordination.",
+    officerName: "District Road Transport Authority Head",
+    officerTitle: "District Transport Officer (DTO) / RTA Head, Hyderabad",
+    photo: "/assets/leadership/district-rta-head-placeholder.svg",
+    description: "Capital district transport administration and urban road safety coordination.",
   },
   warangal: {
     code: "warangal",
     district: "Warangal",
-    officerName: "Regional Transport Officer",
-    officerTitle: "Regional Transport Authority, Warangal",
-    photo: "/assets/logo/Telangana-LOGO.png",
-    description: "Tri-cities regional transport authority and traffic enforcement.",
+    officerName: "District Road Transport Authority Head",
+    officerTitle: "District Transport Officer (DTO) / RTA Head, Warangal",
+    photo: "/assets/leadership/district-rta-head-placeholder.svg",
+    description: "Regional transport administration and highway corridor enforcement.",
   },
 };
 
@@ -51,10 +51,10 @@ export const getRegionalAuthority = (code: string | null | undefined): RegionalA
     return {
       code: districtInfo.code.toLowerCase(),
       district: districtInfo.name,
-      officerName: `District Transport Officer, ${districtInfo.name}`,
-      officerTitle: `Regional Transport Authority, ${districtInfo.name}`,
-      photo: "/assets/logo/Telangana-LOGO.png",
-      description: `Oversees road safety initiatives, institutional enforcement, and compliance in ${districtInfo.name} District.`,
+      officerName: `District Road Transport Authority Head`,
+      officerTitle: `District Transport Officer (DTO) / RTA Head, ${districtInfo.name}`,
+      photo: "/assets/leadership/district-rta-head-placeholder.svg",
+      description: `Oversees transport administration, safety initiatives, and compliance in ${districtInfo.name} District.`,
     };
   }
 

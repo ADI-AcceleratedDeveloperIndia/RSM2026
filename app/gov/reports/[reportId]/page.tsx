@@ -74,15 +74,15 @@ export default function ReportDetailPage({
         <div className="text-center space-y-3 pb-6 border-b-2 border-slate-900">
           <div className="flex justify-center">
             <Image
-              src="/assets/logo/Telangana-LOGO.png"
-              alt="Telangana Government Emblem"
+              src="/assets/logo/state-government-emblem.svg"
+              alt="State Government Emblem"
               width={70}
               height={70}
               className="object-contain"
             />
           </div>
           <p className="text-xs font-bold uppercase tracking-widest text-slate-600">
-            Government of Telangana • Transport Department
+            Transport Department • State Government
           </p>
           <h1 className="text-2xl sm:text-3xl font-serif font-bold text-slate-900 uppercase tracking-tight">
             Road Safety Month 2027

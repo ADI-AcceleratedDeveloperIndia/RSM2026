@@ -48,14 +48,14 @@ export default function SiteFooter() {
           <div className="space-y-4">
             <div className="flex items-start gap-4">
               <Image
-                src="/assets/logo/Telangana-LOGO.png"
-                alt={t("telanganaGovernmentLogo")}
+                src="/assets/logo/state-government-emblem.svg"
+                alt="State Government Transport Department"
                 width={64}
                 height={64}
                 className="h-14 w-14 object-contain flex-shrink-0"
               />
               <div className="space-y-2">
-                <p className="text-sm uppercase tracking-widest text-emerald-200">{t("transportDepartment")}</p>
+                <p className="text-sm uppercase tracking-widest text-emerald-200">State Government</p>
                 <h2 className="text-xl font-semibold text-white">{t("appName")}</h2>
                 <p className="text-sm text-slate-300 max-w-sm leading-relaxed">
                   {t("empoweringCitizens")}
@@ -137,15 +137,15 @@ export default function SiteFooter() {
               <h3 className="text-sm font-semibold uppercase tracking-widest text-emerald-200 mb-4">{t("contact")}</h3>
               <address className="text-sm text-slate-300 not-italic space-y-2">
                 <p>
-                  {t("transportDepartment")}<br />
-                  Karimnagar, Telangana
+                  Transport Department<br />
+                  State Government
                 </p>
                 <p className="mt-3">
                   <a 
-                    href="mailto:support@roadsafety.telangana.gov.in"
+                    href="mailto:support@roadsafety.gov.in"
                     className="text-slate-300 hover:text-yellow-300 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-offset-2 focus:ring-offset-emerald-900 rounded"
                   >
-                    support@roadsafety.telangana.gov.in
+                    support@roadsafety.gov.in
                   </a>
                 </p>
               </address>

@@ -62,30 +62,36 @@ export default function Nav() {
       <div className="rs-container">
         <div className="flex h-20 items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-emerald-200 bg-white shadow-[0_8px_18px_rgba(13,148,94,0.18)]">
+            <div 
+              className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-emerald-200 bg-white shadow-[0_8px_18px_rgba(13,148,94,0.18)]"
+              title="Hon'ble Chief Minister"
+            >
               <Image
-                src="/assets/leadership/CM.png"
-                alt={t("chiefMinisterAlt") || "Chief Minister of Telangana"}
+                src="/assets/leadership/chief-minister-placeholder.svg"
+                alt="Hon'ble Chief Minister"
                 width={48}
                 height={48}
                 className="h-12 w-12 rounded-full object-cover"
               />
             </div>
-            <Link href="/" className="flex items-center">
+            <Link href="/" className="flex items-center" title="State Government • Transport Department">
               <div className="h-14 w-14 rounded-full border-2 border-emerald-200 bg-white flex items-center justify-center shadow-[0_8px_18px_rgba(13,148,94,0.18)]">
                 <Image
-                  src="/assets/logo/Telangana-LOGO.png"
-                  alt={t("telanganaGovernmentLogo") || "Telangana Government Logo"}
+                  src="/assets/logo/state-government-emblem.svg"
+                  alt="State Government Transport Department"
                   width={48}
                   height={48}
                   className="h-12 w-12 object-contain"
                 />
               </div>
             </Link>
-            <div className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-emerald-200 bg-white shadow-[0_8px_18px_rgba(13,148,94,0.18)]">
+            <div 
+              className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-emerald-200 bg-white shadow-[0_8px_18px_rgba(13,148,94,0.18)]"
+              title="Hon'ble Transport Minister"
+            >
               <Image
-                src="/assets/minister/Sri-Ponnam-Prabhakar.jpg"
-                alt={t("transportMinisterAlt") || "Transport Minister of Telangana"}
+                src="/assets/leadership/transport-minister-placeholder.svg"
+                alt="Hon'ble Transport Minister"
                 width={48}
                 height={48}
                 className="h-12 w-12 rounded-full object-cover"

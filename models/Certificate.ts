@@ -11,7 +11,7 @@ const CertificateSchema = new Schema({
   },
   fullName: { type: String, required: true },
   institution: String,
-  eventReferenceId: String, // KRMR-RSM-2026-PDL-RHL-EVT-00001 format
+  eventReferenceId: String, // STGV-RSM-2027-RTA-DTO-EVT-00001 format
   eventTitle: String,
   organizerReferenceId: String, // Optional organizer reference
   activityType: { 

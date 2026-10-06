@@ -421,7 +421,7 @@ export default function EventDetailsPage() {
                   <Input
                     value={organizerId}
                     onChange={(e) => setOrganizerId(e.target.value)}
-                    placeholder="KRMR-RSM-2026-PDL-RHL-ORGANIZER-00001"
+                    placeholder="KRMR-RSM-2027-RTA-DTO-ORGANIZER-00001"
                     className="flex-1"
                   />
                   <Button onClick={handleOrganizerCheck}>Verify</Button>

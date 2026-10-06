@@ -19,7 +19,7 @@ async function seed() {
     passwordHash,
     role: "superadmin",
     fullName: "RSM 2027 Administrator",
-    state: "Telangana",
+    state: "State Government",
   });
   
   console.log("Government admin created:");

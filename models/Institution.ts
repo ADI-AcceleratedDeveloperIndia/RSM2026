@@ -10,7 +10,7 @@ const InstitutionSchema = new Schema({
     index: true
   },
   district: { type: String, required: true, index: true },
-  state: { type: String, required: true, default: "Telangana" },
+  state: { type: String, required: true, default: "State Government" },
   address: { type: String },
   pincode: { type: String },
   contactPerson: { type: String },

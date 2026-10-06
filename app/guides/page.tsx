@@ -21,7 +21,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
   {
     id: "two-wheeler",
     title: "Two-Wheeler Readiness",
-    description: "Small routines before you ride make the biggest difference on Telangana’s busy roads.",
+    description: "Small routines before you ride make the biggest difference on busy roads.",
     steps: [
       {
         prompt: "Do you inspect tyre pressure, chain slack, and brake feel before every long ride?",
@@ -36,7 +36,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
       {
         prompt: "Do you carry reflective rain gear during early mornings and late evenings?",
         reinforcement:
-          "Weather turns quickly in Telangana. High-visibility gear keeps you seen when drizzle or dust hits.",
+          "Weather turns quickly. High-visibility gear keeps you seen when drizzle or dust hits.",
       },
       {
         prompt: "Do you brief your pillion to mount only after your signal?",

@@ -27,7 +27,7 @@ const HazardSchema = new Schema({
   
   // Location
   district: { type: String, required: true, index: true },
-  state: { type: String, default: "Telangana" },
+  state: { type: String, default: "State Government" },
   location: { type: String },
   latitude: { type: Number },
   longitude: { type: Number },

@@ -137,7 +137,7 @@ export default function GovSettingsPage() {
       case "state_admin":
         return <Badge className="bg-indigo-100 text-indigo-800 border-indigo-200">State Commissioner</Badge>;
       case "district_admin":
-        return <Badge className="bg-blue-100 text-blue-800 border-blue-200">District Collector / RTO</Badge>;
+        return <Badge className="bg-blue-100 text-blue-800 border-blue-200">District RTA Head (Head of Transport)</Badge>;
       case "verifier":
         return <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200">Field Verifier</Badge>;
       default:
@@ -244,7 +244,7 @@ export default function GovSettingsPage() {
                     <Input
                       id="email"
                       type="email"
-                      placeholder="officer@telangana.gov.in"
+                      placeholder="officer@stategov.in"
                       value={newOfficer.email}
                       onChange={(e) => setNewOfficer({ ...newOfficer, email: e.target.value })}
                       required
@@ -269,7 +269,7 @@ export default function GovSettingsPage() {
                       value={newOfficer.role}
                       onChange={(e) => setNewOfficer({ ...newOfficer, role: e.target.value })}
                     >
-                      <option value="district_admin">District Admin (Collector / RTO)</option>
+                      <option value="district_admin">District Road Transport Authority Head (Head of Transport)</option>
                       <option value="verifier">Field Verifier (Municipal / Police)</option>
                       <option value="state_admin">State Admin (Transport Commissionerate)</option>
                       <option value="superadmin">Super Administrator</option>
@@ -327,7 +327,7 @@ export default function GovSettingsPage() {
                     <td className="py-3.5 px-4">{getRoleBadge(officer.role)}</td>
                     <td className="py-3.5 px-4 text-slate-700 flex items-center gap-1.5 mt-2">
                       <MapPin size={14} className="text-slate-400" />
-                      <span>{officer.district || officer.state || "Telangana"}</span>
+                      <span>{officer.district || officer.state || "State Government"}</span>
                     </td>
                     <td className="py-3.5 px-4">
                       <div className="flex flex-wrap gap-1">
@@ -361,7 +361,7 @@ export default function GovSettingsPage() {
             <CardHeader>
               <CardTitle className="text-base text-slate-900">Road Safety Month 2027 Directives</CardTitle>
               <CardDescription>
-                Configure statutory guidelines, time windows, and target impact benchmarks for all 33 Telangana districts.
+                Configure statutory guidelines, time windows, and target impact benchmarks for all administrative districts.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -566,7 +566,7 @@ export default function GovSettingsPage() {
               <div className="p-4 border border-slate-200 rounded-lg bg-slate-50/50">
                 <h4 className="font-semibold text-sm text-slate-900 mb-2">District Reference Registry</h4>
                 <p className="text-xs text-slate-500 mb-3">
-                  All 33 Telangana districts are codified as the single source of truth under <code>lib/districts.ts</code>.
+                  All administrative districts are codified as the single source of truth under <code>lib/districts.ts</code>.
                 </p>
                 <div className="flex flex-wrap gap-1 max-h-36 overflow-y-auto p-2 bg-white rounded border border-slate-200">
                   {TELANGANA_DISTRICTS.map((d) => (

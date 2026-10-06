@@ -87,9 +87,9 @@ function CertificatePreviewContent() {
               activityType: cert.activityType,
               details: undefined,
               eventName: cert.eventTitle,
-              referenceId: cert.certificateId, // Use proper certificate number format (KRMR-RSM-2026-PDL-RHL-TYPE-00001)
+              referenceId: cert.certificateId, // Use proper certificate number format (KRMR-RSM-2027-RTA-DTO-TYPE-00001)
               eventType: cert.eventType || null, // Pass eventType for regional certificate logic
-              eventReferenceId: cert.eventReferenceId || null, // Pass event reference ID to check TGSG prefix
+              eventReferenceId: cert.eventReferenceId || null, // Pass event reference ID to check statewide prefix
               participationContext: cert.participationContext || null, // Pass participationContext for subtitle logic
             });
           } else {
