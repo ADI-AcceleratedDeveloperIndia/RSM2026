@@ -1,6 +1,11 @@
 {
   "appName": "Road Safety Month 2027",
   "home": "Home",
+  "activity": "Activity",
+  "activities": "Activities",
+  "actions": "Actions",
+  "hazards": "Hazards",
+  "institutions": "Institutions",
   "info": "Information",
   "rules": "Rules",
   "guides": "Guides",
