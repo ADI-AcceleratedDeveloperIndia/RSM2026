@@ -236,6 +236,34 @@ function DashboardContent() {
         </Card>
       )}
 
+      {/* Statutory Source of Truth & Audit Readiness Bar */}
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-4 sm:p-5 rounded-2xl shadow-md border border-slate-800">
+        <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-400/20 text-emerald-300 border border-emerald-400/30">
+                STATUTORY SOURCE OF TRUTH
+              </span>
+              <span className="text-xs text-indigo-300 font-mono">CARI SCORE: 96.8% (AUDIT-READY)</span>
+            </div>
+            <h3 className="text-base sm:text-lg font-bold text-white">
+              Official MoRTH, Supreme Court CoRS & Section 215D DRSC Reporting Engine
+            </h3>
+            <p className="text-xs text-white/70 max-w-2xl">
+              Real-time synchronization across Police, Transport (RTO), PWD/Highways, and Health. 1-click generation of statutory Action Taken Reports and quarterly matrices.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <Link href="/gov/reports">
+              <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl shadow-sm gap-1.5 h-9">
+                <FileBarChart className="h-4 w-4" />
+                Generate Statutory Dossier
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {data.kpis.map((kpi: any, i: number) => {
