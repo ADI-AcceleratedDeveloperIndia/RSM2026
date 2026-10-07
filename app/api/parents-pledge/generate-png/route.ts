@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import ParentsPledge from "@/models/ParentsPledge";
+import { getPledgeFromMemory } from "@/lib/pledgeStore";
 
 const TELUGU_PLEDGE = `తల్లిదండ్రుల హామీ పత్రం
 
@@ -161,19 +162,38 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const pledgeId = searchParams.get("pledgeId");
 
-    if (!pledgeId) {
-      return NextResponse.json(
-        { error: "Pledge ID is required" },
-        { status: 400 }
-      );
+    let pledge: any = pledgeId ? getPledgeFromMemory(pledgeId) : null;
+
+    if (!pledge && pledgeId) {
+      try {
+        await connectDB();
+        pledge = await ParentsPledge.findById(pledgeId).lean();
+      } catch (dbError) {
+        console.warn("MongoDB lookup bypassed in generate-png:", dbError);
+      }
     }
 
-    await connectDB();
-    const pledge = await ParentsPledge.findById(pledgeId);
+    // Fallback from query params if available
+    if (!pledge) {
+      const childName = searchParams.get("childName");
+      const parentName = searchParams.get("parentName");
+      const institutionName = searchParams.get("institutionName");
+      const district = searchParams.get("district");
+
+      if (childName && parentName && institutionName && district) {
+        pledge = {
+          childName,
+          parentName,
+          institutionName,
+          district,
+          createdAt: new Date(),
+        };
+      }
+    }
 
     if (!pledge) {
       return NextResponse.json(
-        { error: "Pledge not found" },
+        { error: "Pledge record not found. Please provide valid details." },
         { status: 404 }
       );
     }

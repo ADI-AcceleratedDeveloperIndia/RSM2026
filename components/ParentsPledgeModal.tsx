@@ -122,7 +122,14 @@ export default function ParentsPledgeModal({ open, onOpenChange }: ParentsPledge
 
     setDownloading(true);
     try {
-      const pngRes = await fetch(`/api/parents-pledge/generate-png?pledgeId=${pledgeId}`);
+      const params = new URLSearchParams({
+        pledgeId: pledgeId || "",
+        childName: formData.childName,
+        parentName: formData.parentName,
+        institutionName: formData.institutionName,
+        district: formData.district,
+      });
+      const pngRes = await fetch(`/api/parents-pledge/generate-png?${params.toString()}`);
       
       if (!pngRes.ok) {
         const errorData = await pngRes.json().catch(() => ({}));
