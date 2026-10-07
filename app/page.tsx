@@ -19,6 +19,8 @@ import {
   Music,
   BookOpen,
   Download,
+  Trophy,
+  HeartHandshake,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import AudioGuide from "@/components/AudioGuide";
@@ -28,6 +30,7 @@ import MinisterMessageModal from "@/components/MinisterMessageModal";
 export default function Home() {
   const { t, i18n } = useTranslation("common");
   const { t: tc } = useTranslation("content");
+  const isTe = i18n.language === "te";
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [pledgeModalOpen, setPledgeModalOpen] = useState(false);
@@ -168,75 +171,146 @@ export default function Home() {
               <p className="text-sm sm:text-base md:text-lg text-white/80 max-w-xl">
                 {tc("roadSafetySharedResponsibility")}
               </p>
-              <div className="flex flex-wrap gap-2 sm:gap-3 pt-2">
-                <Link href="/gov" className="rs-btn-secondary bg-indigo-900/80 hover:bg-indigo-900 border border-indigo-300/40 text-white">
-                  <ShieldCheck className="h-5 w-5 text-indigo-300" />
-                  Mission Control
-                </Link>
-                <Link href="/quiz" className="rs-btn-secondary">
-                  <ShieldCheck className="h-5 w-5" />
-                  {tc("takeQuizChallenge")}
-                </Link>
-                <Link href="/simulation" className="rs-btn-secondary">
-                  <BrainCircuit className="h-5 w-5" />
-                  {tc("launchSimulationLab")}
-                </Link>
-                <Link href="/basics" className="rs-btn-secondary">
-                  <BookOpen className="h-5 w-5" />
-                  Learning Test
-                </Link>
-                <div className="flex gap-2 sm:gap-3 flex-nowrap">
-                  <button
-                    onClick={handleAnthemClick}
-                    className="rs-btn-secondary"
-                    aria-label="Play Road Safety Anthem"
+              {/* Citizen Action Launchpad (Mobile-First 2-Tier Responsive UX) */}
+              <div className="space-y-3 pt-2 w-full">
+                {/* Tier 1: Primary Citizen Interactive Actions (3 High-Impact Cards) */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
+                  {/* 1. Quiz Challenge */}
+                  <Link
+                    href="/quiz"
+                    className="group relative flex items-center sm:flex-col sm:items-start justify-between sm:justify-center gap-3 p-3 sm:p-3.5 rounded-2xl bg-gradient-to-br from-amber-500/25 via-amber-600/20 to-amber-950/40 border border-amber-400/50 hover:border-amber-300 text-white shadow-lg shadow-amber-950/20 backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:shadow-amber-500/20 min-h-[56px]"
                   >
-                    <Music className="h-5 w-5" />
-                    {isPlaying ? "Stop Anthem" : "Anthem"}
-                  </button>
+                    <div className="flex items-center gap-2.5 sm:gap-3">
+                      <div className="p-2 sm:p-2.5 rounded-xl bg-amber-400/20 text-amber-300 border border-amber-400/30 group-hover:bg-amber-400 group-hover:text-amber-950 transition-colors shrink-0">
+                        <Trophy className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <div className="text-xs sm:text-sm font-bold text-white tracking-wide">
+                          {isTe ? "క్విజ్ ఛాలెంజ్" : "Take Quiz Challenge"}
+                        </div>
+                        <div className="text-[11px] text-amber-200/90 font-medium">
+                          {isTe ? "మెరిట్ సర్టిఫికేట్" : "Earn Merit Certificate"}
+                        </div>
+                      </div>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-amber-300 sm:self-end transition-transform group-hover:translate-x-1 shrink-0" />
+                  </Link>
+
+                  {/* 2. Parents Safety Pledge */}
                   <button
+                    type="button"
+                    onClick={() => setPledgeModalOpen(true)}
+                    className="group relative flex items-center sm:flex-col sm:items-start justify-between sm:justify-center gap-3 p-3 sm:p-3.5 rounded-2xl bg-gradient-to-br from-emerald-500/25 via-teal-600/20 to-emerald-950/40 border border-emerald-400/50 hover:border-emerald-300 text-white shadow-lg shadow-emerald-950/20 backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:shadow-emerald-500/20 text-left w-full min-h-[56px]"
+                  >
+                    <div className="flex items-center gap-2.5 sm:gap-3">
+                      <div className="p-2 sm:p-2.5 rounded-xl bg-emerald-400/20 text-emerald-300 border border-emerald-400/30 group-hover:bg-emerald-400 group-hover:text-emerald-950 transition-colors shrink-0">
+                        <HeartHandshake className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <div className="text-xs sm:text-sm font-bold text-white tracking-wide">
+                          {isTe ? "తల్లిదండ్రుల ప్రతిజ్ఞ" : "Parents Safety Pledge"}
+                        </div>
+                        <div className="text-[11px] text-emerald-200/90 font-medium">
+                          {isTe ? "కుటుంబ రక్షణ కార్డ్" : "Family Safety Card"}
+                        </div>
+                      </div>
+                    </div>
+                    <span className="hidden sm:inline-block text-[10px] font-bold uppercase tracking-wider text-emerald-300 bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-400/30 self-end">
+                      {isTe ? "ప్రతిజ్ఞ తీసుకోండి" : "Sign Pledge"}
+                    </span>
+                    <ArrowRight className="h-4 w-4 text-emerald-300 sm:hidden shrink-0" />
+                  </button>
+
+                  {/* 3. Simulation Lab */}
+                  <Link
+                    href="/simulation"
+                    className="group relative flex items-center sm:flex-col sm:items-start justify-between sm:justify-center gap-3 p-3 sm:p-3.5 rounded-2xl bg-gradient-to-br from-indigo-500/25 via-blue-600/20 to-slate-900/40 border border-indigo-400/50 hover:border-indigo-300 text-white shadow-lg shadow-indigo-950/20 backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:shadow-indigo-500/20 min-h-[56px]"
+                  >
+                    <div className="flex items-center gap-2.5 sm:gap-3">
+                      <div className="p-2 sm:p-2.5 rounded-xl bg-indigo-400/20 text-cyan-300 border border-indigo-400/30 group-hover:bg-cyan-400 group-hover:text-slate-950 transition-colors shrink-0">
+                        <BrainCircuit className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <div className="text-xs sm:text-sm font-bold text-white tracking-wide">
+                          {isTe ? "సిమ్యులేషన్ ల్యాబ్" : "Simulation Lab"}
+                        </div>
+                        <div className="text-[11px] text-cyan-200/90 font-medium">
+                          {isTe ? "ఇంటరాక్టివ్ అభ్యాసం" : "Fix Road Violations"}
+                        </div>
+                      </div>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-cyan-300 sm:self-end transition-transform group-hover:translate-x-1 shrink-0" />
+                  </Link>
+                </div>
+
+                {/* Tier 2: Citizen Utilities & Resources Strip (3 Refined Touch-Friendly Pills) */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  {/* Utility 1: Traffic Basics & Rules Test */}
+                  <Link
+                    href="/basics"
+                    className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs sm:text-sm font-medium transition-all backdrop-blur-md shadow-sm min-h-[44px]"
+                    title="Road Safety Rules & Learning Test"
+                  >
+                    <BookOpen className="h-4 w-4 text-emerald-300 shrink-0" />
+                    <span>{isTe ? "ట్రాఫిక్ రూల్స్ టెస్ట్" : "Traffic Rules Test"}</span>
+                  </Link>
+
+                  {/* Utility 2: Campaign Anthem (Play/Stop + 1-Touch Download) */}
+                  <div className="flex items-stretch rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 transition-all backdrop-blur-md shadow-sm overflow-hidden min-h-[44px]">
+                    <button
+                      type="button"
+                      onClick={handleAnthemClick}
+                      className="flex-1 flex items-center justify-center gap-2 px-2.5 py-2 text-white text-xs sm:text-sm font-medium hover:bg-white/10 transition-colors"
+                      aria-label="Play or Stop Road Safety Anthem"
+                    >
+                      <Music className={`h-4 w-4 shrink-0 ${isPlaying ? "text-amber-300 animate-bounce" : "text-emerald-300"}`} />
+                      <span className="truncate">
+                        {isPlaying
+                          ? (isTe ? "ఆపండి ⏹" : "Stop Anthem ⏹")
+                          : (isTe ? "రోడ్ సేఫ్టీ గీతం" : "Safety Anthem")}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const link = document.createElement("a");
+                        link.href = "/assets/ROADSAFETY3.wav";
+                        link.download = "Road-Safety-Anthem.wav";
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                      }}
+                      className="px-2.5 py-2 flex items-center justify-center border-l border-white/20 hover:bg-white/20 text-white/80 hover:text-white transition-colors"
+                      aria-label="Download Anthem Audio"
+                      title="Download Anthem Audio"
+                    >
+                      <Download className="h-4 w-4 shrink-0" />
+                    </button>
+                  </div>
+
+                  {/* Utility 3: Download Official Poster */}
+                  <button
+                    type="button"
                     onClick={() => {
                       const link = document.createElement("a");
-                      link.href = "/assets/ROADSAFETY3.wav";
-                      link.download = "Road-Safety-Anthem.wav";
+                      link.href = "/assets/Road-Safety-Month-Poster.png";
+                      link.download = "Road-Safety-Month-Poster.png";
                       document.body.appendChild(link);
                       link.click();
                       document.body.removeChild(link);
                     }}
-                    className="rs-btn-secondary"
-                    aria-label="Download Road Safety Anthem"
-                    title="Download Anthem"
+                    className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs sm:text-sm font-medium transition-all backdrop-blur-md shadow-sm min-h-[44px]"
+                    aria-label="Download Official Road Safety Poster"
                   >
-                    <Download className="h-5 w-5" />
+                    <Download className="h-4 w-4 text-cyan-300 shrink-0" />
+                    <span>{isTe ? "అధికారిక పోస్టర్ (HD)" : "Official Poster (HD)"}</span>
                   </button>
                 </div>
-                <button
-                  onClick={() => {
-                    const link = document.createElement("a");
-                    link.href = "/assets/Road-Safety-Month-Poster.png";
-                    link.download = "Road-Safety-Month-Poster.png";
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                  }}
-                  className="rs-btn-secondary"
-                  aria-label="Download Road Safety Poster"
-                >
-                  <Download className="h-5 w-5" />
-                  Download Poster
-                </button>
-                <button
-                  onClick={() => setPledgeModalOpen(true)}
-                  className="rs-btn-secondary"
-                  aria-label="Parents Pledge"
-                >
-                  {i18n.language === "te" ? "హామీ పత్రం" : "Parents Pledge"}
-                </button>
               </div>
             </div>
             <ParentsPledgeModal open={pledgeModalOpen} onOpenChange={setPledgeModalOpen} />
             <div className="relative flex-1 min-w-[280px] w-full">
-              <div className="rs-roadstrap flex flex-col items-center gap-4 sm:gap-6 md:gap-8 p-4 sm:p-6 md:p-8 lg:p-10 relative overflow-hidden" style={{ background: 'transparent' }}>
+              <div className="rs-roadstrap flex flex-col items-center gap-4 sm:gap-6 md:gap-8 p-3 sm:p-6 md:p-8 lg:p-10 relative overflow-hidden" style={{ background: 'transparent' }}>
                 {/* Video Background */}
                 <video
                   autoPlay
@@ -251,25 +325,25 @@ export default function Home() {
                 {/* Semi-transparent overlay to make video visible but not too bright */}
                 <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(255, 255, 255, 0.3)', zIndex: 1 }}></div>
                 
-                <div className="grid w-full max-w-md grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2" style={{ position: 'relative', zIndex: 10 }}>
+                <div className="grid w-full max-w-md grid-cols-2 gap-2.5 sm:gap-6" style={{ position: 'relative', zIndex: 10 }}>
                   {leadershipProfiles.map((leader, index) => {
                     const isMinister = (leader as any).isMinister;
                     return (
                       <div
                         key={leader.name}
-                        className="flex flex-col items-center gap-3 sm:gap-4 rounded-2xl sm:rounded-3xl border border-white/70 bg-white/95 p-4 sm:p-6 text-emerald-900 backdrop-blur-lg shadow-[0_18px_38px_rgba(0,0,0,0.22)]"
+                        className="flex flex-col items-center gap-2 sm:gap-4 rounded-2xl sm:rounded-3xl border border-white/70 bg-white/95 p-2.5 sm:p-6 text-emerald-900 backdrop-blur-lg shadow-[0_18px_38px_rgba(0,0,0,0.22)] text-center"
                       >
                         <div className="relative">
                           {isMinister && (
                             <button
                               onClick={() => setMinisterMessageModalOpen(true)}
-                              className="absolute -top-2 left-1/2 -translate-x-1/2 z-10 bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1 rounded-full shadow-md transition-colors"
+                              className="absolute -top-2 left-1/2 -translate-x-1/2 z-10 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] sm:text-xs px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-md transition-colors whitespace-nowrap"
                               aria-label="View Minister Message"
                             >
                               Message
                             </button>
                           )}
-                          <div className="relative h-32 w-32 sm:h-40 sm:w-40 overflow-hidden rounded-full border-2 sm:border-4 border-white shadow-[0_16px_28px_rgba(0,0,0,0.18)]">
+                          <div className="relative h-20 w-20 sm:h-36 sm:w-36 md:h-40 md:w-40 overflow-hidden rounded-full border-2 sm:border-4 border-white shadow-[0_16px_28px_rgba(0,0,0,0.18)]">
                             <Image
                               src={leader.image}
                               alt={leader.alt}
@@ -279,9 +353,9 @@ export default function Home() {
                             />
                           </div>
                         </div>
-                        <div className="text-center space-y-1">
-                          <p className="text-xs uppercase tracking-wide text-emerald-500">{leader.title}</p>
-                          <p className="text-lg font-semibold text-emerald-900">{leader.name}</p>
+                        <div className="text-center space-y-0.5 sm:space-y-1 w-full">
+                          <p className="text-[10px] sm:text-xs uppercase tracking-wide text-emerald-600 font-semibold truncate">{leader.title}</p>
+                          <p className="text-xs sm:text-lg font-bold text-emerald-900 leading-tight truncate">{leader.name}</p>
                         </div>
                       </div>
                     );

@@ -424,23 +424,21 @@ export default function Nav() {
             {/* Organizer Hub Login */}
             <Link
               href="/organizer/login"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200 transition-colors shadow-sm"
+              className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200 transition-colors shadow-sm"
               title="Institutional Road Safety Organizers Portal"
             >
               <Users className="h-3.5 w-3.5 text-emerald-700" />
-              <span className="hidden sm:inline">Organizer Hub</span>
-              <span className="sm:hidden">Org</span>
+              <span>Organizer Hub</span>
             </Link>
 
             {/* Government Mission Control Portal */}
             <Link
               href="/gov"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 transition-colors shadow-sm"
+              className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 transition-colors shadow-sm"
               title="Government Mission Control Portal"
             >
               <ShieldCheck className="h-3.5 w-3.5 text-indigo-600" />
-              <span className="hidden sm:inline">Mission Control</span>
-              <span className="sm:hidden">Gov</span>
+              <span>Mission Control</span>
             </Link>
 
             {/* Language Switcher */}
