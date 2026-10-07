@@ -362,11 +362,13 @@ export default function QuizPage() {
       });
 
       const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(typeof data.error === "string" ? data.error : "Failed to submit quiz");
+      }
       setResult(data);
       
       // Show celebration animation
       setShowCelebration(true);
-      // Always use English for Virtual Quiz Master
       // Always use English for Virtual Quiz Master
       const lang = getCurrentLang();
       const congratsText = lang === "te" 
@@ -390,9 +392,9 @@ export default function QuizPage() {
       setTimeout(() => {
         setShowCelebration(false);
       }, 2000);
-    } catch (error) {
-      console.error("Error:", error);
-      alert(tc("failedToSubmitQuiz"));
+    } catch (error: any) {
+      console.error("Quiz submission error:", error);
+      alert(error?.message || tc("failedToSubmitQuiz") || "Failed to submit quiz");
     } finally {
       setSubmitting(false);
     }

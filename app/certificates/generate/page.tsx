@@ -74,8 +74,8 @@ const generateSchema = z.object({
   organizerId: z.string().optional(), // Organizer ID (for Scenario 5)
   institution: z.string().optional(), // School, College, or Organization Name
 }).refine((data) => {
-  // District is required UNLESS it's a statewide event (TGSG-*)
-  const isStatewideEvent = data.referenceId?.startsWith("TGSG-");
+  // District is required UNLESS it's a statewide event (STGV-* or TGSG-*)
+  const isStatewideEvent = data.referenceId?.startsWith("STGV-") || data.referenceId?.startsWith("TGSG-");
   if (!isStatewideEvent && (!data.district || data.district.trim() === "")) {
     return false; // District is required for non-statewide events
   }
@@ -207,7 +207,7 @@ function CertificateGenerateContent() {
   const districtValue = watch("district");
   const referenceIdValue = watch("referenceId");
   const hasEventIdEntered = !!(referenceIdValue && referenceIdValue.includes("EVT-"));
-  const isStatewideEvent = hasEventIdEntered && referenceIdValue?.startsWith("TGSG-");
+  const isStatewideEvent = hasEventIdEntered && (referenceIdValue?.startsWith("STGV-") || referenceIdValue?.startsWith("TGSG-"));
   const isRegionalEvent = hasEventIdEntered && !isStatewideEvent;
   
   // Re-validate district field when event ID changes (to update validation for statewide vs regional)
@@ -246,6 +246,9 @@ function CertificateGenerateContent() {
       { key: "details", setter: (val: string) => setValue("details", safeDecode(val)) },
       { key: "event", setter: (val: string) => setValue("eventName", safeDecode(val)) },
       { key: "ref", setter: (val: string) => setValue("referenceId", safeDecode(val)) },
+      { key: "eventReferenceId", setter: (val: string) => setValue("referenceId", safeDecode(val)) },
+      { key: "eventId", setter: (val: string) => setValue("referenceId", safeDecode(val)) },
+      { key: "institution", setter: (val: string) => setValue("institution", safeDecode(val)) },
     ];
 
     paramsToUpdate.forEach(({ key, setter }) => {
@@ -254,6 +257,21 @@ function CertificateGenerateContent() {
         setter(value);
       }
     });
+
+    // Auto-fetch event details if event ID provided in query params
+    const eventParam = searchParams.get("ref") || searchParams.get("eventReferenceId") || searchParams.get("eventId");
+    if (eventParam && eventParam.includes("EVT-")) {
+      fetch(`/api/events/get-by-id?eventId=${encodeURIComponent(eventParam.trim())}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.event) {
+            if (data.event.title) setValue("eventName", data.event.title);
+            if (data.event.institution) setValue("institution", data.event.institution);
+            if (data.event.district) setValue("district", data.event.district);
+          }
+        })
+        .catch(() => {});
+    }
   }, [searchParams, setValue, activityData, isFromActivity, defaultType]);
 
   // REMOVED: Padala Rahul district pre-fill - details saved in padala-rahul-details.json
@@ -630,7 +648,7 @@ function CertificateGenerateContent() {
               </select>
               {hasEventIdEntered && isStatewideEvent && (
                 <p className="text-xs text-slate-500">
-                  District is optional for statewide events (TGSG-*). Event ID determines all details.
+                  District is optional for statewide events (STGV-* / TGSG-*). Event ID determines all details.
                 </p>
               )}
               {hasEventIdEntered && isRegionalEvent && (

@@ -43,12 +43,18 @@ export default function ReportHazardPage() {
     setGeoLoading(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setFormData((prev) => ({
-          ...prev,
-          latitude: Number(pos.coords.latitude.toFixed(6)),
-          longitude: Number(pos.coords.longitude.toFixed(6)),
-          location: prev.location || `Coordinates: ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`,
-        }));
+        if (typeof pos?.coords?.latitude === "number" && typeof pos?.coords?.longitude === "number") {
+          const lat = Number(pos.coords.latitude.toFixed(6));
+          const lng = Number(pos.coords.longitude.toFixed(6));
+          setFormData((prev) => ({
+            ...prev,
+            latitude: lat,
+            longitude: lng,
+            location: prev.location || `Coordinates: ${lat.toFixed(4)}, ${lng.toFixed(4)}`,
+          }));
+        } else {
+          alert("Could not detect valid GPS coordinates.");
+        }
         setGeoLoading(false);
       },
       (err) => {
@@ -62,8 +68,15 @@ export default function ReportHazardPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
+
+    const trimmedPhoto = formData.photoUrl.trim();
+    if (trimmedPhoto && !trimmedPhoto.startsWith("http://") && !trimmedPhoto.startsWith("https://") && !trimmedPhoto.startsWith("data:")) {
+      setError("Please enter a valid photo URL starting with http:// or https://");
+      return;
+    }
+
+    setLoading(true);
 
     try {
       const res = await fetch("/api/hazards/report", {
@@ -71,7 +84,8 @@ export default function ReportHazardPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
-          photos: formData.photoUrl ? [formData.photoUrl] : [],
+          photoUrl: trimmedPhoto,
+          photos: trimmedPhoto ? [trimmedPhoto] : [],
         }),
       });
 

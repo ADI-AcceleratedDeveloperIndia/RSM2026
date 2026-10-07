@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { 
   FileBarChart, PlusCircle, Download, Eye, 
@@ -10,14 +11,24 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DISTRICT_NAMES } from "@/lib/districts";
 
-export default function GovReportsPage() {
+function ReportsContent() {
+  const searchParams = useSearchParams();
+  const districtParam = searchParams.get("district");
+
   const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   
-  const [genScope, setGenScope] = useState("statewide");
-  const [genDistrict, setGenDistrict] = useState("Karimnagar");
+  const [genScope, setGenScope] = useState(districtParam ? "district" : "statewide");
+  const [genDistrict, setGenDistrict] = useState(districtParam || "Karimnagar");
+
+  useEffect(() => {
+    if (districtParam) {
+      setGenScope("district");
+      setGenDistrict(districtParam);
+    }
+  }, [districtParam]);
 
   useEffect(() => {
     loadReports();
@@ -207,5 +218,13 @@ export default function GovReportsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function GovReportsPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-500">Loading government reports & audit dossiers...</div>}>
+      <ReportsContent />
+    </Suspense>
   );
 }

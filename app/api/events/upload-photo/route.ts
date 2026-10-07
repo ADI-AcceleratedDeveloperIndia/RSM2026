@@ -3,13 +3,15 @@ import connectDB from "@/lib/db";
 import Event from "@/models/Event";
 import mongoose from "mongoose";
 import { GridFSBucket } from "mongodb";
+import { getEventFromMemory, saveEventInMemory } from "@/lib/organizerStore";
 
 const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1MB
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
-    const eventReferenceId = formData.get("eventReferenceId") as string;
+    const eventReferenceId = (formData.get("eventReferenceId") as string)?.trim();
+    const organizerId = (formData.get("organizerId") as string)?.trim();
     const file = formData.get("file") as File | null;
 
     if (!eventReferenceId || !file) {
@@ -35,10 +37,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    await connectDB();
+    try {
+      await connectDB();
+    } catch (dbErr: any) {
+      console.warn("MongoDB connection failed in upload-photo:", dbErr?.message);
+      return NextResponse.json(
+        { error: "Storage service temporarily unavailable. Please try again shortly." },
+        { status: 503 }
+      );
+    }
 
-    // Verify event exists and is approved
-    const event = await Event.findOne({ referenceId: eventReferenceId });
+    // Verify event exists
+    let event = await Event.findOne({ referenceId: eventReferenceId });
+    if (!event) {
+      const mem = getEventFromMemory(eventReferenceId);
+      if (mem) event = mem as any;
+    }
+
     if (!event) {
       return NextResponse.json(
         { error: "Event not found" },
@@ -47,23 +62,25 @@ export async function POST(request: NextRequest) {
     }
 
     if (!event.approved) {
-      return NextResponse.json(
-        { error: "Event must be approved before uploading photos" },
-        { status: 400 }
-      );
+      const isOwner = organizerId && (event.organizerId === organizerId);
+      if (!isOwner) {
+        return NextResponse.json(
+          { error: "Event must be approved or verified by the organizing coordinator before uploading photos" },
+          { status: 400 }
+        );
+      }
     }
 
     // Delete old photo if exists
     if (event.groupPhoto) {
       try {
         const db = mongoose.connection.db;
-        if (db) {
+        if (db && mongoose.Types.ObjectId.isValid(event.groupPhoto)) {
           const bucket = new GridFSBucket(db, { bucketName: "eventPhotos" });
           await bucket.delete(new mongoose.Types.ObjectId(event.groupPhoto));
         }
       } catch (err) {
         console.error("Error deleting old photo:", err);
-        // Continue even if deletion fails
       }
     }
 
@@ -71,14 +88,15 @@ export async function POST(request: NextRequest) {
     const db = mongoose.connection.db;
     if (!db) {
       return NextResponse.json(
-        { error: "Database connection error" },
-        { status: 500 }
+        { error: "Database storage engine is not ready. Please try again." },
+        { status: 503 }
       );
     }
 
     const bucket = new GridFSBucket(db, { bucketName: "eventPhotos" });
     const buffer = Buffer.from(await file.arrayBuffer());
-    const filename = `${eventReferenceId}-${Date.now()}.${file.name.split(".").pop()}`;
+    const fileExt = file.name.split(".").pop() || "jpg";
+    const filename = `${eventReferenceId}-${Date.now()}.${fileExt}`;
 
     return new Promise<NextResponse>((resolve) => {
       const uploadStream = bucket.openUploadStream(filename, {
@@ -87,23 +105,32 @@ export async function POST(request: NextRequest) {
 
       uploadStream.on("finish", async () => {
         try {
-          // Update event with new photo ID
+          const photoIdStr = uploadStream.id.toString();
+
+          // Update event with new photo ID in MongoDB
           await Event.updateOne(
             { referenceId: eventReferenceId },
-            { groupPhoto: uploadStream.id.toString() }
+            { groupPhoto: photoIdStr }
           );
+
+          // Update memory store
+          const memEvent = getEventFromMemory(eventReferenceId);
+          if (memEvent) {
+            memEvent.groupPhoto = photoIdStr;
+            saveEventInMemory(memEvent);
+          }
 
           resolve(
             NextResponse.json({
               success: true,
-              photoId: uploadStream.id.toString(),
+              photoId: photoIdStr,
             })
           );
         } catch (err: any) {
-          console.error("Error updating event:", err);
+          console.error("Error updating event photo ID:", err);
           resolve(
             NextResponse.json(
-              { error: "Failed to update event" },
+              { error: "Failed to link photo to event record" },
               { status: 500 }
             )
           );
@@ -111,10 +138,10 @@ export async function POST(request: NextRequest) {
       });
 
       uploadStream.on("error", (err) => {
-        console.error("GridFS upload error:", err);
+        console.error("GridFS upload stream error:", err);
         resolve(
           NextResponse.json(
-            { error: "Failed to upload photo" },
+            { error: "Failed to upload photo to storage" },
             { status: 500 }
           )
         );
@@ -125,9 +152,8 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error("Upload photo error:", error);
     return NextResponse.json(
-      { error: "Failed to upload photo" },
-      { status: 500 }
+      { error: "Failed to process photo upload. Please try again." },
+      { status: 400 }
     );
   }
 }
-

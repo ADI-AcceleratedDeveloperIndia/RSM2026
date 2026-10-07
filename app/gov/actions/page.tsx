@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { 
   Target, CheckCircle, XCircle, Clock, 
@@ -13,13 +14,22 @@ import { Input } from "@/components/ui/input";
 import { DISTRICT_NAMES } from "@/lib/districts";
 import { FOUR_E_CATEGORIES } from "@/lib/fourE";
 
-export default function GovActionsPage() {
+function ActionsContent() {
+  const searchParams = useSearchParams();
+  const districtParam = searchParams.get("district");
+
   const [actions, setActions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("completed"); // Default to completed (awaiting verification)
-  const [districtFilter, setDistrictFilter] = useState("all");
+  const [districtFilter, setDistrictFilter] = useState(districtParam || "all");
   const [categoryFilter, setCategoryFilter] = useState("all");
+
+  useEffect(() => {
+    if (districtParam) {
+      setDistrictFilter(districtParam);
+    }
+  }, [districtParam]);
   
   // Verification dialog
   const [selectedAction, setSelectedAction] = useState<any | null>(null);
@@ -304,5 +314,13 @@ export default function GovActionsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function GovActionsPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-500">Loading ground action verification queue...</div>}>
+      <ActionsContent />
+    </Suspense>
   );
 }

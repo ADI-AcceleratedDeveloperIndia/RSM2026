@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { 
   Building2, CheckCircle, Search, MapPin, 
@@ -11,14 +12,23 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { DISTRICT_NAMES } from "@/lib/districts";
 
-export default function GovInstitutionsPage() {
+function InstitutionsContent() {
+  const searchParams = useSearchParams();
+  const districtParam = searchParams.get("district");
+
   const [institutions, setInstitutions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [districtFilter, setDistrictFilter] = useState("all");
+  const [districtFilter, setDistrictFilter] = useState(districtParam || "all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [verifyingId, setVerifyingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (districtParam) {
+      setDistrictFilter(districtParam);
+    }
+  }, [districtParam]);
 
   useEffect(() => {
     loadInstitutions();
@@ -206,5 +216,13 @@ export default function GovInstitutionsPage() {
         </div>
       </Card>
     </div>
+  );
+}
+
+export default function GovInstitutionsPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-500">Loading institutions directory...</div>}>
+      <InstitutionsContent />
+    </Suspense>
   );
 }

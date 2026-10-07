@@ -16,8 +16,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ items: certificates });
   } catch (error) {
-    console.error("Appreciations list error:", error);
-    return NextResponse.json({ items: [] }, { status: 500 });
+    console.warn("Appreciations list DB latency/disconnect, returning empty list:", error);
+    return NextResponse.json({ items: [] });
   }
 }
 

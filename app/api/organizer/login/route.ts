@@ -2,10 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import connectDB from "@/lib/db";
 import Organizer from "@/models/Organizer";
+import { getOrganizerFromMemory } from "@/lib/organizerStore";
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body = await request.json().catch(() => null);
+    if (!body) {
+      return NextResponse.json(
+        { error: "Invalid request payload. Credentials required." },
+        { status: 400 }
+      );
+    }
+
     const { identifier, password, phone } = body;
 
     if (!identifier || (!password && !phone)) {
@@ -15,46 +23,65 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    await connectDB();
+    const cleanId = String(identifier).trim();
 
-    const cleanId = identifier.trim();
-    const organizer = await Organizer.findOne({
-      $or: [
-        { finalId: cleanId },
-        { temporaryId: cleanId },
-        { email: cleanId.toLowerCase() },
-      ],
-    });
+    // 1. Check in-memory store
+    let organizer: any = getOrganizerFromMemory(cleanId);
+
+    // 2. Query MongoDB if available
+    let dbConnected = false;
+    try {
+      await connectDB();
+      dbConnected = true;
+
+      const dbOrg = await Organizer.findOne({
+        $or: [
+          { finalId: cleanId },
+          { temporaryId: cleanId },
+          { email: cleanId.toLowerCase() },
+        ],
+      }).lean();
+
+      if (dbOrg) {
+        organizer = dbOrg;
+      }
+    } catch (dbError: any) {
+      console.warn("MongoDB unavailable during organizer login, checking memory store:", dbError?.message);
+    }
 
     if (!organizer) {
       return NextResponse.json(
-        { error: "Organizer not found. Please verify your Organizer ID or Email." },
+        { error: "Organizer not found. Please verify your Organizer ID or registered Email." },
         { status: 404 }
       );
     }
 
-    // Verification check:
+    // 3. Authenticate credentials
     let authenticated = false;
 
-    // 1. If password provided and hash exists
+    // A. Password hash match
     if (password && organizer.passwordHash) {
-      const match = await bcrypt.compare(password, organizer.passwordHash);
-      if (match) authenticated = true;
+      try {
+        const match = await bcrypt.compare(String(password), organizer.passwordHash);
+        if (match) authenticated = true;
+      } catch (bcryptErr) {
+        console.warn("Bcrypt comparison error:", bcryptErr);
+      }
     }
 
-    // 2. If phone match provided (or if organizer hasn't set password yet)
+    // B. Registered Phone number match
     if (!authenticated && phone) {
-      const cleanPhone = phone.trim().replace(/[^0-9]/g, "");
-      const orgPhone = (organizer.phone || "").replace(/[^0-9]/g, "");
+      const cleanPhone = String(phone).trim().replace(/[^0-9]/g, "");
+      const orgPhone = String(organizer.phone || "").replace(/[^0-9]/g, "");
       if (cleanPhone && orgPhone && (orgPhone.endsWith(cleanPhone) || cleanPhone.endsWith(orgPhone))) {
         authenticated = true;
       }
     }
 
-    // 3. Fallback: if password matches phone number
+    // C. Password matches phone number fallback
     if (!authenticated && password && organizer.phone) {
-      const cleanPass = password.trim().replace(/[^0-9]/g, "");
-      const orgPhone = (organizer.phone || "").replace(/[^0-9]/g, "");
+      const cleanPass = String(password).trim().replace(/[^0-9]/g, "");
+      const orgPhone = String(organizer.phone || "").replace(/[^0-9]/g, "");
       if (cleanPass.length >= 4 && orgPhone.endsWith(cleanPass)) {
         authenticated = true;
       }
@@ -71,13 +98,15 @@ export async function POST(request: NextRequest) {
       success: true,
       message: "Organizer login successful",
       organizer: {
-        id: organizer._id.toString(),
+        id: organizer._id ? organizer._id.toString() : (organizer.id || organizer.temporaryId),
         fullName: organizer.fullName,
         email: organizer.email,
         phone: organizer.phone,
         institution: organizer.institution,
-        designation: organizer.designation,
-        status: organizer.status,
+        designation: organizer.designation || "Road Safety Coordinator",
+        district: organizer.district || "Karimnagar",
+        districtCode: organizer.districtCode || "KRMR",
+        status: organizer.status || "pending",
         finalId: organizer.finalId || null,
         temporaryId: organizer.temporaryId,
       },
@@ -85,8 +114,8 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error("Organizer login error:", error);
     return NextResponse.json(
-      { error: "Internal server error during organizer login", details: error.message },
-      { status: 500 }
+      { error: "Unable to process organizer login. Please verify your credentials and network connection." },
+      { status: 503 }
     );
   }
 }

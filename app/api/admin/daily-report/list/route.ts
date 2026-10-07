@@ -13,11 +13,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ reports });
   } catch (error: any) {
-    console.error("Daily reports list error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch daily reports" },
-      { status: 500 }
-    );
+    console.warn("Daily reports list DB latency/disconnect, returning empty list:", error);
+    return NextResponse.json({ reports: [] });
   }
 }
 

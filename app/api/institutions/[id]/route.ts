@@ -4,6 +4,7 @@ import Institution from "@/models/Institution";
 import Action from "@/models/Action";
 import Event from "@/models/Event";
 import Certificate from "@/models/Certificate";
+import { getInstitutionFromMemory } from "@/lib/institutionStore";
 
 export async function GET(
   request: Request,
@@ -11,29 +12,47 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    await connectDB();
+    const cleanId = String(id).trim();
 
-    const query = id.match(/^[0-9a-fA-F]{24}$/)
-      ? { $or: [{ institutionId: id }, { _id: id }] }
-      : { institutionId: id };
+    let institution: any = getInstitutionFromMemory(cleanId);
+    let recentActions: any[] = [];
+    let recentEvents: any[] = [];
+    let participantCount = 0;
 
-    const institution = (await Institution.findOne(query).lean()) as any;
+    try {
+      await connectDB();
+
+      const query = cleanId.match(/^[0-9a-fA-F]{24}$/)
+        ? { $or: [{ institutionId: cleanId }, { _id: cleanId }] }
+        : { institutionId: cleanId };
+
+      const dbInst = await Institution.findOne(query).lean();
+      if (dbInst) {
+        institution = dbInst;
+      }
+
+      if (institution) {
+        const [actions, events, count] = await Promise.all([
+          Action.find({
+            $or: [
+              { institutionId: institution.institutionId },
+              { submittedBy: institution.name }
+            ]
+          }).sort({ createdAt: -1 }).limit(10).lean().catch(() => []),
+          Event.find({ institution: institution.name }).sort({ date: -1 }).limit(10).lean().catch(() => []),
+          Certificate.countDocuments({ institution: institution.name }).catch(() => 0),
+        ]);
+        recentActions = actions;
+        recentEvents = events;
+        participantCount = count;
+      }
+    } catch (dbErr: any) {
+      console.warn("MongoDB unavailable during institution lookup, using memory record:", dbErr?.message);
+    }
 
     if (!institution) {
       return NextResponse.json({ error: "Institution not found" }, { status: 404 });
     }
-
-    // Load recent actions and events linked to this institution
-    const [recentActions, recentEvents, participantCount] = await Promise.all([
-      Action.find({
-        $or: [
-          { institutionId: institution.institutionId },
-          { submittedBy: institution.name }
-        ]
-      }).sort({ createdAt: -1 }).limit(10).lean(),
-      Event.find({ institution: institution.name }).sort({ date: -1 }).limit(10).lean(),
-      Certificate.countDocuments({ institution: institution.name }),
-    ]);
 
     return NextResponse.json({
       institution,

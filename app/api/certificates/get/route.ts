@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import Certificate from "@/models/Certificate";
 import { signCertificateUrl } from "@/lib/hmac";
+import { getCertificateFromMemory } from "@/lib/organizerStore";
 
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const certId = searchParams.get("certId");
+    const certId = (searchParams.get("certId") || searchParams.get("certificateId") || searchParams.get("ref"))?.trim();
 
     if (!certId) {
       return NextResponse.json(
@@ -15,8 +16,21 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    await connectDB();
-    const certificate = await Certificate.findOne({ certificateId: certId });
+    let certificate: any = null;
+
+    try {
+      await connectDB();
+      const dbCert = await Certificate.findOne({ certificateId: certId }).lean();
+      if (dbCert) {
+        certificate = dbCert;
+      }
+    } catch (dbErr: any) {
+      console.warn("MongoDB unavailable during certificate get, checking memory store:", dbErr?.message);
+    }
+
+    if (!certificate) {
+      certificate = getCertificateFromMemory(certId);
+    }
 
     if (!certificate) {
       return NextResponse.json(
@@ -38,21 +52,20 @@ export async function GET(request: NextRequest) {
         total: certificate.total,
         activityType: certificate.activityType,
         eventTitle: certificate.eventTitle,
-        eventReferenceId: certificate.eventReferenceId, // Event Reference ID (TGSG-* or district code-*)
-        eventType: certificate.eventType, // statewide or regional
-        district: certificate.district, // District name
-        participationContext: certificate.participationContext, // online or offline
+        eventReferenceId: certificate.eventReferenceId,
+        eventType: certificate.eventType,
+        district: certificate.district,
+        participationContext: certificate.participationContext,
         createdAt: certificate.createdAt,
         userEmail: certificate.userEmail,
       },
-      signature, // Include signature for download
+      signature,
     });
   } catch (error: any) {
     console.error("Certificate get error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch certificate" },
-      { status: 500 }
+      { error: "Failed to fetch certificate. Please check network connection." },
+      { status: 503 }
     );
   }
 }
-

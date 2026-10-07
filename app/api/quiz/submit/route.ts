@@ -3,6 +3,7 @@ import { z } from "zod";
 import connectDB from "@/lib/db";
 import QuizAttempt from "@/models/QuizAttempt";
 import { generateReferenceId } from "@/lib/reference";
+import { rateLimit, getClientIdentifier } from "@/lib/rateLimit";
 import enQuiz from "@/locales/en/quiz.json";
 import teQuiz from "@/locales/te/quiz.json";
 
@@ -109,6 +110,27 @@ const MERIT_CUTOFF = Math.ceil(QUIZ_QUESTIONS.length * 0.6);
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting: 30 quiz submissions per hour per IP
+    const clientId = getClientIdentifier(request);
+    const limit = rateLimit(clientId, 30, 60 * 60 * 1000);
+
+    if (!limit.allowed) {
+      return NextResponse.json(
+        {
+          error: "Rate limit exceeded. Please try again later.",
+          resetTime: limit.resetTime,
+        },
+        {
+          status: 429,
+          headers: {
+            "X-RateLimit-Limit": "30",
+            "X-RateLimit-Remaining": "0",
+            "X-RateLimit-Reset": limit.resetTime.toString(),
+          },
+        }
+      );
+    }
+
     const body = await request.json();
     const validated = submitQuizSchema.parse(body);
 

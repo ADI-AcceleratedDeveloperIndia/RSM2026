@@ -179,8 +179,30 @@ function CertificatePreviewContent() {
           setLoading(false);
         })
         .catch(() => {
-          setLoading(false);
-          router.replace("/certificates/generate");
+          // If fetch fails, try to fallback to URL params before giving up
+          const nameParam = searchParams.get("name");
+          const typeParam = searchParams.get("type");
+          if (nameParam && typeParam) {
+            const type = (typeParam || "ORG") as CertificateCode;
+            const eventTypeParam = searchParams.get("eventType");
+            setCertificateData({
+              certificateType: type,
+              fullName: safeDecode(nameParam),
+              district: safeDecode(searchParams.get("district")) || "Karimnagar",
+              institution: safeDecode(searchParams.get("institution")) || undefined,
+              issueDate: searchParams.get("date") || new Date().toISOString(),
+              email: safeDecode(searchParams.get("email")) || undefined,
+              score: safeDecode(searchParams.get("score")) || undefined,
+              details: safeDecode(searchParams.get("details")) || undefined,
+              eventName: safeDecode(searchParams.get("event")) || undefined,
+              referenceId: certId,
+              eventType: eventTypeParam === "statewide" ? "statewide" : eventTypeParam === "regional" ? "regional" : null,
+            });
+            setLoading(false);
+          } else {
+            setLoading(false);
+            router.replace("/certificates/generate");
+          }
         });
     } else {
       // No certId, use URL params
@@ -209,8 +231,10 @@ function CertificatePreviewContent() {
   }, [router, searchParams]);
 
   const sanitizedFileName = (ext: string) => {
-    const name = certificateData?.fullName ? certificateData.fullName.replace(/\s+/g, "_") : "RoadSafety";
-    const ref = certificateData?.referenceId ? `_${certificateData.referenceId}` : "";
+    const rawName = certificateData?.fullName ? certificateData.fullName.trim() : "RoadSafety";
+    const name = rawName.replace(/[^a-zA-Z0-9_\u0C00-\u0C7F-]/g, "_").replace(/_+/g, "_");
+    const rawRef = certificateData?.referenceId ? `_${certificateData.referenceId}` : "";
+    const ref = rawRef.replace(/[^a-zA-Z0-9_-]/g, "_");
     return `${name}${ref}_certificate.${ext}`;
   };
 

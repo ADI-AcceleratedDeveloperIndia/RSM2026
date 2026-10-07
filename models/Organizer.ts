@@ -21,6 +21,7 @@ const OrganizerSchema = new Schema({
   // Government Edition fields
   institutionId: { type: String, index: true },
   districtCode: { type: String, index: true },
+  district: { type: String, index: true },
 });
 
 export default models.Organizer || model("Organizer", OrganizerSchema);

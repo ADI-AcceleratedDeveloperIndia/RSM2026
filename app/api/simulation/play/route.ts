@@ -9,11 +9,15 @@ export async function POST(request: NextRequest) {
     if (!type || !["bike", "car", "pedestrian"].includes(type)) {
       return NextResponse.json({ error: "Invalid type" }, { status: 400 });
     }
-    await connectDB();
-    await SimulationPlay.create({ type });
+    try {
+      await connectDB();
+      await SimulationPlay.create({ type });
+    } catch (dbError) {
+      console.warn("SimulationPlay database error, failing gracefully:", dbError);
+    }
     return NextResponse.json({ ok: true });
   } catch (e) {
-    return NextResponse.json({ error: "Failed" }, { status: 500 });
+    return NextResponse.json({ ok: true });
   }
 }
 

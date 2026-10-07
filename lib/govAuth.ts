@@ -20,13 +20,49 @@ export async function getGovSession(): Promise<GovSession | null> {
   return session as unknown as GovSession;
 }
 
+const ROLE_WEIGHTS: Record<GovRole, number> = {
+  superadmin: 100,
+  admin: 90,
+  state_admin: 80,
+  district_admin: 50,
+  verifier: 20,
+};
+
 export function hasPermission(role: GovRole, requiredRole: GovRole): boolean {
-  const hierarchy: GovRole[] = ["superadmin", "state_admin", "district_admin", "verifier", "admin"];
-  return hierarchy.indexOf(role) <= hierarchy.indexOf(requiredRole);
+  const userWeight = ROLE_WEIGHTS[role] ?? 0;
+  const requiredWeight = ROLE_WEIGHTS[requiredRole] ?? 0;
+  return userWeight >= requiredWeight;
 }
 
-export function canAccessDistrict(userRole: GovRole, userDistrict: string | undefined, targetDistrict: string): boolean {
-  if (userRole === "superadmin" || userRole === "state_admin") return true;
+export function canAccessDistrict(
+  userRole: GovRole,
+  userDistrict: string | undefined,
+  targetDistrict: string
+): boolean {
+  if (userRole === "superadmin" || userRole === "admin" || userRole === "state_admin") {
+    return true;
+  }
   if (!userDistrict) return false;
-  return userDistrict === targetDistrict;
+  
+  const normUser = userDistrict.trim().toLowerCase();
+  const normTarget = targetDistrict.trim().toLowerCase();
+
+  if (normUser === "all districts" || normUser === "state headquarters" || normUser === "all") {
+    return true;
+  }
+
+  return normUser === normTarget;
 }
+
+export function getScopedDistrict(
+  session: GovSession | null,
+  requestedDistrict?: string | null
+): string | null {
+  if (!session?.user) return requestedDistrict && requestedDistrict !== "all" ? requestedDistrict : null;
+  const { role, district } = session.user;
+  if (role === "district_admin" || role === "verifier") {
+    return district || requestedDistrict || null;
+  }
+  return requestedDistrict && requestedDistrict !== "all" ? requestedDistrict : null;
+}
+

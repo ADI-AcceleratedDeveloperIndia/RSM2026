@@ -42,7 +42,10 @@ export default function SubmitActionPage() {
       const res = await fetch("/api/actions/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          targetDate: formData.targetDate ? formData.targetDate : undefined,
+        }),
       });
 
       const data = await res.json();

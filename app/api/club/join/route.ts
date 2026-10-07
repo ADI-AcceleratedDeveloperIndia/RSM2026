@@ -38,53 +38,79 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validated = clubSchema.parse(body);
 
-    await connectDB();
+    const organizerIdClean = validated.organizerId.trim();
 
-    // Verify organizer ID exists and is approved
-    const organizer = await Organizer.findOne({ 
-      finalId: validated.organizerId.trim(),
-      status: "approved" 
-    });
+    try {
+      await connectDB();
 
-    if (!organizer) {
+      // Check if organizer ID exists (case-insensitive check for finalId or temporaryId)
+      const anyOrganizer = await Organizer.findOne({
+        $or: [
+          { finalId: { $regex: new RegExp(`^${organizerIdClean}$`, "i") } },
+          { temporaryId: { $regex: new RegExp(`^${organizerIdClean}$`, "i") } },
+        ],
+      });
+
+      if (!anyOrganizer) {
+        return NextResponse.json(
+          { error: "Organizer ID not found. Please verify your ID or register as an organizer." },
+          { status: 404 }
+        );
+      }
+
+      if (anyOrganizer.status !== "approved") {
+        return NextResponse.json(
+          { error: "Organizer registration is still pending approval. Please wait for approval before joining the Club." },
+          { status: 403 }
+        );
+      }
+
+      // Check if already joined
+      const existing = await Club.findOne({ 
+        $or: [
+          { organizerId: organizerIdClean },
+          ...(anyOrganizer.finalId ? [{ organizerId: anyOrganizer.finalId }] : []),
+          ...(anyOrganizer.temporaryId ? [{ organizerId: anyOrganizer.temporaryId }] : []),
+        ]
+      });
+
+      if (existing) {
+        return NextResponse.json(
+          { error: "This institution/organizer has already joined the Road Safety Club." },
+          { status: 400 }
+        );
+      }
+
+      const clubEntry = await Club.create({
+        institutionName: validated.institutionName.trim(),
+        district: validated.district,
+        pointOfContact: validated.pointOfContact.trim(),
+        organizerId: anyOrganizer.finalId || organizerIdClean,
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "Successfully joined the Road Safety Club",
+        clubId: clubEntry._id.toString(),
+      });
+    } catch (dbError: any) {
+      console.error("Database error while joining club:", dbError);
       return NextResponse.json(
-        { error: "Invalid or unapproved Organizer ID" },
-        { status: 403 }
+        {
+          error: "Database service is temporarily unavailable. Please try again shortly.",
+          details: dbError?.message || "DB connection error",
+        },
+        { status: 503 }
       );
     }
-
-    // Check if already joined
-    const existing = await Club.findOne({ 
-      organizerId: validated.organizerId.trim() 
-    });
-
-    if (existing) {
-      return NextResponse.json(
-        { error: "This organizer has already joined the Club" },
-        { status: 400 }
-      );
-    }
-
-    const clubEntry = await Club.create({
-      institutionName: validated.institutionName.trim(),
-      district: validated.district,
-      pointOfContact: validated.pointOfContact.trim(),
-      organizerId: validated.organizerId.trim(),
-    });
-
-    return NextResponse.json({
-      success: true,
-      message: "Successfully joined the Club",
-      clubId: clubEntry._id.toString(),
-    });
   } catch (error: any) {
-    console.error("Club join error:", error);
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Invalid form data" },
+        { error: "Invalid form data. Please check all required fields." },
         { status: 400 }
       );
     }
+    console.error("Club join error:", error);
     return NextResponse.json(
       { error: error?.message || "Failed to join club" },
       { status: 500 }

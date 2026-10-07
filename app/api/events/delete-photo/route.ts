@@ -1,12 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import Event from "@/models/Event";
+import Organizer from "@/models/Organizer";
 import mongoose from "mongoose";
 import { GridFSBucket } from "mongodb";
+import { getEventFromMemory, saveEventInMemory } from "@/lib/organizerStore";
 
 export async function DELETE(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body = await request.json().catch(() => null);
+    if (!body) {
+      return NextResponse.json(
+        { error: "Invalid JSON request" },
+        { status: 400 }
+      );
+    }
+
     const { eventReferenceId, organizerId } = body;
 
     if (!eventReferenceId || !organizerId) {
@@ -16,10 +25,24 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    await connectDB();
+    const cleanRefId = String(eventReferenceId).trim();
+    const cleanOrgId = String(organizerId).trim();
 
-    // Verify event exists and organizer matches
-    const event = await Event.findOne({ referenceId: eventReferenceId });
+    let event: any = null;
+    let dbConnected = false;
+
+    try {
+      await connectDB();
+      dbConnected = true;
+      event = await Event.findOne({ referenceId: cleanRefId });
+    } catch (dbError: any) {
+      console.warn("MongoDB unavailable during photo deletion, checking memory store:", dbError?.message);
+    }
+
+    if (!event) {
+      event = getEventFromMemory(cleanRefId);
+    }
+
     if (!event) {
       return NextResponse.json(
         { error: "Event not found" },
@@ -27,33 +50,66 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Verify organizer ID matches
-    if (event.organizerId !== organizerId) {
+    // Authorization check
+    let isAuthorized = (event.organizerId === cleanOrgId);
+
+    if (!isAuthorized && dbConnected) {
+      try {
+        const org = (await Organizer.findOne({
+          $or: [
+            { finalId: cleanOrgId },
+            { temporaryId: cleanOrgId },
+            { email: cleanOrgId.toLowerCase() },
+          ],
+        }).lean()) as any;
+
+        if (org && (org.finalId === event.organizerId || org.temporaryId === event.organizerId)) {
+          isAuthorized = true;
+        }
+      } catch (e) {
+        // Ignored
+      }
+    }
+
+    if (!isAuthorized) {
       return NextResponse.json(
-        { error: "Unauthorized: Organizer ID does not match" },
+        { error: "Unauthorized: Organizer ID does not match the organizer for this event" },
         { status: 403 }
       );
     }
 
     // Delete photo from GridFS if exists
-    if (event.groupPhoto) {
+    if (dbConnected && event.groupPhoto) {
       try {
         const db = mongoose.connection.db;
         if (db) {
           const bucket = new GridFSBucket(db, { bucketName: "eventPhotos" });
-          await bucket.delete(new mongoose.Types.ObjectId(event.groupPhoto));
+          if (mongoose.Types.ObjectId.isValid(event.groupPhoto)) {
+            await bucket.delete(new mongoose.Types.ObjectId(event.groupPhoto));
+          }
         }
       } catch (err) {
         console.error("Error deleting photo from GridFS:", err);
-        // Continue even if deletion fails
       }
     }
 
-    // Clear groupPhoto field in event
-    await Event.updateOne(
-      { referenceId: eventReferenceId },
-      { $unset: { groupPhoto: "" } }
-    );
+    if (dbConnected) {
+      try {
+        await Event.updateOne(
+          { referenceId: cleanRefId },
+          { $unset: { groupPhoto: "" } }
+        );
+      } catch (e) {
+        console.warn("Event photo unset error:", e);
+      }
+    }
+
+    // Update in-memory event
+    const memoryEvent = getEventFromMemory(cleanRefId);
+    if (memoryEvent) {
+      memoryEvent.groupPhoto = undefined;
+      saveEventInMemory(memoryEvent);
+    }
 
     return NextResponse.json({
       success: true,
@@ -62,9 +118,8 @@ export async function DELETE(request: NextRequest) {
   } catch (error: any) {
     console.error("Delete photo error:", error);
     return NextResponse.json(
-      { error: "Failed to delete photo" },
-      { status: 500 }
+      { error: "Failed to delete photo. Please try again." },
+      { status: 400 }
     );
   }
 }
-

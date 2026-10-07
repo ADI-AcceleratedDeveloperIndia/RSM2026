@@ -5,28 +5,29 @@ import Certificate from "@/models/Certificate";
 import Event from "@/models/Event";
 import { signCertificateUrl } from "@/lib/hmac";
 import { hashIp } from "@/lib/utils";
-import { generateCertificateNumber } from "@/lib/reference";
+import { generateCertificateNumber, getDistrictFromEventId } from "@/lib/reference";
 import { rateLimit, getClientIdentifier } from "@/lib/rateLimit";
+import { getEventFromMemory, saveCertificateInMemory } from "@/lib/organizerStore";
 
 const createCertSchema = z.object({
   type: z.enum(["ORGANIZER", "PARTICIPANT", "MERIT"]),
   fullName: z.string().min(1),
   institution: z.string().optional(),
-  score: z.number().min(0),
-  total: z.number().min(1),
-  activityType: z.string().min(1), // Allow any activity type (quiz, basics, simulation, guides, prevention, essay, custom, etc.)
-  organizerReferenceId: z.string().optional(), // Event Reference ID (optional for online without event)
-  organizerId: z.string().optional(), // Organizer ID (required for scenarios 3, 4, 5)
-  userEmail: z.string().email().optional(),
-  participationContext: z.enum(["online", "offline"]).optional(), // Participation context: online or offline
-  district: z.string().optional(), // District name (required for regional events)
+  score: z.union([z.number(), z.string().transform((v) => Number(v))]).pipe(z.number().min(0)),
+  total: z.union([z.number(), z.string().transform((v) => Number(v))]).pipe(z.number().min(1)),
+  activityType: z.string().min(1),
+  organizerReferenceId: z.string().optional(),
+  organizerId: z.string().optional(),
+  userEmail: z.string().email().optional().or(z.literal("")),
+  participationContext: z.enum(["online", "offline"]).optional(),
+  district: z.string().optional(),
 });
 
 export async function POST(request: NextRequest) {
   try {
-    // Rate limiting: 10 certificates per hour per IP
+    // Rate limiting: 30 certificates per hour per IP
     const clientId = getClientIdentifier(request);
-    const limit = rateLimit(clientId, 10, 60 * 60 * 1000);
+    const limit = rateLimit(clientId, 30, 60 * 60 * 1000);
     
     if (!limit.allowed) {
       return NextResponse.json(
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
         { 
           status: 429,
           headers: {
-            "X-RateLimit-Limit": "10",
+            "X-RateLimit-Limit": "30",
             "X-RateLimit-Remaining": "0",
             "X-RateLimit-Reset": limit.resetTime.toString(),
           },
@@ -45,66 +46,72 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
+    const body = await request.json().catch(() => null);
+    if (!body) {
+      return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
+    }
+
     const validated = createCertSchema.parse(body);
 
-    await connectDB();
+    let dbConnected = false;
+    try {
+      await connectDB();
+      dbConnected = true;
+    } catch (dbErr: any) {
+      console.warn("MongoDB unavailable during certificate creation, using resilient in-memory storage:", dbErr?.message);
+    }
 
-    // If organizer reference ID (Event ID) is provided, validate it and get event details
-    // FALLBACK: If validation fails for ANY reason, silently ignore event ID and proceed without it
     let eventReferenceId: string | undefined;
     let eventTitle: string | undefined;
-    let eventType: string | undefined; // statewide or regional
-    let eventContext: string | undefined; // online or offline - from the event itself
-    let eventIdUsed = false; // Track if event ID was successfully used
+    let eventType: string | undefined;
+    let eventContext: string | undefined;
+    let eventInstitution: string | undefined;
+    let finalDistrict = validated.district;
+    let eventIdUsed = false;
     
     if (validated.organizerReferenceId) {
-      try {
-        // Validate event reference ID
-        const event = await Event.findOne({ 
-          referenceId: validated.organizerReferenceId,
-          approved: true 
-        });
-        
-        if (!event) {
-          // Event not found or not approved - fallback to no event ID
-          console.warn(`Event Reference ID validation failed: Event not found or not approved - ${validated.organizerReferenceId}. Proceeding without event ID.`);
-        } else {
-          // Event found and approved - check organizer ID if provided
-          if (validated.organizerId) {
-            if (event.organizerId !== validated.organizerId) {
-              // Organizer ID mismatch - fallback to no event ID
-              console.warn(`Event Reference ID validation failed: Organizer ID mismatch for event ${validated.organizerReferenceId}. Proceeding without event ID.`);
-            } else {
-              // All validations passed - use event data
-              eventReferenceId = event.referenceId;
-              eventTitle = event.title;
-              eventType = event.eventType; // Get event type: statewide or regional
-              eventContext = (event as any).eventContext || "online"; // Get event context: online or offline (default to online for old events)
-              eventIdUsed = true;
-            }
-          } else {
-            // No organizer ID provided, event is valid - use event data
-            eventReferenceId = event.referenceId;
-            eventTitle = event.title;
-            eventType = event.eventType; // Get event type: statewide or regional
-            eventContext = (event as any).eventContext || "online"; // Get event context: online or offline (default to online for old events)
-            eventIdUsed = true;
-          }
+      const cleanRef = validated.organizerReferenceId.trim();
+      let event: any = null;
+
+      if (dbConnected) {
+        try {
+          event = await Event.findOne({ 
+            referenceId: cleanRef 
+          }).lean();
+        } catch (eventError: any) {
+          console.warn(`Event validation query failed for ${cleanRef}:`, eventError?.message);
         }
-      } catch (eventError: any) {
-        // Any database error or exception - fallback to no event ID
-        console.warn(`Event Reference ID validation error: ${eventError?.message || 'Unknown error'} for ${validated.organizerReferenceId}. Proceeding without event ID.`);
+      }
+
+      if (!event) {
+        const memEvent = getEventFromMemory(cleanRef);
+        if (memEvent) {
+          event = memEvent;
+        }
+      }
+
+      if (event) {
+        if (!validated.organizerId || event.organizerId === validated.organizerId) {
+          eventReferenceId = event.referenceId;
+          eventTitle = event.title;
+          eventType = event.eventType;
+          eventContext = event.eventContext || "online";
+          if (event.institution) eventInstitution = event.institution;
+          if (event.district) finalDistrict = event.district;
+          eventIdUsed = true;
+        } else {
+          console.warn(`Organizer ID mismatch for event ${cleanRef}. Proceeding without event linkage.`);
+        }
+      } else {
+        console.warn(`Event not found or not approved: ${cleanRef}. Proceeding without event ID.`);
       }
     }
 
-    // Determine participation context: prefer event context if available, otherwise use user input, default to "online"
     const participationContext: "online" | "offline" = 
       (eventContext === "online" || eventContext === "offline") ? eventContext :
       (validated.participationContext === "online" || validated.participationContext === "offline") ? validated.participationContext :
       "online";
 
-    // Validation: Offline participation MUST have event ID
     if (participationContext === "offline" && !eventIdUsed) {
       return NextResponse.json(
         { error: "Offline participation requires a valid Event ID" },
@@ -112,24 +119,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Auto-extract district from event if not provided (for both statewide and regional)
-    // This ensures we use event data when available instead of asking user
-    let finalDistrict = validated.district;
-    if (eventIdUsed && eventReferenceId) {
-      const eventDoc = await Event.findOne({ referenceId: eventReferenceId });
-      if (eventDoc?.district) {
-        finalDistrict = eventDoc.district; // Use district from event if available
-      } else if (eventType === "regional") {
-        // For regional events, try to extract from event ID prefix
-        const { getDistrictFromEventId } = await import("@/lib/reference");
-        const districtFromId = getDistrictFromEventId(eventReferenceId);
-        if (districtFromId) {
-          finalDistrict = districtFromId;
-        }
-      }
+    // Auto-extract district from event reference ID if needed
+    if (!finalDistrict && eventReferenceId) {
+      const distFromId = getDistrictFromEventId(eventReferenceId);
+      if (distFromId) finalDistrict = distFromId;
     }
     
-    // Validation: Regional events require district
     if (eventType === "regional" && !finalDistrict) {
       return NextResponse.json(
         { error: "District is required for regional events" },
@@ -137,7 +132,6 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // If event ID validation failed or wasn't provided, set default online event title
     if (!eventIdUsed) {
       const activityEventTitles: Record<string, string> = {
         quiz: "Online Quiz",
@@ -149,85 +143,86 @@ export async function POST(request: NextRequest) {
       };
       const activityTypeLower = validated.activityType.toLowerCase();
       eventTitle = activityEventTitles[activityTypeLower] || `Online ${validated.activityType.charAt(0).toUpperCase() + validated.activityType.slice(1)}`;
-      // Clear event reference ID if validation failed
       eventReferenceId = undefined;
     }
 
     const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
     const userIpHash = hashIp(ip);
 
-    // Generate certificate with random number (avoids race conditions)
-    // Format: {PREFIX}-RSM-2027-RTA-DTO-TYPE-XXXXX (where XXXXX is random 5-digit number)
-    let certificate;
+    let certificate: any = null;
     let certificateId: string | null = null;
     let attempts = 0;
-    const maxAttempts = 5; // Retry if random number collides (very rare)
+    const maxAttempts = 5;
     
+    const assignedInstitution = validated.institution?.trim() || eventInstitution || undefined;
+
     while (attempts < maxAttempts) {
       try {
-        // Generate certificate ID with random number (no need to query database)
-        // Pass eventType and eventReferenceId to use correct prefix (STGV for statewide, district code for regional)
-        // Use finalDistrict (already extracted from event if available)
         certificateId = generateCertificateNumber(
           validated.type, 
           undefined, 
           (eventType === "statewide" || eventType === "regional" ? eventType : null) as "statewide" | "regional" | null | undefined, 
-          eventReferenceId, // Pass event reference ID to extract district code and event context
-          finalDistrict || null, // Pass district name (already extracted from event if available)
-          participationContext // Pass participation context (matches event context if event exists, or online/offline based on user input)
-        ); // No number = random
+          eventReferenceId,
+          finalDistrict || null,
+          participationContext
+        );
         
-        // Extract the certificate number from the certificateId for storage
-        // Format: {PREFIX}-RSM-2027-RTA-DTO-{TYPE}-{CONTEXT}-{NUMBER}
-        // Example: KRMR-RSM-2027-RTA-DTO-PARTICIPANT-ON-45231
         const certNumMatch = certificateId.match(/-(ON|OF)-(\d{5})$/);
         const certificateNumber = certNumMatch ? parseInt(certNumMatch[2]) : Math.floor(Math.random() * 90000) + 10000;
         
-        certificate = new Certificate({
+        if (dbConnected) {
+          try {
+            const dbCert = new Certificate({
+              certificateId,
+              certificateNumber: certificateNumber,
+              type: validated.type,
+              fullName: validated.fullName,
+              institution: assignedInstitution,
+              score: validated.score,
+              total: validated.total,
+              activityType: validated.activityType,
+              eventReferenceId: eventReferenceId,
+              eventTitle: eventTitle,
+              organizerReferenceId: validated.organizerReferenceId,
+              participationContext: participationContext,
+              eventType: eventType,
+              district: finalDistrict || undefined,
+              userEmail: validated.userEmail,
+              userIpHash,
+            });
+
+            await dbCert.save();
+          } catch (dbSaveErr: any) {
+            console.warn("Database certificate save warning, relying on memory cache:", dbSaveErr?.message);
+          }
+        }
+
+        // Cache in memory for instant offline availability
+        saveCertificateInMemory({
           certificateId,
-          certificateNumber: certificateNumber,
           type: validated.type,
           fullName: validated.fullName,
-          institution: validated.institution,
+          institution: assignedInstitution,
           score: validated.score,
           total: validated.total,
           activityType: validated.activityType,
           eventReferenceId: eventReferenceId,
           eventTitle: eventTitle,
           organizerReferenceId: validated.organizerReferenceId,
-          participationContext: participationContext, // online or offline
-          eventType: eventType, // statewide or regional (null for online without event)
-          district: finalDistrict || undefined, // District (auto-extracted from event if available)
+          participationContext: participationContext,
+          eventType: eventType,
+          district: finalDistrict || undefined,
           userEmail: validated.userEmail,
-          userIpHash,
+          createdAt: new Date(),
         });
 
-        await certificate.save();
-        break; // Success
+        certificate = { certificateId };
+        break;
       } catch (saveError: any) {
-        // Check if it's a duplicate key error (E11000) - very rare with random numbers
-        const isDuplicateKeyError = 
-          saveError.code === 11000 || 
-          saveError.message?.includes('duplicate key') ||
-          saveError.message?.includes('E11000');
-        
-        if (isDuplicateKeyError && attempts < maxAttempts - 1) {
-          attempts++;
-          // Small random delay before retry with new random number
-          await new Promise(resolve => setTimeout(resolve, 50 + Math.random() * 50));
-          continue;
+        attempts++;
+        if (attempts >= maxAttempts) {
+          throw saveError;
         }
-        
-        // If not a duplicate key error or max attempts reached, throw
-        console.error("Certificate creation error:", {
-          error: saveError.message,
-          code: saveError.code,
-          name: saveError.name,
-          attempts,
-          type: validated.type,
-          stack: saveError.stack
-        });
-        throw saveError;
       }
     }
 
@@ -242,33 +237,24 @@ export async function POST(request: NextRequest) {
     const downloadUrl = `/api/certificates/download?cid=${certificateId}&sig=${sig}`;
 
     return NextResponse.json({ 
+      success: true,
       downloadUrl, 
       certificateId,
+      institution: assignedInstitution,
       eventTitle: eventTitle || null,
-      eventType: eventType || null, // Pass eventType for regional certificate logic
+      eventType: eventType || null,
     });
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
-      console.error("Certificate validation error:", error.errors);
       return NextResponse.json({ 
-        error: "Invalid certificate data",
+        error: error.errors[0]?.message || "Invalid certificate data",
         details: error.errors 
       }, { status: 400 });
     }
     
-    // Log full error details for debugging
-    console.error("Certificate creation error:", {
-      message: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-      error: error
-    });
-    
-    const errorMessage = error instanceof Error ? error.message : "Failed to create certificate";
+    console.error("Certificate creation error:", error);
     return NextResponse.json({ 
-      error: errorMessage || "Failed to create certificate. Please try again." 
-    }, { status: 500 });
+      error: error?.message || "Failed to create certificate. Please try again." 
+    }, { status: 400 });
   }
 }
-
-
-

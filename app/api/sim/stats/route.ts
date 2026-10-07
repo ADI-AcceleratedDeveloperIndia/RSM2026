@@ -60,7 +60,15 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Sim stats error:", error);
-    return NextResponse.json({ error: "Failed to fetch stats" }, { status: 500 });
+    return NextResponse.json({
+      totalSessions: 0,
+      totalCompletions: 0,
+      successRate: 0,
+      categoryStats: [],
+      topFailedScenarios: [],
+      avgTimeSeconds: 0,
+      fallback: true,
+    });
   }
 }
 

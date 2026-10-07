@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { 
   AlertTriangle, CheckCircle, Clock, MapPin, 
@@ -11,13 +12,22 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { DISTRICT_NAMES } from "@/lib/districts";
 
-export default function GovHazardsPage() {
+function HazardsContent() {
+  const searchParams = useSearchParams();
+  const districtParam = searchParams.get("district");
+
   const [hazards, setHazards] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("reported"); // Default: newly reported needing triage
-  const [districtFilter, setDistrictFilter] = useState("all");
+  const [districtFilter, setDistrictFilter] = useState(districtParam || "all");
   const [severityFilter, setSeverityFilter] = useState("all");
+
+  useEffect(() => {
+    if (districtParam) {
+      setDistrictFilter(districtParam);
+    }
+  }, [districtParam]);
 
   // Assignment Modal
   const [assignModalHazard, setAssignModalHazard] = useState<any | null>(null);
@@ -423,5 +433,13 @@ export default function GovHazardsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function GovHazardsPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-500">Loading ground hazard dispatch...</div>}>
+      <HazardsContent />
+    </Suspense>
   );
 }

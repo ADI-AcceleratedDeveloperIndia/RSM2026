@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "react-i18next";
 import { CheckCircle2, Clock, XCircle, Copy, Check, List } from "lucide-react";
+import { DISTRICT_NAMES } from "@/lib/districts";
 
 type OrganizerStatus = "pending" | "approved" | "rejected" | null;
 
@@ -19,6 +20,7 @@ export default function OrganizerPage() {
     phone: "",
     institution: "",
     designation: "",
+    district: "Karimnagar",
     password: "",
   });
   const [temporaryId, setTemporaryId] = useState<string | null>(null);
@@ -519,6 +521,26 @@ export default function OrganizerPage() {
                       setFormData({ ...formData, designation: e.target.value })
                     }
                   />
+                </div>
+                <div>
+                  <Label htmlFor="district">
+                    {i18n.language === "te" ? "జిల్లా" : "District"} *
+                  </Label>
+                  <select
+                    id="district"
+                    required
+                    value={formData.district}
+                    onChange={(e) =>
+                      setFormData({ ...formData, district: e.target.value })
+                    }
+                    className="w-full h-10 px-3 py-2 border border-slate-300 rounded-md text-sm bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  >
+                    {DISTRICT_NAMES.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading

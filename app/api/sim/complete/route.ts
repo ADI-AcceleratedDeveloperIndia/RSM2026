@@ -12,8 +12,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid data" }, { status: 400 });
     }
 
-    await connectDB();
-
     // Extract category from sceneId
     let category: "bike" | "car" | "pedestrian" | "other" = "other";
     if (sceneId.startsWith("bike_")) category = "bike";
@@ -22,19 +20,24 @@ export async function POST(request: NextRequest) {
 
     const referenceId = generateReferenceId(category === "bike" ? "SIM-BIKE" : category === "car" ? "SIM-CAR" : category === "pedestrian" ? "SIM-PED" : "SIM");
 
-    await SimStat.create({
-      referenceId,
-      sceneId,
-      category,
-      success,
-      attempts,
-      seconds,
-    });
+    try {
+      await connectDB();
+      await SimStat.create({
+        referenceId,
+        sceneId,
+        category,
+        success,
+        attempts,
+        seconds,
+      });
+    } catch (dbError) {
+      console.warn("Sim completion database error, proceeding with referenceId:", dbError);
+    }
 
     return NextResponse.json({ ok: true, referenceId });
   } catch (error) {
     console.error("Sim completion error:", error);
-    return NextResponse.json({ error: "Failed to log" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to log simulation completion" }, { status: 500 });
   }
 }
 

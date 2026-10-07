@@ -24,7 +24,7 @@ export default function GovLogin() {
       setEmail("admin@rsm2027.gov.in");
       setPassword("RSM2027@admin");
     } else if (type === "district_admin") {
-      setEmail("dto.hyderabad@stategov.in");
+      setEmail("dto.hyderabad@rsm2027.gov.in");
       setPassword("RSM2027@dto");
     } else if (type === "state_admin") {
       setEmail("commissioner.transport@stategov.in");
@@ -195,8 +195,9 @@ export default function GovLogin() {
                 <span>Role-Based Access Control Active:</span>
               </div>
               <p>• <strong>State Super Admin:</strong> <code className="text-indigo-300">admin@rsm2027.gov.in</code> / <code className="text-slate-300">RSM2027@admin</code></p>
-              <p>• <strong>District RTA Head (Hyd):</strong> <code className="text-indigo-300">dto.hyderabad@stategov.in</code> / <code className="text-slate-300">RSM2027@dto</code></p>
-              <p>• <strong>District RTA Head (Krmr):</strong> <code className="text-indigo-300">dto.karimnagar@stategov.in</code> / <code className="text-slate-300">RSM2027@dto</code></p>
+              <p>• <strong>District RTA Head (Hyd):</strong> <code className="text-indigo-300">dto.hyderabad@rsm2027.gov.in</code> / <code className="text-slate-300">RSM2027@dto</code></p>
+              <p>• <strong>District RTA Head (Krmr):</strong> <code className="text-indigo-300">dto.karimnagar@rsm2027.gov.in</code> / <code className="text-slate-300">RSM2027@dto</code></p>
+              <p>• <strong>State Transport Commissioner:</strong> <code className="text-indigo-300">commissioner.transport@stategov.in</code> / <code className="text-slate-300">RSM2027@state</code></p>
             </div>
           </CardContent>
         </Card>

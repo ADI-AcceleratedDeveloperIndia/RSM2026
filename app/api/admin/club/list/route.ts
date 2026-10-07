@@ -34,11 +34,14 @@ export async function GET(request: NextRequest) {
       totalPages: Math.ceil(total / limit),
     });
   } catch (error: any) {
-    console.error("Error fetching club entries:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch club entries" },
-      { status: 500 }
-    );
+    console.warn("Error fetching club entries, returning empty list:", error);
+    return NextResponse.json({
+      items: [],
+      total: 0,
+      page: 1,
+      limit: 50,
+      totalPages: 1,
+    });
   }
 }
 

@@ -7,7 +7,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, Calendar, CheckCircle2, Clock, Upload, X, Plus, Loader2, Trash2 } from "lucide-react";
+import { MapPin, Calendar, CheckCircle2, Clock, Upload, X, Plus, Loader2, Trash2, Users, Award, ExternalLink, Building, FileText } from "lucide-react";
+
+type Participant = {
+  certificateId: string;
+  name: string;
+  institution: string;
+  type?: string;
+  score?: number;
+  total?: number;
+  percentage?: number;
+  activityType?: string;
+  certificateDate?: string;
+};
 
 type Event = {
   referenceId: string;
@@ -40,6 +52,8 @@ export default function EventDetailsPage() {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [deletingPhoto, setDeletingPhoto] = useState(false);
+  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [loadingParticipants, setLoadingParticipants] = useState(true);
 
   useEffect(() => {
     // Fetch event details
@@ -56,6 +70,17 @@ export default function EventDetailsPage() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
+
+    // Fetch participant roster
+    fetch(`/api/events/participants?eventReferenceId=${encodeURIComponent(eventId)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.participants) {
+          setParticipants(data.participants);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoadingParticipants(false));
   }, [eventId]);
 
   const handleOrganizerCheck = () => {
@@ -601,6 +626,116 @@ export default function EventDetailsPage() {
               </div>
             )}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Participant Roster & Issued Certificates Section */}
+      <Card className="border-slate-200 shadow-sm">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+          <div>
+            <div className="flex items-center gap-2">
+              <Award className="h-5 w-5 text-emerald-600" />
+              <CardTitle className="text-xl text-slate-900">
+                {i18n.language === "te" ? "హాజరైన ప్రతినిధులు & సర్టిఫికెట్లు" : "Participant Roster & Verified Certificates"}
+              </CardTitle>
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                {participants.length} {i18n.language === "te" ? "ధృవీకరించబడినవి" : "Verified"}
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 mt-1">
+              {i18n.language === "te"
+                ? `ఈ ఈవెంట్ లో పాల్గొని ప్రభుత్వ అధికారిక సర్టిఫికెట్ అందుకున్న ప్రతినిధుల జాబితా (${event.institution}).`
+                : `Verified participants who completed safety drives and assessments under ${event.institution}.`}
+            </p>
+          </div>
+
+          <a
+            href={`/certificates/generate?ref=${encodeURIComponent(event.referenceId)}&event=${encodeURIComponent(event.title)}&institution=${encodeURIComponent(event.institution || "")}&district=${encodeURIComponent(event.district || "")}`}
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-700 text-white hover:bg-emerald-800 transition shadow-sm whitespace-nowrap"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            <span>{i18n.language === "te" ? "సర్టిఫికెట్ జారీ చేయండి" : "Issue / Earn Certificate"}</span>
+          </a>
+        </CardHeader>
+
+        <CardContent className="pt-5">
+          {loadingParticipants ? (
+            <div className="py-8 text-center flex items-center justify-center gap-2 text-slate-500 text-sm">
+              <Loader2 className="h-4 w-4 animate-spin text-emerald-600" />
+              <span>{i18n.language === "te" ? "పార్టిసిపెంట్లు లోడ్ అవుతున్నారు..." : "Loading participant roster..."}</span>
+            </div>
+          ) : participants.length === 0 ? (
+            <div className="py-10 text-center space-y-3 border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
+              <div className="h-10 w-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto">
+                <Users className="h-5 w-5" />
+              </div>
+              <p className="text-sm font-semibold text-slate-800">
+                {i18n.language === "te" ? "ఇంకా పార్టిసిపెంట్లు నమోదు కాలేదు" : "No certificates issued for this event yet"}
+              </p>
+              <p className="text-xs text-slate-500 max-w-md mx-auto">
+                {i18n.language === "te"
+                  ? "ఈ ఈవెంట్ కోసం మీ పాఠశాల లేదా కళాశాల విద్యార్థులకు సర్టిఫికెట్లు జారీ చేయండి."
+                  : `Participants who complete activities tagged with this Event Reference ID (${event.referenceId}) will automatically appear in this roster.`}
+              </p>
+              <a
+                href={`/certificates/generate?ref=${encodeURIComponent(event.referenceId)}&event=${encodeURIComponent(event.title)}&institution=${encodeURIComponent(event.institution || "")}&district=${encodeURIComponent(event.district || "")}`}
+                className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:text-emerald-800 underline mt-1"
+              >
+                <span>{i18n.language === "te" ? "మొదటి సర్టిఫికెట్ రూపొందించండి →" : "Generate First Certificate for this Event →"}</span>
+              </a>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50 text-slate-600 font-semibold">
+                    <th className="py-3 px-3">Participant Name</th>
+                    <th className="py-3 px-3">Institution / Organisation</th>
+                    <th className="py-3 px-3">Activity & Score</th>
+                    <th className="py-3 px-3">Certificate ID</th>
+                    <th className="py-3 px-3 text-right">Certificate</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {participants.map((p) => (
+                    <tr key={p.certificateId} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-3 px-3 font-semibold text-slate-900">
+                        {p.name}
+                      </td>
+                      <td className="py-3 px-3 text-slate-700">
+                        <span className="inline-flex items-center gap-1 font-medium text-emerald-950 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                          <Building className="h-3 w-3 text-emerald-700" />
+                          {p.institution || event.institution || "Road Safety Club"}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3 text-slate-600">
+                        <span className="capitalize font-medium text-slate-800">{p.activityType || "Participation"}</span>
+                        {p.score !== undefined && p.total !== undefined && p.total > 0 && (
+                          <span className="ml-1 text-[11px] text-emerald-700 font-bold">
+                            ({p.score}/{p.total})
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3 px-3 font-mono text-[11px] text-slate-600">
+                        {p.certificateId}
+                      </td>
+                      <td className="py-3 px-3 text-right">
+                        <a
+                          href={`/certificates/preview?certId=${encodeURIComponent(p.certificateId)}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-emerald-700 hover:text-emerald-900 font-medium"
+                        >
+                          <span>View</span>
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

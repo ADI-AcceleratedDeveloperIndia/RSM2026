@@ -231,14 +231,22 @@ export default function ParentsPledgeModal({ open, onOpenChange }: ParentsPledge
         height: container.scrollHeight || 1200,
         windowWidth: 800,
         windowHeight: container.scrollHeight || 1200,
-        x: 0,
-        y: 0,
         onclone: (clonedDoc) => {
-          // Ensure cloned document has proper styles
-          const clonedContainer = clonedDoc.querySelector('body > div');
+          // Reset transform and ensure cloned document elements are visible and properly positioned
+          const allElements = clonedDoc.querySelectorAll("*");
+          allElements.forEach((el) => {
+            const htmlEl = el as HTMLElement;
+            if (htmlEl.style) {
+              htmlEl.style.transform = "none";
+            }
+          });
+          const clonedContainer = clonedDoc.querySelector(".container") as HTMLElement;
           if (clonedContainer) {
-            (clonedContainer as HTMLElement).style.visibility = "visible";
-            (clonedContainer as HTMLElement).style.opacity = "1";
+            clonedContainer.style.visibility = "visible";
+            clonedContainer.style.opacity = "1";
+            clonedContainer.style.position = "static";
+            clonedContainer.style.left = "0";
+            clonedContainer.style.top = "0";
           }
         },
       });
@@ -258,10 +266,13 @@ export default function ParentsPledgeModal({ open, onOpenChange }: ParentsPledge
         canvas.toBlob((blob) => {
           if (blob && blob.size > 0) {
             try {
+              const safeChildName = (pledgeData?.childName || "Certificate")
+                .trim()
+                .replace(/[^a-zA-Z0-9_\u0C00-\u0C7F-]/g, "_");
               const url = window.URL.createObjectURL(blob);
               const a = document.createElement("a");
               a.href = url;
-              a.download = `Parents-Pledge-${pledgeData.childName.replace(/\s+/g, "-")}.png`;
+              a.download = `Parents-Pledge-${safeChildName}.png`;
               a.style.display = "none";
               document.body.appendChild(a);
               a.click();
