@@ -246,7 +246,7 @@ export default function Nav() {
                 }`}
               >
                 <Target className="h-3.5 w-3.5" />
-                <span>4E Framework</span>
+                <span>4E</span>
                 <ChevronDown
                   className={`h-3 w-3 transition-transform duration-200 ${
                     fourEDropdownOpen ? "rotate-180" : ""
@@ -502,7 +502,7 @@ export default function Nav() {
                 >
                   <div className="flex items-center gap-2.5">
                     <Target className="h-4 w-4 text-indigo-600" />
-                    <span>4E Framework ({fourEItems.length} Pillars)</span>
+                    <span>4E ({fourEItems.length} Pillars)</span>
                   </div>
                   <ChevronDown
                     className={`h-4 w-4 text-slate-500 transition-transform ${
